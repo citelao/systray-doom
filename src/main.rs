@@ -18,6 +18,8 @@ struct Game {
 
 impl DoomGeneric for Game {
     fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
+        // This one draws the whole screen:
+        //
         // let mut screen_buffer_rgba: Vec<u8> = Vec::with_capacity(xres * yres * 4);
         // for argb in screen_buffer {
         //     screen_buffer_rgba.push(((argb >> 16) & 0xFF) as u8);
@@ -28,7 +30,9 @@ impl DoomGeneric for Game {
         // }
 
         // Use the center-top of the screen.
-        // It's 640x480, so let's try to trim this to about 400x400
+        // It's 640x400 usually.
+        // assert_eq!(640, xres);
+        // assert_eq!(400, yres);
         const DESIRED_WIDTH: usize = 320;
         const DESIRED_HEIGHT: usize = 320;
         let x_range = ((xres - DESIRED_WIDTH) / 2, (xres - DESIRED_WIDTH) / 2 + DESIRED_WIDTH);
