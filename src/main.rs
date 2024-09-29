@@ -1,9 +1,9 @@
-use std::{collections::VecDeque, sync::{Arc, Once}};
+use std::{collections::VecDeque, sync::Once};
 
 use doomgeneric::{game::DoomGeneric, input::KeyData};
 use windows::{
     core::{w, Result, GUID, HSTRING, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, Graphics::Gdi::CreateBitmap, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateIconFromResourceEx, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
@@ -35,6 +35,8 @@ impl DoomGeneric for Game {
         // assert_eq!(400, yres);
         const DESIRED_WIDTH: usize = 320;
         const DESIRED_HEIGHT: usize = 320;
+        assert!(xres > DESIRED_WIDTH);
+        assert!(yres > DESIRED_HEIGHT);
         let x_range = ((xres - DESIRED_WIDTH) / 2, (xres - DESIRED_WIDTH) / 2 + DESIRED_WIDTH);
         // let y_range = ((yres - DESIRED_HEIGHT) / 2, (yres - DESIRED_HEIGHT) / 2 + DESIRED_HEIGHT);
         let y_range = (0, DESIRED_HEIGHT);
