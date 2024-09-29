@@ -1,12 +1,30 @@
-use std::sync::Once;
+use std::sync::{Arc, Once};
 
+use doomgeneric::game::DoomGeneric;
 use windows::{
     core::{w, Result, GUID, HSTRING, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIM_ADD, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4, NOTIFY_ICON_DATA_FLAGS}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, ShowWindow, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, Graphics::Gdi::CreateBitmap, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIM_ADD, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4, NOTIFY_ICON_DATA_FLAGS}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, ShowWindow, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("minesweeper-rs.Window");
+
+struct Game {
+}
+
+impl DoomGeneric for Game {
+    fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
+        // Create an RGBA8 icon
+    }
+
+    fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
+        todo!()
+    }
+
+    fn set_window_title(&mut self, title: &str) {
+        todo!()
+    }
+}
 
 unsafe extern "system" fn wnd_proc(
     window: HWND,
@@ -93,6 +111,15 @@ fn run() -> Result<()> {
         assert_ne!(Shell_NotifyIconW(NIM_ADD, &icon_info), false);
         assert_ne!(Shell_NotifyIconW(NIM_SETVERSION, &icon_info), false);
     }
+
+    // Start a new thread...
+    println!("Starting a thread to play Doom...");
+    let game_state = Game {
+
+    };
+    std::thread::spawn(|| {
+        doomgeneric::game::init(game_state);
+    });
 
     println!("Starting message loop...");
     let mut message = MSG::default();
