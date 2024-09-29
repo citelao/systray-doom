@@ -18,18 +18,44 @@ struct Game {
 
 impl DoomGeneric for Game {
     fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
-        // TODO: Create an RGBA8 icon
-        let mut screen_buffer_rgba: Vec<u8> = Vec::with_capacity(xres * yres * 4);
-        for argb in screen_buffer {
+        // let mut screen_buffer_rgba: Vec<u8> = Vec::with_capacity(xres * yres * 4);
+        // for argb in screen_buffer {
+        //     screen_buffer_rgba.push(((argb >> 16) & 0xFF) as u8);
+        //     screen_buffer_rgba.push(((argb >> 8) & 0xFF) as u8);
+        //     screen_buffer_rgba.push(((argb >> 0) & 0xFF) as u8);
+        //     // Alpha seems to be opacity. Inverting it.
+        //     screen_buffer_rgba.push(255 - ((argb >> 24) & 0xFF) as u8);
+        // }
+
+        // Use the center-top of the screen.
+        // It's 640x480, so let's try to trim this to about 400x400
+        const DESIRED_WIDTH: usize = 320;
+        const DESIRED_HEIGHT: usize = 320;
+        let x_range = ((xres - DESIRED_WIDTH) / 2, (xres - DESIRED_WIDTH) / 2 + DESIRED_WIDTH);
+        // let y_range = ((yres - DESIRED_HEIGHT) / 2, (yres - DESIRED_HEIGHT) / 2 + DESIRED_HEIGHT);
+        let y_range = (0, DESIRED_HEIGHT);
+        let mut screen_buffer_rgba: Vec<u8> = Vec::with_capacity(DESIRED_HEIGHT * DESIRED_WIDTH * 4);
+        for i in 0..screen_buffer.len() {
+            let current_posn = (i % xres, i / xres);
+            if current_posn.0 < x_range.0 || current_posn.0 >= x_range.1
+            {
+                continue
+            }
+            if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1
+            {
+                continue
+            }
+            let argb = &screen_buffer[i];
             screen_buffer_rgba.push(((argb >> 16) & 0xFF) as u8);
             screen_buffer_rgba.push(((argb >> 8) & 0xFF) as u8);
             screen_buffer_rgba.push(((argb >> 0) & 0xFF) as u8);
             // Alpha seems to be opacity. Inverting it.
             screen_buffer_rgba.push(255 - ((argb >> 24) & 0xFF) as u8);
         }
+
         let icon = unsafe { CreateIcon(None,
-            xres as i32,
-            yres as i32,
+            DESIRED_WIDTH as i32,
+            DESIRED_HEIGHT as i32,
             4,
             8,
             screen_buffer_rgba.as_ptr(),
