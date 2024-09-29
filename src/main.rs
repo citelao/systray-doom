@@ -1,8 +1,8 @@
 use std::sync::Once;
 
 use windows::{
-    core::{w, Result, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::WindowsAndMessaging::{DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, RegisterClassW, TranslateMessage, CREATESTRUCTW, IDC_ARROW, MSG, WM_NCCREATE, WNDCLASSW}}
+    core::{w, Result, HSTRING, PCWSTR},
+    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, RegisterClassW, ShowWindow, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, IDC_ARROW, MSG, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
@@ -45,6 +45,25 @@ fn run() -> Result<()> {
             };
             assert_ne!(unsafe { RegisterClassW(&class) }, 0);
         });
+
+    let window = unsafe {
+        CreateWindowExW(
+            windows::Win32::UI::WindowsAndMessaging::WINDOW_EX_STYLE(0),
+            WINDOW_CLASS_NAME,
+            &HSTRING::from("Test window"),
+            WS_OVERLAPPEDWINDOW,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            None,
+            None,
+            instance,
+            None, // Some(result.as_mut() as *mut _ as _),
+        )
+        // .ok()?
+    };
+    unsafe { _ = ShowWindow(window, SW_SHOW) };
 
     println!("Starting message loop...");
     let mut message = MSG::default();
