@@ -77,6 +77,7 @@ fn run() -> Result<()> {
         uFlags: NIF_GUID | NIF_ICON,
         hIcon: icon as _,
         hWnd: window,
+        // szTip: "test".encode_utf16().collect(),
         // szTip: Default::default(),
         // szInfo: None,
         // dwState: 0,
