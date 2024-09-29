@@ -2,7 +2,7 @@ use std::{collections::VecDeque, sync::Once};
 
 use doomgeneric::{game::DoomGeneric, input::KeyData};
 use windows::{
-    core::{w, Result, GUID, HSTRING, PCWSTR}, Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    core::{w, Result, GUID, HSTRING, PCWSTR}, Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, HICON, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 mod tray_icon_message;
@@ -14,6 +14,7 @@ const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
 const SYSTRAY_GUID: GUID = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e]);
 
 struct Game {
+    previous_frame: Option<HICON>,
     input_queue: VecDeque<KeyData>
 }
 
@@ -61,7 +62,6 @@ impl DoomGeneric for Game {
             screen_buffer_rgba.push(255 - ((argb >> 24) & 0xFF) as u8);
         }
 
-        // TODO: we probably have to delete these icons :)
         let icon = unsafe { CreateIcon(None,
             DESIRED_WIDTH as i32,
             DESIRED_HEIGHT as i32,
@@ -77,6 +77,10 @@ impl DoomGeneric for Game {
         unsafe {
             assert_ne!(Shell_NotifyIconW(NIM_MODIFY, &icon_info), false);
         }
+        if let Some(previous_frame) = self.previous_frame {
+            unsafe { DestroyIcon(previous_frame).expect("delete previous frame") };
+        }
+        self.previous_frame = Some(icon);
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
@@ -172,6 +176,7 @@ fn run() -> Result<()> {
     // Start a new thread...
     println!("Starting a thread to play Doom...");
     let game_state = Game {
+        previous_frame: None,
         input_queue: VecDeque::new(),
     };
     std::thread::spawn(|| {
