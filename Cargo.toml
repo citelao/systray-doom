@@ -1,0 +1,10 @@
+[package]
+name = "systray-doom"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+doomgeneric = { path = "../doomgeneric-rs", version = "0.3.0-beta.2" }
+
+[build-dependencies]
+cc = "1.0"
