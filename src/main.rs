@@ -1,8 +1,8 @@
 use std::sync::Once;
 
 use windows::{
-    core::{w, Result, HSTRING, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, RegisterClassW, ShowWindow, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, IDC_ARROW, MSG, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}
+    core::{w, Result, GUID, HSTRING, PCWSTR},
+    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIM_ADD, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4, NOTIFY_ICON_DATA_FLAGS}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, ShowWindow, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
@@ -63,7 +63,35 @@ fn run() -> Result<()> {
         )
         // .ok()?
     };
-    unsafe { _ = ShowWindow(window, SW_SHOW) };
+    // unsafe { _ = ShowWindow(window, SW_SHOW) };
+
+    // Systray!
+    // 3889a1fb-1354-42a2-a0d6-cb6493d2e91e
+    let systray_guid = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e]);
+    let icon = unsafe {
+        LoadIconW(None, IDI_ASTERISK)?
+    };
+    let icon_info = NOTIFYICONDATAW {
+        cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
+        guidItem: systray_guid,
+        uFlags: NIF_GUID | NIF_ICON,
+        hIcon: icon as _,
+        hWnd: window,
+        // szTip: Default::default(),
+        // szInfo: None,
+        // dwState: 0,
+        // dwStateMask: 0,
+        // szInfoTitle: None,
+        // dwInfoFlags: 0,
+        Anonymous: NOTIFYICONDATAW_0 {
+            uVersion: NOTIFYICON_VERSION_4,
+        },
+        ..Default::default()
+    };
+    unsafe {
+        assert_ne!(Shell_NotifyIconW(NIM_ADD, &icon_info), false);
+        assert_ne!(Shell_NotifyIconW(NIM_SETVERSION, &icon_info), false);
+    }
 
     println!("Starting message loop...");
     let mut message = MSG::default();
