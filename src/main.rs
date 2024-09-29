@@ -1,15 +1,16 @@
-use std::sync::{Arc, Once};
+use std::{collections::VecDeque, sync::{Arc, Once}};
 
-use doomgeneric::game::DoomGeneric;
+use doomgeneric::{game::DoomGeneric, input::KeyData};
 use windows::{
     core::{w, Result, GUID, HSTRING, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, Graphics::Gdi::CreateBitmap, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIM_ADD, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4, NOTIFY_ICON_DATA_FLAGS}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, ShowWindow, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIM_ADD, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("minesweeper-rs.Window");
 
 struct Game {
+    input_queue: VecDeque<KeyData>
 }
 
 impl DoomGeneric for Game {
@@ -18,7 +19,7 @@ impl DoomGeneric for Game {
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
-        todo!()
+        return self.input_queue.pop_front()
     }
 
     fn set_window_title(&mut self, title: &str) {
@@ -115,7 +116,7 @@ fn run() -> Result<()> {
     // Start a new thread...
     println!("Starting a thread to play Doom...");
     let game_state = Game {
-
+        input_queue: VecDeque::new(),
     };
     std::thread::spawn(|| {
         doomgeneric::game::init(game_state);
