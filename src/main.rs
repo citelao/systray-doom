@@ -69,13 +69,11 @@ impl DoomGeneric for Game {
             8,
             screen_buffer_rgba.as_ptr(),
             screen_buffer_rgba.as_ptr()).expect("Could not create icon") };
-        let icon_info = NOTIFYICONDATAW {
-            cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
-            guidItem: SYSTRAY_GUID,
-            uFlags: NIF_GUID | NIF_ICON | NIF_SHOWTIP,
-            hIcon: icon,
+        let icon_info = tray_icon_message::TrayIconMessage {
+            guid: SYSTRAY_GUID,
+            icon: Some(icon),
             ..Default::default()
-        };
+        }.build();
         unsafe {
             assert_ne!(Shell_NotifyIconW(NIM_MODIFY, &icon_info), false);
         }
@@ -86,19 +84,11 @@ impl DoomGeneric for Game {
     }
 
     fn set_window_title(&mut self, title: &str) {
-        // TODO: I don't know rust
-        let vec = title.encode_utf16().take(128).collect::<Vec<u16>>();
-        let arr: [u16; 128] = std::array::from_fn(|i| {
-            if i >= vec.len() { return 0 }
-            return vec[i];
-        });
-        let icon_info = NOTIFYICONDATAW {
-            cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
-            guidItem: SYSTRAY_GUID,
-            uFlags: NIF_GUID | NIF_TIP | NIF_SHOWTIP,
-            szTip: arr,
+        let icon_info = tray_icon_message::TrayIconMessage {
+            guid: SYSTRAY_GUID,
+            tooltip: Some(title.to_string()),
             ..Default::default()
-        };
+        }.build();
         unsafe {
             assert_ne!(Shell_NotifyIconW(NIM_MODIFY, &icon_info), false);
         }

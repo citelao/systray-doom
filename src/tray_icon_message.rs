@@ -47,6 +47,7 @@ impl TrayIconMessage
             notify_icon.uFlags |= NIF_SHOWTIP;
 
             if let Some(tooltip) = &self.tooltip {
+                // TODO: I don't know rust
                 let vec = tooltip.encode_utf16().take(128).collect::<Vec<u16>>();
                 let arr: [u16; 128] = std::array::from_fn(|i| {
                     if i >= vec.len() { return 0 }
