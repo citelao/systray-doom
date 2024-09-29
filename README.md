@@ -8,6 +8,14 @@
 cargo run
 ```
 
+## TODO
+
+* [ ] Handle keypresses
+* [ ] Click to show full window
+* [ ] Right-click menu
+* [ ] Hotkey to show full window
+* [ ] Hotkey to pause?
+
 ## Acknowledgements
 
 * minesweeper-rs

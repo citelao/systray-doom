@@ -7,7 +7,7 @@ use windows::{
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
-const WINDOW_CLASS_NAME: PCWSTR = w!("minesweeper-rs.Window");
+const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
 
 // 3889a1fb-1354-42a2-a0d6-cb6493d2e91e
 const SYSTRAY_GUID: GUID = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e]);
@@ -59,6 +59,7 @@ impl DoomGeneric for Game {
             screen_buffer_rgba.push(255 - ((argb >> 24) & 0xFF) as u8);
         }
 
+        // TODO: we probably have to delete these icons :)
         let icon = unsafe { CreateIcon(None,
             DESIRED_WIDTH as i32,
             DESIRED_HEIGHT as i32,
