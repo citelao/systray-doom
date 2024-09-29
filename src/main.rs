@@ -2,9 +2,10 @@ use std::{collections::VecDeque, sync::Once};
 
 use doomgeneric::{game::DoomGeneric, input::KeyData};
 use windows::{
-    core::{w, Result, GUID, HSTRING, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    core::{w, Result, GUID, HSTRING, PCWSTR}, Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
+
+mod tray_icon_message;
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
@@ -18,7 +19,8 @@ struct Game {
 
 impl DoomGeneric for Game {
     fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
-        // This one draws the whole screen:
+        // This one draws the whole screen.
+        // Taken from piston-doom's impl.
         //
         // let mut screen_buffer_rgba: Vec<u8> = Vec::with_capacity(xres * yres * 4);
         // for argb in screen_buffer {
@@ -164,24 +166,14 @@ fn run() -> Result<()> {
     let icon = unsafe {
         LoadIconW(None, IDI_ASTERISK)?
     };
-    let icon_info = NOTIFYICONDATAW {
-        cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
-        guidItem: SYSTRAY_GUID,
-        uFlags: NIF_GUID | NIF_ICON,
-        hIcon: icon as _,
-        hWnd: window,
-        // szTip: "test".encode_utf16().collect(),
-        // szTip: Default::default(),
-        // szInfo: None,
-        // dwState: 0,
-        // dwStateMask: 0,
-        // szInfoTitle: None,
-        // dwInfoFlags: 0,
-        Anonymous: NOTIFYICONDATAW_0 {
-            uVersion: NOTIFYICON_VERSION_4,
-        },
+    let icon_info = tray_icon_message::TrayIconMessage {
+        guid: SYSTRAY_GUID,
+        hwnd: Some(window),
+        callback_message: Some(0),
+        tooltip: Some("Starting Doom...".to_string()),
+        icon: Some(icon),
         ..Default::default()
-    };
+    }.build();
     unsafe {
         assert_ne!(Shell_NotifyIconW(NIM_ADD, &icon_info), false);
         assert_ne!(Shell_NotifyIconW(NIM_SETVERSION, &icon_info), false);
