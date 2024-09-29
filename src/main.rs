@@ -3,11 +3,14 @@ use std::{collections::VecDeque, sync::{Arc, Once}};
 use doomgeneric::{game::DoomGeneric, input::KeyData};
 use windows::{
     core::{w, Result, GUID, HSTRING, PCWSTR},
-    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIM_ADD, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("minesweeper-rs.Window");
+
+// 3889a1fb-1354-42a2-a0d6-cb6493d2e91e
+const SYSTRAY_GUID: GUID = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e]);
 
 struct Game {
     input_queue: VecDeque<KeyData>
@@ -23,7 +26,22 @@ impl DoomGeneric for Game {
     }
 
     fn set_window_title(&mut self, title: &str) {
-        todo!()
+        // TODO: I don't know rust
+        let vec = title.encode_utf16().take(128).collect::<Vec<u16>>();
+        let arr: [u16; 128] = std::array::from_fn(|i| {
+            if i >= vec.len() { return 0 }
+            return vec[i];
+        });
+        let icon_info = NOTIFYICONDATAW {
+            cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
+            guidItem: SYSTRAY_GUID,
+            uFlags: NIF_GUID | NIF_TIP | NIF_SHOWTIP,
+            szTip: arr,
+            ..Default::default()
+        };
+        unsafe {
+            assert_ne!(Shell_NotifyIconW(NIM_MODIFY, &icon_info), false);
+        }
     }
 }
 
@@ -85,14 +103,12 @@ fn run() -> Result<()> {
     // unsafe { _ = ShowWindow(window, SW_SHOW) };
 
     // Systray!
-    // 3889a1fb-1354-42a2-a0d6-cb6493d2e91e
-    let systray_guid = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e]);
     let icon = unsafe {
         LoadIconW(None, IDI_ASTERISK)?
     };
     let icon_info = NOTIFYICONDATAW {
         cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
-        guidItem: systray_guid,
+        guidItem: SYSTRAY_GUID,
         uFlags: NIF_GUID | NIF_ICON,
         hIcon: icon as _,
         hWnd: window,
