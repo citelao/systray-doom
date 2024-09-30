@@ -1,11 +1,13 @@
-use std::{collections::VecDeque, sync::Once};
+use std::{collections::VecDeque, sync::{Arc, Once}};
 
 use doomgeneric::{game::DoomGeneric, input::KeyData};
+use window::{Window, WndProc};
 use windows::{
-    core::{w, Result, GUID, HSTRING, PCWSTR}, Win32::{Foundation::{HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, LoadCursorW, LoadIconW, RegisterClassW, TranslateMessage, CW_USEDEFAULT, HICON, IDC_ARROW, IDI_ASTERISK, MSG, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    core::{w, Result, GUID, HSTRING, PCWSTR}, Win32::{Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE, WINDOW_STYLE, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 mod tray_icon_message;
+mod window;
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
@@ -99,62 +101,39 @@ impl DoomGeneric for Game {
     }
 }
 
-unsafe extern "system" fn wnd_proc(
-    window: HWND,
-    message: u32,
-    wparam: WPARAM,
-    lparam: LPARAM,
-) -> LRESULT {
-    if message == WM_NCCREATE {
-        // let cs = lparam.0 as *const CREATESTRUCTW;
-        // let this = (*cs).lpCreateParams as *mut Self;
-        // (*this).handle = window;
+struct GameWindow {
 
-        // SetWindowLongPtrW(window, GWLP_USERDATA, this as _);
-    } else {
-        // let this = GetWindowLongPtrW(window, GWLP_USERDATA) as *mut Self;
+}
 
-        // if let Some(this) = this.as_mut() {
-        //     return this.message_handler(message, wparam, lparam);
-        // }
+impl WndProc for GameWindow {
+    fn wnd_proc_message_handler(&mut self, window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> Option<LRESULT> {
+        // todo!()
+        println!("Hi");
+        None
     }
-    DefWindowProcW(window, message, wparam, lparam)
 }
 
 fn run() -> Result<()> {
     println!("Hello, world!");
 
-    println!("Registering window class...");
-    let instance = unsafe { GetModuleHandleW(None)? };
-        REGISTER_WINDOW_CLASS.call_once(|| {
-            let class = WNDCLASSW {
-                hCursor: unsafe { LoadCursorW(None, IDC_ARROW).ok().unwrap() },
-                hInstance: instance.into(),
-                lpszClassName: WINDOW_CLASS_NAME,
-                lpfnWndProc: Some(wnd_proc),
-                ..Default::default()
-            };
-            assert_ne!(unsafe { RegisterClassW(&class) }, 0);
-        });
+    // println!("Registering window class...");
+    // let instance = unsafe { GetModuleHandleW(None)? };
+    //     REGISTER_WINDOW_CLASS.call_once(|| {
+    //         let class = WNDCLASSW {
+    //             hCursor: unsafe { LoadCursorW(None, IDC_ARROW).ok().unwrap() },
+    //             hInstance: instance.into(),
+    //             lpszClassName: WINDOW_CLASS_NAME,
+    //             lpfnWndProc: Some(wnd_proc),
+    //             ..Default::default()
+    //         };
+    //         assert_ne!(unsafe { RegisterClassW(&class) }, 0);
+    //     });
 
-    let window = unsafe {
-        CreateWindowExW(
-            windows::Win32::UI::WindowsAndMessaging::WINDOW_EX_STYLE(0),
-            WINDOW_CLASS_NAME,
-            &HSTRING::from("Test window"),
-            WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            None,
-            None,
-            instance,
-            None, // Some(result.as_mut() as *mut _ as _),
-        )
-        // .ok()?
-    };
-    // unsafe { _ = ShowWindow(window, SW_SHOW) };
+    let window = Window::new(
+        "test", 
+        640,
+        400,
+        GameWindow{})?;
 
     // Systray!
     let icon = unsafe {
@@ -162,7 +141,7 @@ fn run() -> Result<()> {
     };
     let icon_info = tray_icon_message::TrayIconMessage {
         guid: SYSTRAY_GUID,
-        hwnd: Some(window),
+        hwnd: Some(window.handle),
         callback_message: Some(0),
         tooltip: Some("Starting Doom...".to_string()),
         icon: Some(icon),
