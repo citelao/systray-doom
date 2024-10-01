@@ -32,9 +32,6 @@ use windows::{
 mod tray_icon_message;
 mod window;
 
-static REGISTER_WINDOW_CLASS: Once = Once::new();
-const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
-
 // 3889a1fb-1354-42a2-a0d6-cb6493d2e91e
 const SYSTRAY_GUID: GUID = GUID::from_values(
     0x3889a1fb,
@@ -58,7 +55,7 @@ impl WndProc for GameWindow {
         _window: HWND,
         message: u32,
         wparam: WPARAM,
-        lparam: LPARAM,
+        _lparam: LPARAM,
     ) -> Option<LRESULT> {
         match message {
             WM_KEYDOWN => {

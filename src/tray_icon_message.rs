@@ -25,6 +25,21 @@ pub struct TrayIconMessage {
     pub icon: Option<HICON>,
 }
 
+// impl Default for TrayIconMessage {
+//     fn default() -> Self {
+//         Self {
+//             guid: GUID::zeroed(),
+//             hwnd: None,
+//             callback_message: None,
+
+//             tooltip: None,
+//             show_tooltip: true,
+
+//             icon: None,
+//         }
+//     }
+// }
+
 impl TrayIconMessage {
     pub fn new(guid: GUID) -> Self {
         Self {
