@@ -114,7 +114,7 @@ impl Window {
             let this = GetWindowLongPtrW(window, GWLP_USERDATA) as *mut Self;
 
             if let Some(this) = this.as_mut() {
-                if let Some(result) = (*(*this).message_handler)
+                if let Some(result) = (*this.message_handler)
                     .wnd_proc_message_handler(window, message, wparam, lparam)
                 {
                     return result;

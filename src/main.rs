@@ -64,7 +64,7 @@ impl WndProc for GameWindow {
             WM_KEYDOWN => {
                 if let Some(key) = vkey_to_doom_key(wparam) {
                     let key_data = KeyData {
-                        key: key,
+                        key,
                         pressed: true,
                     };
                     self.input_queue.lock().unwrap().push_back(key_data);
@@ -74,7 +74,7 @@ impl WndProc for GameWindow {
             WM_KEYUP => {
                 if let Some(key) = vkey_to_doom_key(wparam) {
                     let key_data = KeyData {
-                        key: key,
+                        key,
                         pressed: false,
                     };
                     self.input_queue.lock().unwrap().push_back(key_data);

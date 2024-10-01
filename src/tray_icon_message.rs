@@ -63,7 +63,7 @@ impl TrayIconMessage {
                     if i >= vec.len() {
                         return 0;
                     }
-                    return vec[i];
+                    vec[i]
                 });
 
                 notify_icon.szTip = arr;
@@ -76,6 +76,6 @@ impl TrayIconMessage {
             notify_icon.uFlags |= NIF_ICON;
         }
 
-        return notify_icon;
+        notify_icon
     }
 }
