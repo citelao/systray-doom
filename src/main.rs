@@ -1,9 +1,37 @@
-use std::{collections::VecDeque, rc::Rc, sync::{Arc, Mutex, Once}};
+use std::{
+    collections::VecDeque,
+    sync::{Arc, Mutex, Once},
+};
 
-use doomgeneric::{game::DoomGeneric, input::{keys, KeyData}};
+use doomgeneric::{
+    game::DoomGeneric,
+    input::{keys, KeyData},
+};
 use window::{Window, WndProc};
 use windows::{
-    core::{w, Result, GUID, HSTRING, PCWSTR}, System::VirtualKey, Win32::{Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Input::KeyboardAndMouse::{VIRTUAL_KEY, VK_ACCEPT, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA, VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP}, Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, PostQuitMessage, RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE, WINDOW_STYLE, WM_DESTROY, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    core::{w, Result, GUID, PCWSTR},
+    Win32::{
+        Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
+        System::LibraryLoader::GetModuleHandleW,
+        UI::{
+            Input::KeyboardAndMouse::{
+                VIRTUAL_KEY, VK_ACCEPT, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA,
+                VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP,
+            },
+            Shell::{
+                Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY,
+                NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4,
+            },
+            WindowsAndMessaging::{
+                CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW,
+                GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, PostQuitMessage,
+                RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT,
+                GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE,
+                WINDOW_STYLE, WM_DESTROY, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_NCCREATE,
+                WNDCLASSW, WS_OVERLAPPEDWINDOW,
+            },
+        },
+    },
 };
 
 mod tray_icon_message;
@@ -13,25 +41,36 @@ static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
 
 // 3889a1fb-1354-42a2-a0d6-cb6493d2e91e
-const SYSTRAY_GUID: GUID = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e]);
+const SYSTRAY_GUID: GUID = GUID::from_values(
+    0x3889a1fb,
+    0x1354,
+    0x42a2,
+    [0xa0, 0xd6, 0xcb, 0x64, 0x93, 0xd2, 0xe9, 0x1e],
+);
 
 struct Game {
     previous_frame: Option<HICON>,
-    input_queue: Arc<Mutex<VecDeque<KeyData>>>
+    input_queue: Arc<Mutex<VecDeque<KeyData>>>,
 }
 
 struct GameWindow {
-    input_queue: Arc<Mutex<VecDeque<KeyData>>>
+    input_queue: Arc<Mutex<VecDeque<KeyData>>>,
 }
 
 impl WndProc for GameWindow {
-    fn wnd_proc_message_handler(&mut self, window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> Option<LRESULT> {
+    fn wnd_proc_message_handler(
+        &mut self,
+        window: HWND,
+        message: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+    ) -> Option<LRESULT> {
         match message {
             WM_KEYDOWN => {
                 if let Some(key) = vkey_to_doom_key(wparam) {
                     let key_data = KeyData {
                         key: key,
-                        pressed: true
+                        pressed: true,
                     };
                     self.input_queue.lock().unwrap().push_back(key_data);
                     // println!("Key: {}", key);
@@ -41,7 +80,7 @@ impl WndProc for GameWindow {
                 if let Some(key) = vkey_to_doom_key(wparam) {
                     let key_data = KeyData {
                         key: key,
-                        pressed: false
+                        pressed: false,
                     };
                     self.input_queue.lock().unwrap().push_back(key_data);
                 }
@@ -78,19 +117,21 @@ impl DoomGeneric for Game {
         const DESIRED_HEIGHT: usize = 320;
         assert!(xres > DESIRED_WIDTH);
         assert!(yres > DESIRED_HEIGHT);
-        let x_range = ((xres - DESIRED_WIDTH) / 2, (xres - DESIRED_WIDTH) / 2 + DESIRED_WIDTH);
+        let x_range = (
+            (xres - DESIRED_WIDTH) / 2,
+            (xres - DESIRED_WIDTH) / 2 + DESIRED_WIDTH,
+        );
         // let y_range = ((yres - DESIRED_HEIGHT) / 2, (yres - DESIRED_HEIGHT) / 2 + DESIRED_HEIGHT);
         let y_range = (0, DESIRED_HEIGHT);
-        let mut screen_buffer_rgba: Vec<u8> = Vec::with_capacity(DESIRED_HEIGHT * DESIRED_WIDTH * 4);
+        let mut screen_buffer_rgba: Vec<u8> =
+            Vec::with_capacity(DESIRED_HEIGHT * DESIRED_WIDTH * 4);
         for i in 0..screen_buffer.len() {
             let current_posn = (i % xres, i / xres);
-            if current_posn.0 < x_range.0 || current_posn.0 >= x_range.1
-            {
-                continue
+            if current_posn.0 < x_range.0 || current_posn.0 >= x_range.1 {
+                continue;
             }
-            if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1
-            {
-                continue
+            if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1 {
+                continue;
             }
             let argb = &screen_buffer[i];
             screen_buffer_rgba.push(((argb >> 16) & 0xFF) as u8);
@@ -100,18 +141,24 @@ impl DoomGeneric for Game {
             screen_buffer_rgba.push(255 - ((argb >> 24) & 0xFF) as u8);
         }
 
-        let icon = unsafe { CreateIcon(None,
-            DESIRED_WIDTH as i32,
-            DESIRED_HEIGHT as i32,
-            4,
-            8,
-            screen_buffer_rgba.as_ptr(),
-            screen_buffer_rgba.as_ptr()).expect("Could not create icon") };
+        let icon = unsafe {
+            CreateIcon(
+                None,
+                DESIRED_WIDTH as i32,
+                DESIRED_HEIGHT as i32,
+                4,
+                8,
+                screen_buffer_rgba.as_ptr(),
+                screen_buffer_rgba.as_ptr(),
+            )
+            .expect("Could not create icon")
+        };
         let icon_info = tray_icon_message::TrayIconMessage {
             guid: SYSTRAY_GUID,
             icon: Some(icon),
             ..Default::default()
-        }.build();
+        }
+        .build();
         unsafe {
             assert_ne!(Shell_NotifyIconW(NIM_MODIFY, &icon_info), false);
         }
@@ -122,7 +169,7 @@ impl DoomGeneric for Game {
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
-        return self.input_queue.lock().unwrap().pop_front()
+        return self.input_queue.lock().unwrap().pop_front();
     }
 
     fn set_window_title(&mut self, title: &str) {
@@ -130,7 +177,8 @@ impl DoomGeneric for Game {
             guid: SYSTRAY_GUID,
             tooltip: Some(title.to_string()),
             ..Default::default()
-        }.build();
+        }
+        .build();
         unsafe {
             assert_ne!(Shell_NotifyIconW(NIM_MODIFY, &icon_info), false);
         }
@@ -175,20 +223,19 @@ fn run() -> Result<()> {
     let shared_input_queue = Arc::new(Mutex::new(VecDeque::new()));
     let game_state = Game {
         previous_frame: None,
-        input_queue: shared_input_queue.clone()
+        input_queue: shared_input_queue.clone(),
     };
     let window = Window::new(
-        "test", 
+        "test",
         640,
         400,
-        GameWindow{
-            input_queue: shared_input_queue
-        })?;
+        GameWindow {
+            input_queue: shared_input_queue,
+        },
+    )?;
 
     // Systray!
-    let icon = unsafe {
-        LoadIconW(None, IDI_ASTERISK)?
-    };
+    let icon = unsafe { LoadIconW(None, IDI_ASTERISK)? };
     let icon_info = tray_icon_message::TrayIconMessage {
         guid: SYSTRAY_GUID,
         hwnd: Some(window.handle),
@@ -196,7 +243,8 @@ fn run() -> Result<()> {
         tooltip: Some("Starting Doom...".to_string()),
         icon: Some(icon),
         ..Default::default()
-    }.build();
+    }
+    .build();
     unsafe {
         assert_ne!(Shell_NotifyIconW(NIM_ADD, &icon_info), false);
         assert_ne!(Shell_NotifyIconW(NIM_SETVERSION, &icon_info), false);

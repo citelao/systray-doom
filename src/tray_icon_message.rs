@@ -1,10 +1,19 @@
 use windows::{
-    core::GUID, Win32::{Foundation::HWND, UI::{Shell::{NIF_GUID, NIF_ICON, NIF_MESSAGE, NIF_SHOWTIP, NIF_TIP, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::HICON}}
+    core::GUID,
+    Win32::{
+        Foundation::HWND,
+        UI::{
+            Shell::{
+                NIF_GUID, NIF_ICON, NIF_MESSAGE, NIF_SHOWTIP, NIF_TIP, NOTIFYICONDATAW,
+                NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4,
+            },
+            WindowsAndMessaging::HICON,
+        },
+    },
 };
 
 #[derive(Debug, Clone, Default)]
-pub struct TrayIconMessage
-{
+pub struct TrayIconMessage {
     pub guid: GUID,
     pub hwnd: Option<HWND>,
     pub callback_message: Option<u32>,
@@ -16,8 +25,7 @@ pub struct TrayIconMessage
     pub icon: Option<HICON>,
 }
 
-impl TrayIconMessage
-{
+impl TrayIconMessage {
     pub fn new(guid: GUID) -> Self {
         Self {
             guid,
@@ -26,7 +34,9 @@ impl TrayIconMessage
     }
 
     pub fn build(&self) -> NOTIFYICONDATAW {
-        let mut notify_icon = NOTIFYICONDATAW { ..Default::default() };
+        let mut notify_icon = NOTIFYICONDATAW {
+            ..Default::default()
+        };
         notify_icon.cbSize = std::mem::size_of::<NOTIFYICONDATAW>() as u32;
         notify_icon.guidItem = self.guid;
         notify_icon.uFlags = NIF_GUID;
@@ -50,7 +60,9 @@ impl TrayIconMessage
                 // TODO: I don't know rust
                 let vec = tooltip.encode_utf16().take(128).collect::<Vec<u16>>();
                 let arr: [u16; 128] = std::array::from_fn(|i| {
-                    if i >= vec.len() { return 0 }
+                    if i >= vec.len() {
+                        return 0;
+                    }
                     return vec[i];
                 });
 
@@ -67,4 +79,3 @@ impl TrayIconMessage
         return notify_icon;
     }
 }
-

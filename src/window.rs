@@ -1,24 +1,49 @@
 use std::sync::Once;
 
-use windows::{core::{w, Result, HSTRING, PCWSTR}, Win32::{Foundation::{HWND, LPARAM, LRESULT, RECT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::WindowsAndMessaging::{AdjustWindowRectEx, CreateWindowExW, DefWindowProcW, GetWindowLongPtrW, LoadCursorW, RegisterClassW, SetWindowLongPtrW, ShowWindow, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, IDC_ARROW, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_EX_NOREDIRECTIONBITMAP, WS_OVERLAPPEDWINDOW}}};
+use windows::{
+    core::{w, Result, HSTRING, PCWSTR},
+    Win32::{
+        Foundation::{HWND, LPARAM, LRESULT, RECT, WPARAM},
+        System::LibraryLoader::GetModuleHandleW,
+        UI::WindowsAndMessaging::{
+            AdjustWindowRectEx, CreateWindowExW, DefWindowProcW, GetWindowLongPtrW, LoadCursorW,
+            RegisterClassW, SetWindowLongPtrW, ShowWindow, CREATESTRUCTW, CW_USEDEFAULT,
+            GWLP_USERDATA, IDC_ARROW, SW_SHOW, WM_NCCREATE, WNDCLASSW, WS_EX_NOREDIRECTIONBITMAP,
+            WS_OVERLAPPEDWINDOW,
+        },
+    },
+};
 
 static REGISTER_WINDOW_CLASS: Once = Once::new();
 const WINDOW_CLASS_NAME: PCWSTR = w!("systray-doom.Window");
 
 pub trait WndProc {
-    fn wnd_proc_message_handler(&mut self, window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> Option<LRESULT>;
+    fn wnd_proc_message_handler(
+        &mut self,
+        window: HWND,
+        message: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+    ) -> Option<LRESULT>;
 }
 
 // Adapted from https://github.com/robmikh/minesweeper-rs/blob/135ab04eb5c02a3fb7d50265cbbacad372c73ed1/src/window.rs
 pub struct Window {
     pub handle: HWND,
 
-    message_handler: Box<dyn WndProc>
+    message_handler: Box<dyn WndProc>,
 }
 
 impl Window {
-    pub fn new(title: &str, width: u32, height: u32, message_handler: impl WndProc + 'static) -> Result<Box<Self>> {
+    pub fn new(
+        title: &str,
+        width: u32,
+        height: u32,
+        message_handler: impl WndProc + 'static,
+    ) -> Result<Box<Self>> {
         let instance = unsafe { GetModuleHandleW(None)? };
+
+        // TODO: generalize this to support multiple window classes.
         REGISTER_WINDOW_CLASS.call_once(|| {
             let class = WNDCLASSW {
                 hCursor: unsafe { LoadCursorW(None, IDC_ARROW).ok().unwrap() },
@@ -89,7 +114,9 @@ impl Window {
             let this = GetWindowLongPtrW(window, GWLP_USERDATA) as *mut Self;
 
             if let Some(this) = this.as_mut() {
-                if let Some(result) = (*(*this).message_handler).wnd_proc_message_handler(window, message, wparam, lparam) {
+                if let Some(result) = (*(*this).message_handler)
+                    .wnd_proc_message_handler(window, message, wparam, lparam)
+                {
                     return result;
                 }
             }
