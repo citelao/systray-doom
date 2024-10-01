@@ -1,6 +1,6 @@
 use std::{
     collections::VecDeque,
-    sync::{Arc, Mutex, Once},
+    sync::{Arc, Mutex},
 };
 
 use doomgeneric::{
@@ -9,7 +9,7 @@ use doomgeneric::{
 };
 use window::{Window, WndProc};
 use windows::{
-    core::{w, Result, GUID, PCWSTR},
+    core::{Result, GUID},
     Win32::{
         Foundation::{HWND, LPARAM, LRESULT, WPARAM},
         UI::{
