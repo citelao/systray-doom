@@ -1,9 +1,9 @@
-use std::{collections::VecDeque, sync::{Arc, Once}};
+use std::{collections::VecDeque, rc::Rc, sync::{Arc, Mutex, Once}};
 
-use doomgeneric::{game::DoomGeneric, input::KeyData};
+use doomgeneric::{game::DoomGeneric, input::{keys, KeyData}};
 use window::{Window, WndProc};
 use windows::{
-    core::{w, Result, GUID, HSTRING, PCWSTR}, Win32::{Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE, WINDOW_STYLE, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    core::{w, Result, GUID, HSTRING, PCWSTR}, System::VirtualKey, Win32::{Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Input::KeyboardAndMouse::{VIRTUAL_KEY, VK_ACCEPT, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA, VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP}, Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE, WINDOW_STYLE, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 mod tray_icon_message;
@@ -17,7 +17,39 @@ const SYSTRAY_GUID: GUID = GUID::from_values(0x3889a1fb, 0x1354, 0x42a2, [0xa0, 
 
 struct Game {
     previous_frame: Option<HICON>,
-    input_queue: VecDeque<KeyData>
+    input_queue: Arc<Mutex<VecDeque<KeyData>>>
+}
+
+struct GameWindow {
+    input_queue: Arc<Mutex<VecDeque<KeyData>>>
+}
+
+impl WndProc for GameWindow {
+    fn wnd_proc_message_handler(&mut self, window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> Option<LRESULT> {
+        match message {
+            WM_KEYDOWN => {
+                if let Some(key) = vkey_to_doom_key(wparam) {
+                    let key_data = KeyData {
+                        key: key,
+                        pressed: true
+                    };
+                    self.input_queue.lock().unwrap().push_back(key_data);
+                    // println!("Key: {}", key);
+                }
+            }
+            WM_KEYUP => {
+                if let Some(key) = vkey_to_doom_key(wparam) {
+                    let key_data = KeyData {
+                        key: key,
+                        pressed: false
+                    };
+                    self.input_queue.lock().unwrap().push_back(key_data);
+                }
+            }
+            _ => {}
+        }
+        None
+    }
 }
 
 impl DoomGeneric for Game {
@@ -86,7 +118,7 @@ impl DoomGeneric for Game {
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
-        return self.input_queue.pop_front()
+        return self.input_queue.lock().unwrap().pop_front()
     }
 
     fn set_window_title(&mut self, title: &str) {
@@ -101,15 +133,22 @@ impl DoomGeneric for Game {
     }
 }
 
-struct GameWindow {
-
-}
-
-impl WndProc for GameWindow {
-    fn wnd_proc_message_handler(&mut self, window: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> Option<LRESULT> {
-        // todo!()
-        println!("Hi");
-        None
+fn vkey_to_doom_key(button: WPARAM) -> Option<u8> {
+    let key = VIRTUAL_KEY(button.0 as u16);
+    match key {
+        // Map keyboard keys from m_controller.c
+        VK_RIGHT => Some(*keys::KEY_RIGHT),
+        VK_LEFT => Some(*keys::KEY_LEFT),
+        VK_UP => Some(*keys::KEY_UP),
+        VK_DOWN => Some(*keys::KEY_DOWN),
+        VK_OEM_COMMA => Some(*keys::KEY_STRAFELEFT),
+        VK_OEM_PERIOD => Some(*keys::KEY_STRAFERIGHT),
+        VK_LCONTROL | VK_RCONTROL => Some(*keys::KEY_FIRE),
+        VK_SPACE => Some(*keys::KEY_USE),
+        VK_MENU => Some(*keys::KEY_STRAFE),
+        VK_SHIFT => Some(*keys::KEY_SPEED),
+        // Let doom deal with the rest
+        _ => keys::from_char(button.0 as u8 as char),
     }
 }
 
@@ -129,11 +168,18 @@ fn run() -> Result<()> {
     //         assert_ne!(unsafe { RegisterClassW(&class) }, 0);
     //     });
 
+    let shared_input_queue = Arc::new(Mutex::new(VecDeque::new()));
+    let game_state = Game {
+        previous_frame: None,
+        input_queue: shared_input_queue.clone()
+    };
     let window = Window::new(
         "test", 
         640,
         400,
-        GameWindow{})?;
+        GameWindow{
+            input_queue: shared_input_queue
+        })?;
 
     // Systray!
     let icon = unsafe {
@@ -154,10 +200,6 @@ fn run() -> Result<()> {
 
     // Start a new thread...
     println!("Starting a thread to play Doom...");
-    let game_state = Game {
-        previous_frame: None,
-        input_queue: VecDeque::new(),
-    };
     std::thread::spawn(|| {
         doomgeneric::game::init(game_state);
     });

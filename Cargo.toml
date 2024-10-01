@@ -8,6 +8,7 @@ doomgeneric = { path = "../doomgeneric-rs", version = "0.3.0-beta.2" }
 
 [dependencies.windows]
 version = "0.56.0"
+# https://microsoft.github.io/windows-rs/features/#/master
 features = [
     "Foundation_Collections",
     "Foundation_Numerics",
@@ -19,8 +20,14 @@ features = [
     "Win32_System_LibraryLoader",
     "Win32_System_WinRT",
     "Win32_System_WinRT_Composition",
+
+    # Shell notify icon
     "Win32_UI_Shell_Common",
+
     "Win32_UI_WindowsAndMessaging",
+
+    # VK codes
+    "Win32_UI_Input_KeyboardAndMouse",
 ]
 
 [build-dependencies]

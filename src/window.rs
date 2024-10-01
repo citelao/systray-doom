@@ -96,4 +96,11 @@ impl Window {
         }
         DefWindowProcW(window, message, wparam, lparam)
     }
+
+    // https://github.com/robmikh/minesweeper-rs/blob/135ab04eb5c02a3fb7d50265cbbacad372c73ed1/src/window.rs
+    pub fn get_mouse_position(lparam: LPARAM) -> (isize, isize) {
+        let x = lparam.0 & 0xffff;
+        let y = (lparam.0 >> 16) & 0xffff;
+        (x, y)
+    }
 }
