@@ -11,24 +11,19 @@ use window::{Window, WndProc};
 use windows::{
     core::{w, Result, GUID, PCWSTR},
     Win32::{
-        Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
-        System::LibraryLoader::GetModuleHandleW,
+        Foundation::{HWND, LPARAM, LRESULT, WPARAM},
         UI::{
             Input::KeyboardAndMouse::{
-                VIRTUAL_KEY, VK_ACCEPT, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA,
+                VIRTUAL_KEY, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA,
                 VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP,
             },
             Shell::{
-                Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY,
-                NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4,
+                Shell_NotifyIconW, NIM_ADD, NIM_MODIFY,
+                NIM_SETVERSION,
             },
             WindowsAndMessaging::{
-                CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW,
-                GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, PostQuitMessage,
-                RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT,
-                GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE,
-                WINDOW_STYLE, WM_DESTROY, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_NCCREATE,
-                WNDCLASSW, WS_OVERLAPPEDWINDOW,
+                CreateIcon, DestroyIcon, DispatchMessageW,
+                GetMessageW, LoadIconW, PostQuitMessage, TranslateMessage, HICON, IDI_ASTERISK, MSG, WM_DESTROY, WM_KEYDOWN, WM_KEYUP,
             },
         },
     },
@@ -60,7 +55,7 @@ struct GameWindow {
 impl WndProc for GameWindow {
     fn wnd_proc_message_handler(
         &mut self,
-        window: HWND,
+        _window: HWND,
         message: u32,
         wparam: WPARAM,
         lparam: LPARAM,
