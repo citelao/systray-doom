@@ -3,7 +3,7 @@ use std::{collections::VecDeque, rc::Rc, sync::{Arc, Mutex, Once}};
 use doomgeneric::{game::DoomGeneric, input::{keys, KeyData}};
 use window::{Window, WndProc};
 use windows::{
-    core::{w, Result, GUID, HSTRING, PCWSTR}, System::VirtualKey, Win32::{Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Input::KeyboardAndMouse::{VIRTUAL_KEY, VK_ACCEPT, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA, VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP}, Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE, WINDOW_STYLE, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
+    core::{w, Result, GUID, HSTRING, PCWSTR}, System::VirtualKey, Win32::{Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM}, System::LibraryLoader::GetModuleHandleW, UI::{Input::KeyboardAndMouse::{VIRTUAL_KEY, VK_ACCEPT, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA, VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP}, Shell::{Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_SHOWTIP, NIF_TIP, NIM_ADD, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICONDATAW_0, NOTIFYICON_VERSION_4}, WindowsAndMessaging::{CreateIcon, CreateWindowExW, DefWindowProcW, DestroyIcon, DispatchMessageW, GetMessageW, GetWindowLongPtrW, LoadCursorW, LoadIconW, PostQuitMessage, RegisterClassW, SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, CW_USEDEFAULT, GWLP_USERDATA, HICON, HMENU, IDC_ARROW, IDI_ASTERISK, MSG, WINDOW_EX_STYLE, WINDOW_STYLE, WM_DESTROY, WM_KEYDOWN, WM_KEYUP, WM_MOUSEMOVE, WM_NCCREATE, WNDCLASSW, WS_OVERLAPPEDWINDOW}}}
 };
 
 mod tray_icon_message;
@@ -45,6 +45,10 @@ impl WndProc for GameWindow {
                     };
                     self.input_queue.lock().unwrap().push_back(key_data);
                 }
+            }
+            WM_DESTROY => {
+                unsafe { PostQuitMessage(0) };
+                return Some(LRESULT(0));
             }
             _ => {}
         }
