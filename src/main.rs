@@ -15,7 +15,7 @@ use windows::{
         UI::{
             Input::KeyboardAndMouse::{
                 VIRTUAL_KEY, VK_DOWN, VK_LCONTROL, VK_LEFT, VK_MENU, VK_OEM_COMMA,
-                VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP,
+                VK_OEM_PERIOD, VK_RCONTROL, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_UP, VK_Z,
             },
             Shell::{
                 Shell_NotifyIconW, NIM_ADD, NIM_MODIFY,
@@ -187,7 +187,7 @@ fn vkey_to_doom_key(button: WPARAM) -> Option<u8> {
         VK_DOWN => Some(*keys::KEY_DOWN),
         VK_OEM_COMMA => Some(*keys::KEY_STRAFELEFT),
         VK_OEM_PERIOD => Some(*keys::KEY_STRAFERIGHT),
-        VK_LCONTROL | VK_RCONTROL => Some(*keys::KEY_FIRE),
+        VK_Z | VK_LCONTROL | VK_RCONTROL => Some(*keys::KEY_FIRE),
         VK_SPACE => Some(*keys::KEY_USE),
         VK_MENU => Some(*keys::KEY_STRAFE),
         VK_SHIFT => Some(*keys::KEY_SPEED),
