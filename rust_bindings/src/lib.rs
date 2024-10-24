@@ -4,6 +4,7 @@
 // But I don't like compiling C, and I know you don't either.
 
 #[no_mangle]
-pub extern "C" fn rust_function() {
+pub extern "C" fn rust_function() -> i32 {
     println!("Hello from Rust!");
+    42
 }
