@@ -12,88 +12,6 @@ Console.WriteLine("Hello, World!");
 var i = PInvokeDoom.rust_function();
 Console.WriteLine(i);
 
-static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
-{
-    // Console.WriteLine("DrawFrame");
-    var desiredSizePx = (height: 320, width: 320);
-
-    // Assert that the desired size is smaller than the actual size.
-    Debug.Assert(desiredSizePx.width <= xres);
-    Debug.Assert(desiredSizePx.height <= yres);
-
-    var xRange = (
-        min: (xres - desiredSizePx.width) / 2,
-        max: (xres - desiredSizePx.width) / 2 + desiredSizePx.width
-    );
-    var yRange = (
-        min: 0,
-        max: desiredSizePx.height
-    );
-    var rgbaPixelArray = new uint[desiredSizePx.width * desiredSizePx.height * 4];
-
-    // Convert the frame pointer array to a managed array.
-    for (var i = 0; i < rgbaPixelArray.Length / 4; i++)
-    {
-        var currentPosn = (x: i % desiredSizePx.width, y: i / desiredSizePx.width);
-        if (currentPosn.x < xRange.min || currentPosn.x >= xRange.max)
-        {
-            continue;
-        }
-        // if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1
-        if (currentPosn.y < yRange.min || currentPosn.y >= yRange.max)
-        {
-            continue;
-        }
-
-        rgbaPixelArray[i * 4 + 0] = (frame[i] >> 16) & 0xFF;
-        rgbaPixelArray[i * 4 + 1] = (frame[i] >> 8) & 0xFF;
-        rgbaPixelArray[i * 4 + 2] = (frame[i] >> 0) & 0xFF;
-        // // Alpha seems to be opacity. Inverting it.
-        rgbaPixelArray[i * 4 + 3] = 255 - ((frame[i] >> 24) & 0xFF);
-    }
-
-    // https://stackoverflow.com/a/537722/788168
-    GCHandle pinnedArray = GCHandle.Alloc(rgbaPixelArray, GCHandleType.Pinned);
-    IntPtr pointer = pinnedArray.AddrOfPinnedObject();
-
-    var icon = PInvoke.CreateIcon(
-        default(HINSTANCE),
-        desiredSizePx.width,
-        desiredSizePx.height,
-        4,
-        8,
-        (byte*)pointer.ToPointer(),
-        (byte*)pointer.ToPointer()
-    );
-
-    pinnedArray.Free();
-
-}
-static unsafe PInvokeDoom.CKeyData* KeyCallback()
-{
-    // Console.WriteLine("KeyCallback");
-    return null;
-}
-static unsafe void SetWindowTitle(byte* title, nint size)
-{
-    var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
-    Console.WriteLine($"SetWindowTitle: {titleString}");
-}
-
-var doomTask = Task.Run(() => {
-    unsafe
-    {
-        var game = PInvokeDoom.create_game(
-            DrawFrame,
-            KeyCallback,
-            SetWindowTitle
-        );
-
-        PInvokeDoom.start_game(game);
-    }
-});
-
-// Create the systray icon here...
 // Heavily inspired by https://github.com/microsoft/CsWin32/blob/99ddd314ea359d3a97afa82c735b6a25eb25ea32/test/WinRTInteropTest/Program.cs
 
 const string WindowClassName = "SimpleSystrayWindow";
@@ -155,6 +73,97 @@ var trayIcon = new TrayIcon(guid, hwnd)
 {
     Tooltip = "Hello, Windows!"
 };
+
+static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
+{
+    // Console.WriteLine("DrawFrame");
+    var desiredSizePx = (height: 320, width: 320);
+
+    // Assert that the desired size is smaller than the actual size.
+    Debug.Assert(desiredSizePx.width <= xres);
+    Debug.Assert(desiredSizePx.height <= yres);
+
+    var xRange = (
+        min: (xres - desiredSizePx.width) / 2,
+        max: (xres - desiredSizePx.width) / 2 + desiredSizePx.width
+    );
+    var yRange = (
+        min: 0,
+        max: desiredSizePx.height
+    );
+    var rgbaPixelArray = new uint[desiredSizePx.width * desiredSizePx.height * 4];
+
+    // Convert the frame pointer array to a managed array.
+    for (var i = 0; i < rgbaPixelArray.Length / 4; i++)
+    {
+        var currentPosn = (x: i % desiredSizePx.width, y: i / desiredSizePx.width);
+        if (currentPosn.x < xRange.min || currentPosn.x >= xRange.max)
+        {
+            continue;
+        }
+        // if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1
+        if (currentPosn.y < yRange.min || currentPosn.y >= yRange.max)
+        {
+            continue;
+        }
+
+        rgbaPixelArray[i * 4 + 0] = (frame[i] >> 16) & 0xFF;
+        rgbaPixelArray[i * 4 + 1] = (frame[i] >> 8) & 0xFF;
+        rgbaPixelArray[i * 4 + 2] = (frame[i] >> 0) & 0xFF;
+        // // Alpha seems to be opacity. Inverting it.
+        rgbaPixelArray[i * 4 + 3] = 255 - ((frame[i] >> 24) & 0xFF);
+    }
+
+    // https://stackoverflow.com/a/537722/788168
+    GCHandle pinnedArray = GCHandle.Alloc(rgbaPixelArray, GCHandleType.Pinned);
+    IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
+    var icon = PInvoke.CreateIcon(
+        default(HINSTANCE),
+        desiredSizePx.width,
+        desiredSizePx.height,
+        4,
+        8,
+        (byte*)pointer.ToPointer(),
+        (byte*)pointer.ToPointer()
+    );
+
+    pinnedArray.Free();
+
+    // trayIcon.Icon = icon;
+    var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
+    var notificationIconData = new TrayIconMessageBuilder(guid: guid)
+    {
+        Icon = icon,
+    }.Build();
+    if (!PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+    {
+        throw new Exception("Failed to modify icon in the notification area.");
+    }
+}
+static unsafe PInvokeDoom.CKeyData* KeyCallback()
+{
+    // Console.WriteLine("KeyCallback");
+    return null;
+}
+static unsafe void SetWindowTitle(byte* title, nint size)
+{
+    var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
+    Console.WriteLine($"SetWindowTitle: {titleString}");
+}
+
+var doomTask = Task.Run(() => {
+    unsafe
+    {
+        var game = PInvokeDoom.create_game(
+            DrawFrame,
+            KeyCallback,
+            SetWindowTitle
+        );
+
+        PInvokeDoom.start_game(game);
+    }
+});
 
 Console.WriteLine("Starting message loop...");
 Console.WriteLine("Press Ctrl-C to exit.");
