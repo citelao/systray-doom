@@ -3,7 +3,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 
-public class TrayIcon
+internal class TrayIcon
 {
     private string _tooltip = string.Empty;
     public string Tooltip {
