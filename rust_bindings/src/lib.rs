@@ -17,7 +17,7 @@ pub struct PublicGame {
 
 impl DoomGeneric for PublicGame {
     fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
-        todo!()
+    
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
