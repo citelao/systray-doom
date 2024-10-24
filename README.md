@@ -18,8 +18,8 @@ cd rust_bindings/
 cargo build
 
 # Build & run the Dotnet!
-cd ../systray_doom/
-dotnet run
+cd ..
+dotnet run --project .\systray_doom\systray_doom.csproj
 ```
 
 ## TODO

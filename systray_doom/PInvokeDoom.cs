@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 public static partial class PInvokeDoom
 {
-    [LibraryImport("../rust_bindings/target/debug/systray_doom_bindings.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    [LibraryImport("./rust_bindings/target/debug/systray_doom_bindings.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
     public static partial Int32 rust_function();
 
     [StructLayout(LayoutKind.Sequential)]
@@ -21,7 +21,7 @@ public static partial class PInvokeDoom
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public unsafe delegate void SetWindowTitleDelegate(byte* title, nint size);
 
-    [LibraryImport("../rust_bindings/target/debug/systray_doom_bindings.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    [LibraryImport("./rust_bindings/target/debug/systray_doom_bindings.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
     public static partial IntPtr create_game(
         DrawFrameDelegate draw_frame,
         KeyCallbackDelegate key_callback,
@@ -29,6 +29,6 @@ public static partial class PInvokeDoom
     );
 
     // pub extern "C" fn start_game(game: *mut PublicGame) {
-    [LibraryImport("../rust_bindings/target/debug/systray_doom_bindings.dll", SetLastError = true)]
+    [LibraryImport("./rust_bindings/target/debug/systray_doom_bindings.dll", SetLastError = true)]
     public static partial void start_game(IntPtr game);
 }
