@@ -11,46 +11,61 @@ pub extern "C" fn rust_function() -> i32 {
     42
 }
 
+type DrawFrameCb = extern "C" fn(*mut PublicGame, *const u32, usize, usize);
+type GetKeyCb = extern "C" fn(*mut PublicGame) -> Option<doomgeneric::input::KeyData>;
+type SetWindowTitleCb = extern "C" fn(*mut PublicGame, *const u8, usize);
+
 #[repr(C)]
 pub struct PublicGame {
+    draw_frame_cb: DrawFrameCb,
+    get_key_cb: GetKeyCb,
+    set_window_title_cb: SetWindowTitleCb,
 }
 
 impl DoomGeneric for PublicGame {
     fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
-    
+        (self.draw_frame_cb)(self, screen_buffer.as_ptr(), xres, yres);
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
-        todo!()
+        (self.get_key_cb)(self)
     }
 
     fn set_window_title(&mut self, title: &str) {
-        todo!()
+        (self.set_window_title_cb)(self, title.as_ptr(), title.len());
     }
 }
 
 // Create an opaque handle to the game
 #[no_mangle]
-pub extern "C" fn create_game() -> *mut PublicGame {
-    Box::into_raw(Box::new(PublicGame {}))
+pub extern "C" fn create_game(
+    draw_frame_cb: extern "C" fn(*mut PublicGame, *const u32, usize, usize),
+    get_key_cb: extern "C" fn(*mut PublicGame) -> Option<doomgeneric::input::KeyData>,
+    set_window_title_cb: extern "C" fn(*mut PublicGame, *const u8, usize),
+) -> *mut PublicGame {
+    Box::into_raw(Box::new(PublicGame {
+        draw_frame_cb,
+        get_key_cb,
+        set_window_title_cb,
+    }))
 }
 
-#[no_mangle]
-pub extern "C" fn draw_frame(game: *mut PublicGame, screen_buffer: *const u32, xres: usize, yres: usize) {
-    let game = unsafe { &mut *game };
-    let screen_buffer = unsafe { std::slice::from_raw_parts(screen_buffer, xres * yres) };
-    game.draw_frame(screen_buffer, xres, yres);
-}
+// #[no_mangle]
+// pub extern "C" fn draw_frame(game: *mut PublicGame, screen_buffer: *const u32, xres: usize, yres: usize) {
+//     let game = unsafe { &mut *game };
+//     let screen_buffer = unsafe { std::slice::from_raw_parts(screen_buffer, xres * yres) };
+//     game.draw_frame(screen_buffer, xres, yres);
+// }
 
-#[no_mangle]
-pub extern "C" fn get_key(game: *mut PublicGame) -> Option<doomgeneric::input::KeyData> {
-    let game = unsafe { &mut *game };
-    game.get_key()
-}
+// #[no_mangle]
+// pub extern "C" fn get_key(game: *mut PublicGame) -> Option<doomgeneric::input::KeyData> {
+//     let game = unsafe { &mut *game };
+//     game.get_key()
+// }
 
-#[no_mangle]
-pub extern "C" fn set_window_title(game: *mut PublicGame, title: *const u8, len: usize) {
-    let title = unsafe { std::str::from_utf8(std::slice::from_raw_parts(title, len)).unwrap() };
-    let game = unsafe { &mut *game };
-    game.set_window_title(title);
-}
+// #[no_mangle]
+// pub extern "C" fn set_window_title(game: *mut PublicGame, title: *const u8, len: usize) {
+//     let title = unsafe { std::str::from_utf8(std::slice::from_raw_parts(title, len)).unwrap() };
+//     let game = unsafe { &mut *game };
+//     game.set_window_title(title);
+// }
