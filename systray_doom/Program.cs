@@ -1,11 +1,7 @@
-﻿using System;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-// See https://aka.ms/new-console-template for more information
 Console.WriteLine("Hello, World!");
 
-// PInvoke.MessageBox(IntPtr.Zero, "Hello, World!", "Hello", 0);
 var i = PInvoke.rust_function();
 Console.WriteLine(i);
 
@@ -33,19 +29,6 @@ unsafe
 
     PInvoke.start_game(game);
 }
-
-
-// public static class Doom
-// {
-//     public static void CreateGame()
-//     {
-//         PInvoke.create_game(
-//             DrawFrame,
-//             KeyCallback,
-//             SetWindowTitle
-//         );
-//     }
-// }
 
 public static partial class PInvoke
 {
