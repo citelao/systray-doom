@@ -11,9 +11,9 @@ pub extern "C" fn rust_function() -> i32 {
     42
 }
 
-type DrawFrameCb = extern "C" fn(*mut PublicGame, *const u32, usize, usize);
-type GetKeyCb = extern "C" fn(*mut PublicGame) -> Option<doomgeneric::input::KeyData>;
-type SetWindowTitleCb = extern "C" fn(*mut PublicGame, *const u8, usize);
+type DrawFrameCb = extern "C" fn(*const u32, usize, usize);
+type GetKeyCb = extern "C" fn() -> Option<doomgeneric::input::KeyData>;
+type SetWindowTitleCb = extern "C" fn(*const u8, usize);
 
 #[repr(C)]
 pub struct PublicGame {
@@ -24,24 +24,24 @@ pub struct PublicGame {
 
 impl DoomGeneric for PublicGame {
     fn draw_frame(&mut self, screen_buffer: &[u32], xres: usize, yres: usize) {
-        (self.draw_frame_cb)(self, screen_buffer.as_ptr(), xres, yres);
+        (self.draw_frame_cb)(screen_buffer.as_ptr(), xres, yres);
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
-        (self.get_key_cb)(self)
+        (self.get_key_cb)()
     }
 
     fn set_window_title(&mut self, title: &str) {
-        (self.set_window_title_cb)(self, title.as_ptr(), title.len());
+        (self.set_window_title_cb)(title.as_ptr(), title.len());
     }
 }
 
 // Create an opaque handle to the game
 #[no_mangle]
 pub extern "C" fn create_game(
-    draw_frame_cb: extern "C" fn(*mut PublicGame, *const u32, usize, usize),
-    get_key_cb: extern "C" fn(*mut PublicGame) -> Option<doomgeneric::input::KeyData>,
-    set_window_title_cb: extern "C" fn(*mut PublicGame, *const u8, usize),
+    draw_frame_cb: DrawFrameCb,
+    get_key_cb: GetKeyCb,
+    set_window_title_cb: SetWindowTitleCb,
 ) -> *mut PublicGame {
     Box::into_raw(Box::new(PublicGame {
         draw_frame_cb,
