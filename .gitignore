@@ -3,3 +3,7 @@
 
 # Rust
 target/
+
+# Dotnet
+bin/
+obj/

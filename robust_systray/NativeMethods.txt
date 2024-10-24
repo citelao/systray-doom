@@ -1,0 +1,31 @@
+Shell_NotifyIcon
+NOTIFYICON_VERSION_4
+NOTIFY_ICON_DATA_FLAGS
+
+LoadIcon
+IDI_*
+
+// Window fns
+RegisterClassEx
+CreateWindowEx
+ShowWindow
+UpdateWindow
+
+GetModuleHandle
+LoadCursor
+DefWindowProc
+
+// Pro-tip: if you ever find that a const isn't showing up when you define it
+// like `COLOR_*`, try defining the full name of one, like `COLOR_WINDOW`. You
+// should get a nice warning when trying to build.
+SYS_COLOR_INDEX
+IDC_*
+WM_*
+
+DestroyWindow
+PostQuitMessage
+
+// Message loop
+GetMessage
+TranslateMessage
+DispatchMessage
