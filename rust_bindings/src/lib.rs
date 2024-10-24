@@ -11,8 +11,15 @@ pub extern "C" fn rust_function() -> i32 {
     42
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CKeyData {
+    pub pressed: bool,
+    pub key: u8,
+}
+
 type DrawFrameCb = extern "C" fn(*const u32, usize, usize);
-type GetKeyCb = extern "C" fn() -> Option<doomgeneric::input::KeyData>;
+type GetKeyCb = extern "C" fn() -> *mut CKeyData;
 type SetWindowTitleCb = extern "C" fn(*const u8, usize);
 
 #[repr(C)]
@@ -28,7 +35,15 @@ impl DoomGeneric for PublicGame {
     }
 
     fn get_key(&mut self) -> Option<doomgeneric::input::KeyData> {
-        (self.get_key_cb)()
+        let key = (self.get_key_cb)();
+        if key.is_null() {
+            return None;
+        }
+        let key = unsafe { *key };
+        Some(doomgeneric::input::KeyData {
+            pressed: key.pressed,
+            key: key.key,
+        })
     }
 
     fn set_window_title(&mut self, title: &str) {
@@ -36,7 +51,7 @@ impl DoomGeneric for PublicGame {
     }
 }
 
-// Create an opaque handle to the game
+// Start a game!
 #[no_mangle]
 pub extern "C" fn create_game(
     draw_frame_cb: DrawFrameCb,
@@ -49,23 +64,3 @@ pub extern "C" fn create_game(
         set_window_title_cb,
     }))
 }
-
-// #[no_mangle]
-// pub extern "C" fn draw_frame(game: *mut PublicGame, screen_buffer: *const u32, xres: usize, yres: usize) {
-//     let game = unsafe { &mut *game };
-//     let screen_buffer = unsafe { std::slice::from_raw_parts(screen_buffer, xres * yres) };
-//     game.draw_frame(screen_buffer, xres, yres);
-// }
-
-// #[no_mangle]
-// pub extern "C" fn get_key(game: *mut PublicGame) -> Option<doomgeneric::input::KeyData> {
-//     let game = unsafe { &mut *game };
-//     game.get_key()
-// }
-
-// #[no_mangle]
-// pub extern "C" fn set_window_title(game: *mut PublicGame, title: *const u8, len: usize) {
-//     let title = unsafe { std::str::from_utf8(std::slice::from_raw_parts(title, len)).unwrap() };
-//     let game = unsafe { &mut *game };
-//     game.set_window_title(title);
-// }
