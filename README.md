@@ -13,9 +13,11 @@ git clone https://github.com/citelao/systray-doom
 ## Dev
 
 ```pwsh
+# Build the Rust bindings
 cd rust_bindings/
 cargo build
 
+# Build & run the Dotnet!
 cd ../systray_doom/
 dotnet run
 ```

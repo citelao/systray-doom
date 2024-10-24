@@ -9,27 +9,31 @@ Console.WriteLine("Hello, World!");
 var i = PInvoke.rust_function();
 Console.WriteLine(i);
 
-static void DrawFrame(IntPtr frame, nint xres, nint yres)
+static void DrawFrame(UInt32[] frame, nint xres, nint yres)
 {
     Console.WriteLine("DrawFrame");
 }
-static PInvoke.CKeyData? KeyCallback()
+static unsafe PInvoke.CKeyData* KeyCallback()
 {
     Console.WriteLine("KeyCallback");
     return null;
 }
-static void SetWindowTitle(IntPtr title, nint size)
+static void SetWindowTitle(byte[] title, nint size)
 {
     Console.WriteLine("SetWindowTitle");
 }
 
-var game = PInvoke.create_game(
-    DrawFrame,
-    KeyCallback,
-    SetWindowTitle
-);
+unsafe
+{
+    var game = PInvoke.create_game(
+        DrawFrame,
+        KeyCallback,
+        SetWindowTitle
+    );
 
-PInvoke.start_game(game);
+    PInvoke.start_game(game);
+}
+
 
 // public static class Doom
 // {
@@ -56,13 +60,13 @@ public static partial class PInvoke
     };
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void DrawFrameDelegate(IntPtr frame, nint xres, nint yres);
+    public delegate void DrawFrameDelegate(UInt32[] frame, nint xres, nint yres);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate CKeyData? KeyCallbackDelegate();
+    public unsafe delegate CKeyData* KeyCallbackDelegate();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetWindowTitleDelegate(IntPtr title, nint size);
+    public delegate void SetWindowTitleDelegate(byte[] title, nint size);
 
     [LibraryImport("../rust_bindings/target/debug/systray_doom_bindings.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
     public static partial IntPtr create_game(
