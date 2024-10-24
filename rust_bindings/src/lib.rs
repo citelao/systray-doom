@@ -11,6 +11,17 @@ pub extern "C" fn rust_function() -> i32 {
     42
 }
 
+// Simple shim to allow calling MessageBoxW
+#[link(name = "user32")]
+extern "system" {
+    fn MessageBoxW(
+        hWnd: *const u8,
+        lpText: *const u8,
+        lpCaption: *const u8,
+        uType: u32,
+    ) -> i32;
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct CKeyData {
