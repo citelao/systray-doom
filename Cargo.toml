@@ -3,6 +3,10 @@ name = "systray-doom"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "systray_doom_bindings"
+crate-type = ["cdylib"]
+
 [dependencies]
 # doomgeneric = { path = "../doomgeneric-rs", version = "0.3.0-beta.2" }
 doomgeneric = { version = "0.3.0-beta.2" }
