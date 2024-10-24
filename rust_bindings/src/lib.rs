@@ -62,7 +62,8 @@ impl DoomGeneric for PublicGame {
     }
 }
 
-// Start a game!
+// Spawn a game
+// https://users.rust-lang.org/t/sending-a-boxed-trait-over-ffi/21708/5
 #[no_mangle]
 pub extern "C" fn create_game(
     draw_frame_cb: DrawFrameCb,
@@ -74,4 +75,11 @@ pub extern "C" fn create_game(
         get_key_cb,
         set_window_title_cb,
     }))
+}
+
+// Start a game
+#[no_mangle]
+pub extern "C" fn start_game(game: *mut PublicGame) {
+    let interface: Box<PublicGame> = unsafe { Box::from_raw(game as *mut _) };
+    doomgeneric::game::init(*interface);
 }

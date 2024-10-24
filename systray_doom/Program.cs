@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 
 // See https://aka.ms/new-console-template for more information
@@ -22,11 +23,25 @@ static void SetWindowTitle(IntPtr title, nint size)
     Console.WriteLine("SetWindowTitle");
 }
 
-PInvoke.create_game(
+var game = PInvoke.create_game(
     DrawFrame,
     KeyCallback,
     SetWindowTitle
 );
+
+PInvoke.start_game(game);
+
+// public static class Doom
+// {
+//     public static void CreateGame()
+//     {
+//         PInvoke.create_game(
+//             DrawFrame,
+//             KeyCallback,
+//             SetWindowTitle
+//         );
+//     }
+// }
 
 public static partial class PInvoke
 {
@@ -55,4 +70,8 @@ public static partial class PInvoke
         KeyCallbackDelegate key_callback,
         SetWindowTitleDelegate set_window_title
     );
+
+    // pub extern "C" fn start_game(game: *mut PublicGame) {
+    [LibraryImport("../rust_bindings/target/debug/systray_doom_bindings.dll", SetLastError = true)]
+    public static partial void start_game(IntPtr game);
 }
