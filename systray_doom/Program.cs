@@ -76,8 +76,11 @@ var trayIcon = new TrayIcon(guid, hwnd)
 
 static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
 {
-    // Console.WriteLine("DrawFrame");
-    var desiredSizePx = (height: 320, width: 320);
+    // Console.WriteLine($"DrawFrame: {xres}x{yres}");
+    var desiredSizePx = (height: 200, width: 200);
+    // var desiredSizePx = (height: 320, width: 320);
+    // var desiredSizePx = (height: 400, width: 300);
+    // var desiredSizePx = (height: (int)yres, width: (int)xres);
 
     // Assert that the desired size is smaller than the actual size.
     Debug.Assert(desiredSizePx.width <= xres);
@@ -87,31 +90,48 @@ static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
         min: (xres - desiredSizePx.width) / 2,
         max: (xres - desiredSizePx.width) / 2 + desiredSizePx.width
     );
+    // var xRange = (
+    //     min: 0,
+    //     max: desiredSizePx.width
+    // );
     var yRange = (
         min: 0,
         max: desiredSizePx.height
     );
-    var rgbaPixelArray = new uint[desiredSizePx.width * desiredSizePx.height * 4];
+
+    var rgbaPixelArray = new byte[desiredSizePx.width * desiredSizePx.height * 4];
 
     // Convert the frame pointer array to a managed array.
-    for (var i = 0; i < rgbaPixelArray.Length / 4; i++)
+    var currentPixelIndex = 0;
+    var totalPixels = xres * yres;
+    for (var i = 0; i < totalPixels; i++)
     {
-        var currentPosn = (x: i % desiredSizePx.width, y: i / desiredSizePx.width);
+        var currentPosn = (x: i % xres, y: i / xres);
         if (currentPosn.x < xRange.min || currentPosn.x >= xRange.max)
         {
             continue;
         }
-        // if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1
         if (currentPosn.y < yRange.min || currentPosn.y >= yRange.max)
         {
             continue;
         }
+        // Console.WriteLine($"Current pixel: {i} {currentPosn.x}, {currentPosn.y}");
 
-        rgbaPixelArray[i * 4 + 0] = (frame[i] >> 16) & 0xFF;
-        rgbaPixelArray[i * 4 + 1] = (frame[i] >> 8) & 0xFF;
-        rgbaPixelArray[i * 4 + 2] = (frame[i] >> 0) & 0xFF;
-        // // Alpha seems to be opacity. Inverting it.
-        rgbaPixelArray[i * 4 + 3] = 255 - ((frame[i] >> 24) & 0xFF);
+        var argb = frame[i];
+        var r = (byte)((argb >> 16) & 0xFF);
+        var g = (byte)((argb >> 8) & 0xFF);
+        var b = (byte)((argb >> 0) & 0xFF);
+        // Alpha seems to be opacity. Inverting it.
+        var a = (byte)(255 - (argb >> 24) & 0xFF);
+        rgbaPixelArray[currentPixelIndex++] = r;
+        rgbaPixelArray[currentPixelIndex++] = g;
+        rgbaPixelArray[currentPixelIndex++] = b;
+        rgbaPixelArray[currentPixelIndex++] = a;
+
+        // if (i == 0)
+        // {
+        //     Console.WriteLine($"First pixel: 0x{frame[i]:x} -> R: {rgbaPixelArray[i * 4 + 0]:x}, G: {rgbaPixelArray[i * 4 + 1]:x}, B: {rgbaPixelArray[i * 4 + 2]:x}, A: {rgbaPixelArray[i * 4 + 3]:x}");
+        // }
     }
 
     // https://stackoverflow.com/a/537722/788168

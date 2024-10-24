@@ -118,6 +118,12 @@ impl DoomGeneric for Game {
         let mut screen_buffer_rgba: Vec<u8> =
             Vec::with_capacity(DESIRED_HEIGHT * DESIRED_WIDTH * 4);
         for i in 0..screen_buffer.len() {
+            // let argb = &screen_buffer[i];
+            // // Write the first pixel as hex
+            // if i == 0 {
+            //     println!("First pixel: {:x}", argb);
+            // }
+
             let current_posn = (i % xres, i / xres);
             if current_posn.0 < x_range.0 || current_posn.0 >= x_range.1 {
                 continue;
@@ -125,6 +131,7 @@ impl DoomGeneric for Game {
             if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1 {
                 continue;
             }
+
             let argb = &screen_buffer[i];
             screen_buffer_rgba.push(((argb >> 16) & 0xFF) as u8);
             screen_buffer_rgba.push(((argb >> 8) & 0xFF) as u8);
