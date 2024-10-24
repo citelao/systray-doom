@@ -1,16 +1,24 @@
 # Systray Doom
 
-## Init
+## Download
 
-```
+```pwsh
+# 1. Clone the repo
 git clone https://github.com/citelao/systray-doom
-cd systray-doom
-git submodule init
+
+# 2. Put DOOM1.WAD in the systray_doom/ directory (you can find the shareware free & legal online)
+# cp somethingsomething
 ```
 
-## Usage
+## Dev
 
-TODO
+```pwsh
+cd rust_bindings/
+cargo build
+
+cd ../systray_doom/
+dotnet run
+```
 
 ## TODO
 
