@@ -170,6 +170,16 @@ static unsafe void SetWindowTitle(byte* title, nint size)
 {
     var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
     Console.WriteLine($"SetWindowTitle: {titleString}");
+
+    var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
+    var notificationIconData = new TrayIconMessageBuilder(guid: guid)
+    {
+        Tooltip = titleString,
+    }.Build();
+    if (!PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+    {
+        throw new Exception("Failed to modify icon in the notification area.");
+    }
 }
 
 var doomTask = Task.Run(() => {
