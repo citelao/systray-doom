@@ -6,6 +6,9 @@
 
 # 2. Run
 cargo run
+
+# Keystrokes go into that annoying ghost window that spawns.
+# Ctrl-C in Terminal to exit.
 ```
 
 ## TODO
