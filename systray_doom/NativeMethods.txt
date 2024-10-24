@@ -3,6 +3,7 @@ NOTIFYICON_VERSION_4
 NOTIFY_ICON_DATA_FLAGS
 
 LoadIcon
+CreateIcon
 IDI_*
 
 // Window fns
@@ -10,6 +11,7 @@ RegisterClassEx
 CreateWindowEx
 ShowWindow
 UpdateWindow
+AdjustWindowRectEx
 
 GetModuleHandle
 LoadCursor

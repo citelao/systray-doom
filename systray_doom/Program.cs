@@ -4,6 +4,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using Windows.Win32.Graphics.Gdi;
+using System.Diagnostics;
 
 
 Console.WriteLine("Hello, World!");
@@ -14,6 +15,59 @@ Console.WriteLine(i);
 static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
 {
     // Console.WriteLine("DrawFrame");
+    var desiredSizePx = (height: 320, width: 320);
+
+    // Assert that the desired size is smaller than the actual size.
+    Debug.Assert(desiredSizePx.width <= xres);
+    Debug.Assert(desiredSizePx.height <= yres);
+
+    var xRange = (
+        min: (xres - desiredSizePx.width) / 2,
+        max: (xres - desiredSizePx.width) / 2 + desiredSizePx.width
+    );
+    var yRange = (
+        min: 0,
+        max: desiredSizePx.height
+    );
+    var rgbaPixelArray = new uint[desiredSizePx.width * desiredSizePx.height * 4];
+
+    // Convert the frame pointer array to a managed array.
+    for (var i = 0; i < rgbaPixelArray.Length / 4; i++)
+    {
+        var currentPosn = (x: i % desiredSizePx.width, y: i / desiredSizePx.width);
+        if (currentPosn.x < xRange.min || currentPosn.x >= xRange.max)
+        {
+            continue;
+        }
+        // if current_posn.1 < y_range.0 || current_posn.1 >= y_range.1
+        if (currentPosn.y < yRange.min || currentPosn.y >= yRange.max)
+        {
+            continue;
+        }
+
+        rgbaPixelArray[i * 4 + 0] = (frame[i] >> 16) & 0xFF;
+        rgbaPixelArray[i * 4 + 1] = (frame[i] >> 8) & 0xFF;
+        rgbaPixelArray[i * 4 + 2] = (frame[i] >> 0) & 0xFF;
+        // // Alpha seems to be opacity. Inverting it.
+        rgbaPixelArray[i * 4 + 3] = 255 - ((frame[i] >> 24) & 0xFF);
+    }
+
+    // https://stackoverflow.com/a/537722/788168
+    GCHandle pinnedArray = GCHandle.Alloc(rgbaPixelArray, GCHandleType.Pinned);
+    IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
+    var icon = PInvoke.CreateIcon(
+        default(HINSTANCE),
+        desiredSizePx.width,
+        desiredSizePx.height,
+        4,
+        8,
+        (byte*)pointer.ToPointer(),
+        (byte*)pointer.ToPointer()
+    );
+
+    pinnedArray.Free();
+
 }
 static unsafe PInvokeDoom.CKeyData* KeyCallback()
 {
