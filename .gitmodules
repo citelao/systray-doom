@@ -1,3 +1,0 @@
-[submodule "rust_bindings2/doomgeneric"]
-	path = rust_bindings2/doomgeneric
-	url = https://github.com/ozkl/doomgeneric.git
