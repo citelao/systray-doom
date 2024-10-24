@@ -77,8 +77,8 @@ var trayIcon = new TrayIcon(guid, hwnd)
 static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
 {
     // Console.WriteLine($"DrawFrame: {xres}x{yres}");
-    var desiredSizePx = (height: 200, width: 200);
-    // var desiredSizePx = (height: 320, width: 320);
+    // var desiredSizePx = (height: 200, width: 200);
+    var desiredSizePx = (height: 320, width: 320);
     // var desiredSizePx = (height: 400, width: 300);
     // var desiredSizePx = (height: (int)yres, width: (int)xres);
 
