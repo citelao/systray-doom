@@ -11,13 +11,13 @@ public static class PInvokeHelpers
     }
 
     // TODO: verify that we don't get negative coords.
-    public static int GET_X_LPARAM(nint wParam)
+    public static int GET_X_LPARAM(nuint wParam)
     {
-        return (int)LOWORD(wParam);
+        return (int)(wParam & 0xFFFF);
     }
 
-    public static int GET_Y_LPARAM(nint wParam)
+    public static int GET_Y_LPARAM(nuint wParam)
     {
-        return (int)HIWORD(wParam);
+        return (int)(wParam >> 16);
     }
 }

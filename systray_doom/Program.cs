@@ -40,59 +40,64 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
         case var value when value == trayIconMessage:
             // Console.WriteLine("Tray icon message received.");
             var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
+            var iconId = (uint)PInvokeHelpers.HIWORD(lParam.Value);
+            var x = PInvokeHelpers.GET_X_LPARAM(wParam.Value);
+            var y = PInvokeHelpers.GET_Y_LPARAM(wParam.Value);
 
+            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicona#remarks
+            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataa#:~:text=but%20the%20interpretation%20of%20the%20lParam%20and%20wParam%20parameters%20of%20that%20message%20is%20changed%20as%20follows%3A
             switch (ev)
             {
                 case PInvoke.WM_CONTEXTMENU:
-                    Console.WriteLine("Tray icon context menu.");
+                    Console.WriteLine($"Tray icon context menu for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.WM_MOUSEMOVE:
-                    Console.WriteLine("Tray icon mouse move.");
+                    Console.WriteLine($"Tray icon mouse move for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.WM_LBUTTONDOWN:
-                    Console.WriteLine("Tray icon left button down.");
+                    Console.WriteLine($"Tray icon left button down for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.WM_LBUTTONUP:
-                    Console.WriteLine("Tray icon left button up.");
+                    Console.WriteLine($"Tray icon left button up for {iconId} ({x}, {y}).");
                     break;
                 
                 case PInvoke.WM_LBUTTONDBLCLK:
-                    Console.WriteLine("Tray icon left button double click.");
+                    Console.WriteLine($"Tray icon left button double click for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.WM_RBUTTONDOWN:
-                    Console.WriteLine("Tray icon right button down.");
+                    Console.WriteLine($"Tray icon right button down for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.WM_RBUTTONUP:
-                    Console.WriteLine("Tray icon right button up.");
+                    Console.WriteLine($"Tray icon right button up for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.NIN_BALLOONSHOW:
-                    Console.WriteLine("Tray icon balloon show.");
+                    Console.WriteLine($"Tray icon balloon show for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.NIN_BALLOONHIDE:
-                    Console.WriteLine("Tray icon balloon hide.");
+                    Console.WriteLine($"Tray icon balloon hide for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.NIN_BALLOONTIMEOUT:
-                    Console.WriteLine("Tray icon balloon timeout.");
+                    Console.WriteLine($"Tray icon balloon timeout for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.NIN_BALLOONUSERCLICK:
-                    Console.WriteLine("Tray icon balloon user click.");
+                    Console.WriteLine($"Tray icon balloon user click for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.NIN_POPUPOPEN:
-                    Console.WriteLine("Tray icon popup open.");
+                    Console.WriteLine($"Tray icon popup open for {iconId} ({x}, {y}).");
                     break;
 
                 case PInvoke.NIN_POPUPCLOSE:
-                    Console.WriteLine("Tray icon popup close.");
+                    Console.WriteLine($"Tray icon popup close for {iconId} ({x}, {y}).");
                     break;
 
                 default:
