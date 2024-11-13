@@ -23,6 +23,27 @@ const string WindowClassName = "SimpleSystrayWindow";
 //     return WndProc(hwnd, msg, wParam, lParam);
 // };
 
+var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
+{
+    switch (msg)
+    {
+        case PInvoke.WM_CLOSE:
+            PInvoke.DestroyWindow(hwnd);
+            break;
+
+        case PInvoke.WM_DESTROY:
+            PInvoke.PostQuitMessage(0);
+            break;
+
+        default:
+            Console.WriteLine($"WindowProc: {msg}");
+            break;
+    }
+
+    return null;
+});
+var data = windowProcHelper.LpParamData();
+
 unsafe
 {
     fixed (char* pClassName = WindowClassName)
@@ -37,7 +58,7 @@ unsafe
 
             // Required to actually run your WndProc (and the app will crash if
             // null).
-            lpfnWndProc = WndProc,
+            lpfnWndProc = WindowMessageHandler.StaticWndProc,
 
             // Required to identify the window class in CreateWindowEx.
             lpszClassName = pClassName,
@@ -64,12 +85,13 @@ unsafe
         HWND.Null, // hWndParent
         new NoReleaseSafeHandle(0), // hMenu
         new NoReleaseSafeHandle(0), // hInstance
-        null // lpParam
+        &data // lpParam
     );
 }
 
 var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
-var trayIcon = new TrayIcon(guid, hwnd)
+var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
+var trayIcon = new TrayIcon(guid, hwnd, trayIconMessage)
 {
     Tooltip = "Hello, Windows!"
 };
@@ -214,26 +236,67 @@ while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
 
 await doomTask;
 
-static LRESULT WndProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (msg)
-    {
-        case PInvoke.WM_CLOSE:
-            PInvoke.DestroyWindow(hwnd);
-            break;
-
-        case PInvoke.WM_DESTROY:
-            PInvoke.PostQuitMessage(0);
-            break;
-        
-        default:
-            return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-
-    return new LRESULT(0);
-}
-
 static class State
 {
     public static HICON LastIcon = HICON.Null;
+}
+
+class WindowMessageHandler
+{
+    public static LRESULT StaticWndProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (msg)
+        {
+            case PInvoke.WM_NCCREATE:
+                unsafe
+                {
+                    var createStruct = (CREATESTRUCTW*)lParam.Value;
+                    var data = (Data*)createStruct->lpCreateParams;
+                    PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, (nint)data);
+                }
+                return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
+
+            default:
+                unsafe
+                {
+                    var data = (Data*)PInvoke.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
+                    if (data != null)
+                    {
+                        var that = Marshal.GetDelegateForFunctionPointer<WndProcDelegate>(data->WndProcDelegate);
+                        var result = that(hwnd, msg, wParam, lParam);
+                        if (result != null)
+                        {
+                            return result.Value;
+                        }
+                    }
+                }
+
+                return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
+        }
+    }
+
+    public delegate LRESULT? WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+
+    public struct Data
+    {
+        public nint WndProcDelegate;
+    }
+    private Data _data;
+
+    private readonly WndProcDelegate _wndProc;
+
+    public WindowMessageHandler(WndProcDelegate del)
+    {
+        _wndProc = del;
+        var delPtr = Marshal.GetFunctionPointerForDelegate(del);
+        _data = new Data
+        {
+            WndProcDelegate = delPtr,
+        };
+    }
+
+    public Data LpParamData()
+    {
+        return _data;
+    }
 }
