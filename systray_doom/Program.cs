@@ -36,13 +36,12 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             break;
 
         default:
-            Console.WriteLine($"WindowProc: {msg}");
+            Console.WriteLine($"WindowProc: {msg} {wParam} {lParam}");
             break;
     }
 
     return null;
 });
-var data = windowProcHelper.LpParamData();
 
 unsafe
 {
@@ -70,6 +69,7 @@ unsafe
     }
 }
 
+var data = windowProcHelper.LpParamData();
 HWND hwnd;
 unsafe
 {
@@ -234,7 +234,8 @@ while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
     PInvoke.DispatchMessage(msg);
 }
 
-// Await synchronously
+// Await synchronously to avoid a CS9123 because of our reference to &data.
+// https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/warning-waves
 doomTask.GetAwaiter().GetResult();
 // await doomTask;
 
