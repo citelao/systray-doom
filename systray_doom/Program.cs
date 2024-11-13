@@ -234,7 +234,9 @@ while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
     PInvoke.DispatchMessage(msg);
 }
 
-await doomTask;
+// Await synchronously
+doomTask.GetAwaiter().GetResult();
+// await doomTask;
 
 static class State
 {
