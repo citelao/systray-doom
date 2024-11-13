@@ -23,12 +23,14 @@ GetWindowLongPtr
 SetWindowLongPtr
 WINDOW_LONG_PTR_INDEX
 
+
 // Pro-tip: if you ever find that a const isn't showing up when you define it
 // like `COLOR_*`, try defining the full name of one, like `COLOR_WINDOW`. You
 // should get a nice warning when trying to build.
 SYS_COLOR_INDEX
 IDC_*
 WM_*
+NIN_*
 
 DestroyWindow
 PostQuitMessage

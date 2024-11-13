@@ -15,6 +15,7 @@ Console.WriteLine(i);
 // Heavily inspired by https://github.com/microsoft/CsWin32/blob/99ddd314ea359d3a97afa82c735b6a25eb25ea32/test/WinRTInteropTest/Program.cs
 
 const string WindowClassName = "SimpleSystrayWindow";
+var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 
 // Use the variable style function here to get easy access to the full function
 // signature. This function isn't used directly.
@@ -33,6 +34,72 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 
         case PInvoke.WM_DESTROY:
             PInvoke.PostQuitMessage(0);
+            break;
+
+        // https://stackoverflow.com/a/65642709/788168
+        case var value when value == trayIconMessage:
+            // Console.WriteLine("Tray icon message received.");
+            var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
+
+            switch (ev)
+            {
+                case PInvoke.WM_CONTEXTMENU:
+                    Console.WriteLine("Tray icon context menu.");
+                    break;
+
+                case PInvoke.WM_MOUSEMOVE:
+                    Console.WriteLine("Tray icon mouse move.");
+                    break;
+
+                case PInvoke.WM_LBUTTONDOWN:
+                    Console.WriteLine("Tray icon left button down.");
+                    break;
+
+                case PInvoke.WM_LBUTTONUP:
+                    Console.WriteLine("Tray icon left button up.");
+                    break;
+                
+                case PInvoke.WM_LBUTTONDBLCLK:
+                    Console.WriteLine("Tray icon left button double click.");
+                    break;
+
+                case PInvoke.WM_RBUTTONDOWN:
+                    Console.WriteLine("Tray icon right button down.");
+                    break;
+
+                case PInvoke.WM_RBUTTONUP:
+                    Console.WriteLine("Tray icon right button up.");
+                    break;
+
+                case PInvoke.NIN_BALLOONSHOW:
+                    Console.WriteLine("Tray icon balloon show.");
+                    break;
+
+                case PInvoke.NIN_BALLOONHIDE:
+                    Console.WriteLine("Tray icon balloon hide.");
+                    break;
+
+                case PInvoke.NIN_BALLOONTIMEOUT:
+                    Console.WriteLine("Tray icon balloon timeout.");
+                    break;
+
+                case PInvoke.NIN_BALLOONUSERCLICK:
+                    Console.WriteLine("Tray icon balloon user click.");
+                    break;
+
+                case PInvoke.NIN_POPUPOPEN:
+                    Console.WriteLine("Tray icon popup open.");
+                    break;
+
+                case PInvoke.NIN_POPUPCLOSE:
+                    Console.WriteLine("Tray icon popup close.");
+                    break;
+
+                default:
+                    Console.WriteLine($"Tray icon message: {ev}");
+                    break;
+            }
+
             break;
 
         default:
@@ -90,7 +157,6 @@ unsafe
 }
 
 var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
-var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 var trayIcon = new TrayIcon(guid, hwnd, trayIconMessage)
 {
     Tooltip = "Hello, Windows!"
