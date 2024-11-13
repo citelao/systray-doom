@@ -160,6 +160,14 @@ static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
     {
         throw new Exception("Failed to modify icon in the notification area.");
     }
+
+    // Clean up the old icon.
+    if (!State.LastIcon.IsNull)
+    {
+        PInvoke.DestroyIcon(State.LastIcon);
+    }
+
+    State.LastIcon = icon;
 }
 static unsafe PInvokeDoom.CKeyData* KeyCallback()
 {
@@ -223,4 +231,9 @@ static LRESULT WndProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
     }
 
     return new LRESULT(0);
+}
+
+static class State
+{
+    public static HICON LastIcon = HICON.Null;
 }
