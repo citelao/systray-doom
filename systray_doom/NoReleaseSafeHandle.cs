@@ -19,7 +19,11 @@ internal class NoReleaseSafeHandle : SafeHandle
         this.SetHandle(new IntPtr(value));
     }
 
-    public override bool IsInvalid => throw new NotImplementedException();
+    public override bool IsInvalid {
+        get {
+            return this.handle == IntPtr.Zero;
+        }
+    }
 
     protected override bool ReleaseHandle()
     {

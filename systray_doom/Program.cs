@@ -3,8 +3,8 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
-using Windows.Win32.Graphics.Gdi;
 using System.Diagnostics;
+using System.Drawing;
 
 
 Console.WriteLine("Hello, World!");
@@ -23,6 +23,70 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 // {
 //     return WndProc(hwnd, msg, wParam, lParam);
 // };
+
+bool TryDisplayContextMenu(HWND hwnd, int x, int y)
+{
+    // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
+    PInvoke.SetForegroundWindow(hwnd);
+
+    var str = "Hello, Windows!";
+    var menu = PInvoke.CreateMenu();
+    try
+    {
+        unsafe {
+            fixed (char* pText = str)
+            {
+                PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), 0, true, new MENUITEMINFOW
+                {
+                    cbSize = (uint)Marshal.SizeOf<MENUITEMINFOW>(),
+                    fMask = MENU_ITEM_MASK.MIIM_STRING,
+                    dwTypeData = pText,
+                }));
+            }
+        }
+
+        unsafe {
+            fixed (char* pText = "Hello, Windows! 2")
+            {
+                PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), 0, true, new MENUITEMINFOW
+                {
+                    cbSize = (uint)Marshal.SizeOf<MENUITEMINFOW>(),
+                    fMask = MENU_ITEM_MASK.MIIM_STRING,
+                    dwTypeData = pText,
+                }));
+            }
+        }
+
+        var flags = TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON;
+        if (PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_MENUDROPALIGNMENT) != 0)
+        {
+            flags |= TRACK_POPUP_MENU_FLAGS.TPM_RIGHTALIGN;
+        }
+        else
+        {
+            flags |= TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN;
+        }
+
+        PInvokeHelpers.THROW_IF_FALSE(PInvoke.TrackPopupMenuEx(
+            new NoReleaseSafeHandle((int)menu.Value),
+            (uint)(flags),
+            10,
+            10,
+            hwnd,
+            null), "Failed to track popup menu.");
+    }
+    finally
+    {
+        var result = PInvoke.DestroyMenu(menu);
+        if (!result)
+        {
+            // throw new Exception("Failed to destroy menu.");
+            Console.Error.WriteLine("Failed to destroy menu.");
+        }
+    }
+
+    return false;
+}
 
 var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 {
@@ -50,6 +114,10 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             {
                 case PInvoke.WM_CONTEXTMENU:
                     Console.WriteLine($"Tray icon context menu for {iconId} ({x}, {y}).");
+                    // var pt = new Point(x, y);
+                    // var client = PInvoke.ScreenToClient(hwnd, ref pt);
+                    // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
+                    TryDisplayContextMenu(hwnd, x, y);
                     break;
 
                 case PInvoke.WM_MOUSEMOVE:

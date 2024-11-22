@@ -1,3 +1,5 @@
+using Windows.Win32.Foundation;
+
 public static class PInvokeHelpers
 {
     public static nint LOWORD(nint n)
@@ -19,5 +21,13 @@ public static class PInvokeHelpers
     public static int GET_Y_LPARAM(nuint wParam)
     {
         return (int)(wParam >> 16);
+    }
+
+    internal static void THROW_IF_FALSE(BOOL boolResult, string? message = null)
+    {
+        if (!boolResult)
+        {
+            throw new System.ComponentModel.Win32Exception(message);
+        }
     }
 }

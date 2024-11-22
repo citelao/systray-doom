@@ -23,7 +23,6 @@ GetWindowLongPtr
 SetWindowLongPtr
 WINDOW_LONG_PTR_INDEX
 
-
 // Pro-tip: if you ever find that a const isn't showing up when you define it
 // like `COLOR_*`, try defining the full name of one, like `COLOR_WINDOW`. You
 // should get a nice warning when trying to build.
@@ -32,6 +31,10 @@ IDC_*
 WM_*
 NIN_*
 
+GetSystemMetrics
+SYSTEM_METRICS_INDEX
+
+SetForegroundWindow
 DestroyWindow
 PostQuitMessage
 
@@ -39,3 +42,15 @@ PostQuitMessage
 GetMessage
 TranslateMessage
 DispatchMessage
+
+// Menus
+CreateMenu
+InsertMenuItem
+AppendMenu
+TrackPopupMenuEx
+TRACK_POPUP_MENU_FLAGS
+
+GetClientRect
+ScreenToClient
+PtInRect
+ClientToScreen
