@@ -6,7 +6,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using System.Diagnostics;
 using Windows.Win32.UI.HiDpi;
 
-
 Console.WriteLine("Hello, World!");
 
 var i = PInvokeDoom.rust_function();
@@ -40,40 +39,19 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     var menu = PInvoke.CreatePopupMenu();
     try
     {
-        unsafe {
-            fixed (char* pText = "Doom!")
-            {
-                PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), 0, true, new MENUITEMINFOW
-                {
-                    cbSize = (uint)Marshal.SizeOf<MENUITEMINFOW>(),
-                    fMask = MENU_ITEM_MASK.MIIM_STRING,
-                    dwTypeData = pText,
-                }));
-            }
-        }
+        MenuHelpers.InsertMenuItem(menu, 0, "Hello, Windows!");
+        MenuHelpers.InsertMenuItem(menu, 1, "Goodbye, Windows!");
 
-        unsafe {
-            fixed (char* pText = "Hello, Windows! 2")
-            {
-                PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), 0, true, new MENUITEMINFOW
-                {
-                    cbSize = (uint)Marshal.SizeOf<MENUITEMINFOW>(),
-                    fMask = MENU_ITEM_MASK.MIIM_STRING,
-                    dwTypeData = pText,
-                }));
-            }
-        }
+        // TODO: docs say to use this, but there are no examples.
+        // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
+        //     new POINT(x, y),
+        //     new RECT(0, 0, 0, 0),
+        //     TPM.TPM_VERTICAL | TPM.TPM_RIGHTALIGN | TPM.TPM_RIGHTBUTTON,
+        //     out var position
+        // ));
 
-        var flags = TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON;
-        if (PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_MENUDROPALIGNMENT) != 0)
-        {
-            flags |= TRACK_POPUP_MENU_FLAGS.TPM_RIGHTALIGN;
-        }
-        else
-        {
-            flags |= TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN;
-        }
-
+        // TODO: what DPI/coordinate space are X & Y?
+        var flags = MenuHelpers.GetPopupFlags();
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.TrackPopupMenuEx(
             new NoReleaseSafeHandle((int)menu.Value),
             (uint)(flags),

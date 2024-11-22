@@ -50,6 +50,9 @@ AppendMenu
 TrackPopupMenuEx
 TRACK_POPUP_MENU_FLAGS
 
+CalculatePopupWindowPosition
+GetMenuItemRect
+
 // DPI
 SetProcessDpiAwarenessContext
 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
