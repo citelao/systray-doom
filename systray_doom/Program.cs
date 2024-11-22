@@ -4,7 +4,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using System.Diagnostics;
-using System.Drawing;
+using Windows.Win32.UI.HiDpi;
 
 
 Console.WriteLine("Hello, World!");
@@ -13,6 +13,12 @@ var i = PInvokeDoom.rust_function();
 Console.WriteLine(i);
 
 // Heavily inspired by https://github.com/microsoft/CsWin32/blob/99ddd314ea359d3a97afa82c735b6a25eb25ea32/test/WinRTInteropTest/Program.cs
+
+// Turn on DPI awareness the non-recommended way! Since it's easier than a manifest! Don't trust
+// any code in this file!
+//
+// https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
+PInvokeHelpers.THROW_IF_FALSE(PInvoke.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
 
 const string WindowClassName = "SimpleSystrayWindow";
 var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
@@ -29,12 +35,13 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
     PInvoke.SetForegroundWindow(hwnd);
 
-    var str = "Hello, Windows!";
-    var menu = PInvoke.CreateMenu();
+    // If you ... happen to call `CreateMenu` instead here, you'll get a menu
+    // that has basically no width.
+    var menu = PInvoke.CreatePopupMenu();
     try
     {
         unsafe {
-            fixed (char* pText = str)
+            fixed (char* pText = "Doom!")
             {
                 PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), 0, true, new MENUITEMINFOW
                 {
@@ -70,8 +77,8 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.TrackPopupMenuEx(
             new NoReleaseSafeHandle((int)menu.Value),
             (uint)(flags),
-            10,
-            10,
+            x,
+            y,
             hwnd,
             null), "Failed to track popup menu.");
     }

@@ -44,11 +44,15 @@ TranslateMessage
 DispatchMessage
 
 // Menus
-CreateMenu
+CreatePopupMenu
 InsertMenuItem
 AppendMenu
 TrackPopupMenuEx
 TRACK_POPUP_MENU_FLAGS
+
+// DPI
+SetProcessDpiAwarenessContext
+DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 
 GetClientRect
 ScreenToClient
