@@ -76,6 +76,10 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                     Console.WriteLine($"Tray icon right button up for {iconId} ({x}, {y}).");
                     break;
 
+                case PInvoke.NIN_SELECT:
+                    Console.WriteLine($"Tray icon select for {iconId} ({x}, {y}).");
+                    break;
+
                 case PInvoke.NIN_BALLOONSHOW:
                     Console.WriteLine($"Tray icon balloon show for {iconId} ({x}, {y}).");
                     break;
@@ -161,8 +165,7 @@ unsafe
     );
 }
 
-var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
-var trayIcon = new TrayIcon(guid, hwnd, trayIconMessage)
+var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {
     Tooltip = "Hello, Windows!"
 };
@@ -244,8 +247,7 @@ static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
     pinnedArray.Free();
 
     // trayIcon.Icon = icon;
-    var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
-    var notificationIconData = new TrayIconMessageBuilder(guid: guid)
+    var notificationIconData = new TrayIconMessageBuilder(guid: Constants.SystrayGuid)
     {
         Icon = icon,
     }.Build();
@@ -272,8 +274,7 @@ static unsafe void SetWindowTitle(byte* title, nint size)
     var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
     Console.WriteLine($"SetWindowTitle: {titleString}");
 
-    var guid = Guid.Parse("bc540dbe-f04e-4c1c-a5a0-01b32095b04c");
-    var notificationIconData = new TrayIconMessageBuilder(guid: guid)
+    var notificationIconData = new TrayIconMessageBuilder(guid: Constants.SystrayGuid)
     {
         Tooltip = titleString,
     }.Build();
@@ -361,6 +362,7 @@ class WindowMessageHandler
 
     public WindowMessageHandler(WndProcDelegate del)
     {
+        // https://github.com/ControlzEx/ControlzEx/blob/cbb56cab39ffc78d9599208826f47eeab70455f7/src/ControlzEx/Controls/GlowWindow.cs#L94
         _wndProc = del;
         var delPtr = Marshal.GetFunctionPointerForDelegate(del);
         _data = new Data
