@@ -17,6 +17,7 @@ Console.WriteLine(i);
 // any code in this file!
 //
 // https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
+// https://stackoverflow.com/questions/23551112/how-can-i-set-the-dpiaware-property-in-a-windows-application-manifest-to-per-mo/
 PInvokeHelpers.THROW_IF_FALSE(PInvoke.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
 
 const string WindowClassName = "SimpleSystrayWindow";
@@ -39,8 +40,10 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     var menu = PInvoke.CreatePopupMenu();
     try
     {
-        MenuHelpers.InsertMenuItem(menu, 0, "Hello, Windows!");
-        MenuHelpers.InsertMenuItem(menu, 1, "Goodbye, Windows!");
+        MenuHelpers.InsertMenuItem(menu, 0, "Systray Doom!");
+        MenuHelpers.InsertMenuItem(menu, 1, "By Ben Stolovitz");
+        MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
+        MenuHelpers.InsertMenuItem(menu, 3, "E&xit");
 
         // TODO: docs say to use this, but there are no examples.
         // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
@@ -59,6 +62,10 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
             y,
             hwnd,
             null), "Failed to track popup menu.");
+
+        // TODO: doesn't work...
+        Console.WriteLine("TrackPopupMenuEx succeeded.");
+        PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
     }
     finally
     {

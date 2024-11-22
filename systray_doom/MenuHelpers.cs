@@ -8,18 +8,15 @@ internal class MenuHelpers
 {
     public static void InsertMenuItem(HMENU menu, uint index, string text)
     {
-        unsafe {
-            fixed (char* pText = "Systray Doom!")
-            {
-                // TODO: MENUITEMINFOW builder.
-                PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), index, true, new MENUITEMINFOW
-                {
-                    cbSize = (uint)Marshal.SizeOf<MENUITEMINFOW>(),
-                    fMask = MENU_ITEM_MASK.MIIM_STRING,
-                    dwTypeData = pText,
-                }));
-            }
-        }
+        // TODO: callbacks/handlers might mean we should get rid of this helper
+        // altogether.
+        var item = MenuItemInfoBuilder.CreateString(text);
+        InsertMenuItem(menu, index, item);
+    }
+
+    public static void InsertMenuItem(HMENU menu, uint index, MENUITEMINFOW item)
+    {
+        PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), index, true, item));
     }
 
     public static TRACK_POPUP_MENU_FLAGS GetPopupFlags()
