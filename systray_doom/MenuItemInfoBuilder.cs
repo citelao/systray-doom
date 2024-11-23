@@ -20,7 +20,7 @@ internal class MenuItemInfoBuilder
         return result;
     }
 
-    public static MENUITEMINFOW CreateString(string text)
+    public static MENUITEMINFOW CreateString(string text, uint? id = null)
     {
         unsafe
         {
@@ -29,6 +29,13 @@ internal class MenuItemInfoBuilder
                 var result = CreateBasic();
                 result.fMask = MENU_ITEM_MASK.MIIM_STRING;
                 result.dwTypeData = pText;
+
+                if (id.HasValue)
+                {
+                    result.fMask |= MENU_ITEM_MASK.MIIM_ID;
+                    result.wID = id.Value;
+                }
+
                 return result;
             }
         }

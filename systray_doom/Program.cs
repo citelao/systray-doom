@@ -40,10 +40,10 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     var menu = PInvoke.CreatePopupMenu();
     try
     {
-        MenuHelpers.InsertMenuItem(menu, 0, "Systray Doom!");
-        MenuHelpers.InsertMenuItem(menu, 1, "By Ben Stolovitz");
+        MenuHelpers.InsertMenuItem(menu, 0, MenuItemInfoBuilder.CreateString("Systray Doom!", id: 1));
+        MenuHelpers.InsertMenuItem(menu, 1, MenuItemInfoBuilder.CreateString("By Ben Stolovitz", id: 2));
         MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-        MenuHelpers.InsertMenuItem(menu, 3, "E&xit");
+        MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfoBuilder.CreateString("E&xit", id: 3));
 
         // TODO: docs say to use this, but there are no examples.
         // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
@@ -53,18 +53,39 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         //     out var position
         // ));
 
-        // TODO: what DPI/coordinate space are X & Y?
-        var flags = MenuHelpers.GetPopupFlags();
-        PInvokeHelpers.THROW_IF_FALSE(PInvoke.TrackPopupMenuEx(
+        // Get alignment flags & also ensure that:
+        // 1. The menu returns the command ID of the item selected.
+        // 2. The menu does not send notifications of the selected item to
+        //    parent HWND.
+        var flags = MenuHelpers.GetPopupAlignmentFlags();
+        var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
+        flags |= returnValueFlags;
+
+        // TODO: what DPI/coordinate space are X & Y? (they are "screen
+        // coordinates", but I think they correspond to the app's DPI, whereas I
+        // think the x & y we get from the WMs are in the system DPI. Before I
+        // turned on DPI awareness, this menu drew in the bottom-right corner of
+        // the screen).
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex
+        // https://learn.microsoft.com/en-us/windows/win32/learnwin32/dpi-and-device-independent-pixels
+        //
+        // TODO: TPM_LAYOUTRTL on RTL systems?
+
+        var response = PInvoke.TrackPopupMenuEx(
             new NoReleaseSafeHandle((int)menu.Value),
             (uint)(flags),
             x,
             y,
             hwnd,
-            null), "Failed to track popup menu.");
+            null);
+        if (response == 0)
+        {
+            // Either nothing selected or an error occurred.
+            // throw new Exception("TrackPopupMenuEx failed.");
+        }
+        Console.WriteLine($"TrackPopupMenuEx complete; {response}");
 
         // TODO: doesn't work...
-        Console.WriteLine("TrackPopupMenuEx succeeded.");
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
     }
     finally

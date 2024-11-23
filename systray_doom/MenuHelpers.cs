@@ -19,8 +19,9 @@ internal class MenuHelpers
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), index, true, item));
     }
 
-    public static TRACK_POPUP_MENU_FLAGS GetPopupFlags()
+    public static TRACK_POPUP_MENU_FLAGS GetPopupAlignmentFlags()
     {
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#remarks
         // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
         var flags = TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON;
         if (PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_MENUDROPALIGNMENT) != 0)
