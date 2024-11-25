@@ -5,9 +5,14 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using Windows.Win32.UI.Shell;
 
+// TODO: this is secretly a static singleton class. It would be nice to
+// generalize it.
 public class Doom
 {
-    public Task RunAsync()
+    private static CancellationTokenSource _cts = new CancellationTokenSource();
+    private static HICON _lastIcon = HICON.Null;
+
+    public static Task RunAsync()
     {
         return Task.Run(() => {
             unsafe
@@ -20,16 +25,21 @@ public class Doom
 
                 PInvokeDoom.start_game(game);
             }
-        });
+        }, _cts.Token);
     }
 
-    static class State
+    public static void Stop()
     {
-        public static HICON LastIcon = HICON.Null;
+        _cts.Cancel();
     }
 
     static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
     {
+        if (_cts.Token.IsCancellationRequested)
+        {
+            return;
+        }
+
         // Console.WriteLine($"DrawFrame: {xres}x{yres}");
         // var desiredSizePx = (height: 200, width: 200);
         var desiredSizePx = (height: 320, width: 320);
@@ -115,22 +125,32 @@ public class Doom
         }
 
         // Clean up the old icon.
-        if (!State.LastIcon.IsNull)
+        if (!_lastIcon.IsNull)
         {
-            PInvoke.DestroyIcon(State.LastIcon);
+            PInvoke.DestroyIcon(_lastIcon);
         }
 
-        State.LastIcon = icon;
+        _lastIcon = icon;
     }
 
     static unsafe PInvokeDoom.CKeyData* KeyCallback()
     {
+        if (_cts.Token.IsCancellationRequested)
+        {
+            return null;
+        }
+
         // Console.WriteLine("KeyCallback");
         return null;
     }
 
     static unsafe void SetWindowTitle(byte* title, nint size)
     {
+        if (_cts.Token.IsCancellationRequested)
+        {
+            return;
+        }
+
         var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
         Console.WriteLine($"SetWindowTitle: {titleString}");
 

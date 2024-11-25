@@ -251,8 +251,7 @@ var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
     Tooltip = "Hello, Windows!"
 };
 
-var doomGame = new Doom();
-var doomTask = doomGame.RunAsync();
+var doomTask = Doom.RunAsync();
 
 Console.WriteLine("Starting message loop...");
 Console.WriteLine("Press Ctrl-C to exit.");
