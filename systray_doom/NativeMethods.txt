@@ -17,6 +17,8 @@ CREATESTRUCTW
 
 BeginPaint
 EndPaint
+CreateDispatcherQueueController
+ICompositorDesktopInterop
 
 GetModuleHandle
 LoadCursor

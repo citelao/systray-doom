@@ -5,7 +5,13 @@ using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using System.Diagnostics;
 using Windows.Win32.UI.HiDpi;
+using Windows.Win32.System.WinRT;
+using Windows.Win32.System.WinRT.Composition;
 using static Crayon.Output;
+using Windows.UI.Composition;
+using Windows.UI.Composition.Desktop;
+using WinRT;
+using System.Numerics;
 
 Console.WriteLine("Starting doom...");
 
@@ -308,6 +314,23 @@ unsafe
     );
 }
 
+// https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
+var options = new DispatcherQueueOptions()
+{
+    dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
+    apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
+    threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
+};
+PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
+var compositor = new Compositor();
+var interop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
+interop.CreateDesktopWindowTarget(hwnd, false, out var target);
+
+var root = compositor.CreateContainerVisual();
+root.RelativeSizeAdjustment = Vector2.One;
+root.Offset = new Vector3(124, 12, 0);
+target.Root = root;
+
 // Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
 // {
 //     var app = new Microsoft.UI.Xaml.Application();
@@ -318,6 +341,12 @@ unsafe
 //     };
 //     app.Start();
 // });
+
+var element = compositor.CreateSpriteVisual();
+var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
+element.Brush = compositor.CreateColorBrush(color);
+element.Size = new Vector2(100, 100);
+root.Children.InsertAtTop(element);
 
 var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {
