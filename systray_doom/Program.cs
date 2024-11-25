@@ -134,6 +134,9 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             if (isMinimize)
             {
                 PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+
+                // TODO: doesn't work.
+                PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
             }
             break;
 
