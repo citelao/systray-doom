@@ -149,7 +149,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             switch (ev)
             {
                 case PInvoke.WM_CONTEXTMENU:
-                    Console.WriteLine($"Tray icon context menu for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon context menu for {iconId} ({x}, {y})."));
                     // var pt = new Point(x, y);
                     // var client = PInvoke.ScreenToClient(hwnd, ref pt);
                     // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
@@ -157,67 +157,67 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                     break;
 
                 case PInvoke.WM_MOUSEMOVE:
-                    Console.WriteLine($"Tray icon mouse move for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.WM_LBUTTONDOWN:
-                    Console.WriteLine($"Tray icon left button down for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.WM_LBUTTONUP:
-                    Console.WriteLine($"Tray icon left button up for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
                     break;
                 
                 case PInvoke.WM_LBUTTONDBLCLK:
-                    Console.WriteLine($"Tray icon left button double click for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.WM_RBUTTONDOWN:
-                    Console.WriteLine($"Tray icon right button down for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon right button down for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.WM_RBUTTONUP:
-                    Console.WriteLine($"Tray icon right button up for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_SELECT:
-                    Console.WriteLine($"Tray icon select for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
                     PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
                     break;
 
                 case PInvoke.NIN_BALLOONSHOW:
-                    Console.WriteLine($"Tray icon balloon show for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_BALLOONHIDE:
-                    Console.WriteLine($"Tray icon balloon hide for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon balloon hide for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_BALLOONTIMEOUT:
-                    Console.WriteLine($"Tray icon balloon timeout for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon balloon timeout for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_BALLOONUSERCLICK:
-                    Console.WriteLine($"Tray icon balloon user click for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon balloon user click for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_POPUPOPEN:
-                    Console.WriteLine($"Tray icon popup open for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon popup open for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_POPUPCLOSE:
-                    Console.WriteLine($"Tray icon popup close for {iconId} ({x}, {y}).");
+                    Console.WriteLine(Dim($"Tray icon popup close for {iconId} ({x}, {y})."));
                     break;
 
                 default:
-                    Console.WriteLine($"Tray icon message: {ev}");
+                    Console.WriteLine(Dim($"Tray icon message: {ev}"));
                     break;
             }
 
             break;
 
         default:
-            Console.WriteLine($"WindowProc: {msg} {wParam} {lParam}");
+            Console.WriteLine(Dim($"WindowProc: {msg} {wParam} {lParam}"));
             break;
     }
 
