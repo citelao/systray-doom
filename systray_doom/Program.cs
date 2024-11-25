@@ -308,6 +308,17 @@ unsafe
     );
 }
 
+// Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
+// {
+//     var app = new Microsoft.UI.Xaml.Application();
+//     app.OnLaunched += (s, e) =>
+//     {
+//         var window = new Microsoft.UI.Xaml.Window();
+//         window.Activate();
+//     };
+//     app.Start();
+// });
+
 var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {
     Tooltip = "Hello, Windows!"
