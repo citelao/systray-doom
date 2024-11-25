@@ -283,10 +283,10 @@ unsafe
     hwnd = PInvoke.CreateWindowEx(
         0, // dwExStyle WINDOW_EX_STYLE.WS_EX_NOREDIRECTIONBITMAP
         WindowClassName,
-        "Hello, Windows!", // lpWindowName
+        "Systray Doom - v0.0.1", // lpWindowName
         WINDOW_STYLE.WS_OVERLAPPEDWINDOW, // dwStyle
-        0, // x
-        0, // y
+        PInvoke.CW_USEDEFAULT, // x
+        PInvoke.CW_USEDEFAULT, // y
         640, // nWidth
         480, // nHeight
         HWND.Null, // hWndParent
