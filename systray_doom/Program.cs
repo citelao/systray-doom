@@ -91,6 +91,7 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         {
             // Open window
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+            PInvoke.SetForegroundWindow(hwnd);
         }
         else if (response == 4)
         {
@@ -183,6 +184,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 case PInvoke.NIN_SELECT:
                     Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
                     PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+                    PInvoke.SetForegroundWindow(hwnd);
                     break;
 
                 case PInvoke.NIN_BALLOONSHOW:
