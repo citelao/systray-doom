@@ -44,7 +44,7 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
         MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
         MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
-        MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
+        MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
 
         // TODO: docs say to use this, but there are no examples.
         // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
