@@ -10,7 +10,7 @@ internal class MenuHelpers
     {
         // TODO: callbacks/handlers might mean we should get rid of this helper
         // altogether.
-        var item = MenuItemInfoBuilder.CreateString(text);
+        var item = MenuItemInfoBuilder.CreateString(text).Build();
         InsertMenuItem(menu, index, item);
     }
 

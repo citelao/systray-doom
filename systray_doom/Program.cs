@@ -40,10 +40,10 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     var menu = PInvoke.CreatePopupMenu();
     try
     {
-        MenuHelpers.InsertMenuItem(menu, 0, MenuItemInfoBuilder.CreateString("Systray Doom!", id: 1));
-        MenuHelpers.InsertMenuItem(menu, 1, MenuItemInfoBuilder.CreateString("By Ben Stolovitz", id: 2));
+        MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
+        MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
         MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-        MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfoBuilder.CreateString("E&xit", id: 3));
+        MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfoBuilder.CreateString("E&xit", id: 3).Build());
 
         // TODO: docs say to use this, but there are no examples.
         // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
