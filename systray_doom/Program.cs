@@ -172,7 +172,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 case PInvoke.WM_LBUTTONUP:
                     Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
                     break;
-                
+
                 case PInvoke.WM_LBUTTONDBLCLK:
                     Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
                     break;
@@ -183,6 +183,14 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 
                 case PInvoke.WM_RBUTTONUP:
                     Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_MBUTTONDOWN:
+                    Console.WriteLine(Dim($"Tray icon middle button down for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_MBUTTONUP:
+                    Console.WriteLine(Dim($"Tray icon middle button up for {iconId} ({x}, {y})."));
                     break;
 
                 case PInvoke.NIN_SELECT:
@@ -225,8 +233,12 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
         default:
             if (msg == taskbarCreatedWindowMessage)
             {
+                // Fired if Explorer crashes & restarts, or if the primary
+                // display DPI changes.
+                //
+                // https://learn.microsoft.com/en-us/windows/win32/shell/taskbar#taskbar-creation-notification
                 Console.WriteLine(Dim("Taskbar created message received."));
-                trayIcon.Recreate();
+                // TODO: recreate icon.
             }
             else
             {
