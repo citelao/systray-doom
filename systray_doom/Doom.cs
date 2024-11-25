@@ -13,6 +13,14 @@ public class Doom
     private static byte[]? _lastRgbaFrame = null;
     private static HICON _lastIcon = HICON.Null;
 
+
+    // Console.WriteLine($"DrawFrame: {xres}x{yres}");
+    // var desiredSizePx = (height: 200, width: 200);
+    // var desiredSizePx = (height: 320, width: 320);
+    // var desiredSizePx = (height: 400, width: 300);
+    // var desiredSizePx = (height: (int)yres, width: (int)xres);
+    public static readonly (int width, int height) DesiredSizePx = (320, 320);
+
     public static byte[]? LastRgbaFrame
     {
         get
@@ -57,11 +65,7 @@ public class Doom
             return;
         }
 
-        // Console.WriteLine($"DrawFrame: {xres}x{yres}");
-        // var desiredSizePx = (height: 200, width: 200);
-        var desiredSizePx = (height: 320, width: 320);
-        // var desiredSizePx = (height: 400, width: 300);
-        // var desiredSizePx = (height: (int)yres, width: (int)xres);
+        var desiredSizePx = DesiredSizePx;
 
         // Assert that the desired size is smaller than the actual size.
         Debug.Assert(desiredSizePx.width <= xres);

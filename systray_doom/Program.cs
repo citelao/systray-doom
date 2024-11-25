@@ -13,6 +13,8 @@ using Windows.UI.Composition;
 using Windows.UI.Composition.Desktop;
 using WinRT;
 using System.Numerics;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 
 Console.WriteLine("Starting doom...");
 
@@ -139,20 +141,20 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 
         case PInvoke.WM_PAINT:
             Console.WriteLine("Painting...");
-            var hdc = PInvoke.BeginPaint(hwnd, out var ps);
+            // var hdc = PInvoke.BeginPaint(hwnd, out var ps);
 
-            // https://stackoverflow.com/a/1760571/788168
-            var icon = Doom.LastIcon;
-            if (!icon.IsNull)
-            {
-                var hdcIcon = PInvoke.CreateCompatibleDC(hdc);
-                var oldIcon = PInvoke.SelectObject(hdcIcon, new NoReleaseSafeHandle((int)icon.Value));
-                PInvoke.BitBlt(hdc, 0, 0, 16, 16, hdcIcon, 0, 0, ROP_CODE.SRCCOPY);
-                PInvoke.SelectObject(hdcIcon, oldIcon);
-                PInvoke.DeleteDC(hdcIcon);
-            }
+            // // https://stackoverflow.com/a/1760571/788168
+            // var icon = Doom.LastIcon;
+            // if (!icon.IsNull)
+            // {
+            //     var hdcIcon = PInvoke.CreateCompatibleDC(hdc);
+            //     var oldIcon = PInvoke.SelectObject(hdcIcon, new NoReleaseSafeHandle((int)icon.Value));
+            //     PInvoke.BitBlt(hdc, 0, 0, 16, 16, hdcIcon, 0, 0, ROP_CODE.SRCCOPY);
+            //     PInvoke.SelectObject(hdcIcon, oldIcon);
+            //     PInvoke.DeleteDC(hdcIcon);
+            // }
 
-            PInvoke.EndPaint(hwnd, ps);
+            // PInvoke.EndPaint(hwnd, ps);
             break;
 
         case PInvoke.WM_SIZE:
@@ -322,39 +324,39 @@ unsafe
     );
 }
 
-// // https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
-// var options = new DispatcherQueueOptions()
+// https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
+var options = new DispatcherQueueOptions()
+{
+    dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
+    apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
+    threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
+};
+PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
+var compositor = new Compositor();
+var interop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
+interop.CreateDesktopWindowTarget(hwnd, false, out var target);
+
+var root = compositor.CreateContainerVisual();
+root.RelativeSizeAdjustment = Vector2.One;
+root.Offset = new Vector3(124, 12, 0);
+target.Root = root;
+
+// Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
 // {
-//     dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
-//     apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
-//     threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
-// };
-// PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
-// var compositor = new Compositor();
-// var interop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
-// interop.CreateDesktopWindowTarget(hwnd, false, out var target);
+//     var app = new Microsoft.UI.Xaml.Application();
+//     app.OnLaunched += (s, e) =>
+//     {
+//         var window = new Microsoft.UI.Xaml.Window();
+//         window.Activate();
+//     };
+//     app.Start();
+// });
 
-// var root = compositor.CreateContainerVisual();
-// root.RelativeSizeAdjustment = Vector2.One;
-// root.Offset = new Vector3(124, 12, 0);
-// target.Root = root;
-
-// // Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
-// // {
-// //     var app = new Microsoft.UI.Xaml.Application();
-// //     app.OnLaunched += (s, e) =>
-// //     {
-// //         var window = new Microsoft.UI.Xaml.Window();
-// //         window.Activate();
-// //     };
-// //     app.Start();
-// // });
-
-// var element = compositor.CreateSpriteVisual();
-// var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
-// element.Brush = compositor.CreateColorBrush(color);
-// element.Size = new Vector2(100, 100);
-// root.Children.InsertAtTop(element);
+var element = compositor.CreateSpriteVisual();
+var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
+element.Brush = compositor.CreateColorBrush(color);
+element.Size = new Vector2(100, 100);
+root.Children.InsertAtTop(element);
 
 var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {
@@ -362,6 +364,15 @@ var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 };
 
 var doomTask = Doom.RunAsync();
+
+// TODO: we can't use LoadedImageSurface because it's XAML.
+// https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.loadedimagesurface?view=winrt-26100
+//
+// await Task.Delay(100);
+// IRandomAccessStream memoryStream = new InMemoryRandomAccessStream();
+// var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, memoryStream);
+// encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied, (uint)Doom.DesiredSizePx.height, (uint)Doom.DesiredSizePx.width, 96, 96, Doom.LastRgbaFrame);
+// await encoder.FlushAsync();
 
 Console.WriteLine("Starting message loop...");
 Console.WriteLine("Press Ctrl-C to exit.");
