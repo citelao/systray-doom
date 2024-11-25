@@ -92,7 +92,8 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
             PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
         }
 
-        // TODO: doesn't work...
+        // TODO: return focus to systray after dismissing the menu. This line
+        // doesn't work:
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
     }
     finally
