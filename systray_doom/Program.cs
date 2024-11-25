@@ -85,6 +85,13 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         }
         Console.WriteLine($"TrackPopupMenuEx complete; {response}");
 
+        if (response == 3)
+        {
+            // Exit
+            Doom.Stop();
+            PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
+        }
+
         // TODO: doesn't work...
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
     }
@@ -262,10 +269,13 @@ while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
     PInvoke.DispatchMessage(msg);
 }
 
-// Await synchronously to avoid a CS9123 because of our reference to &data.
+Console.WriteLine("Exiting...");
+
+// Don't await at all! Exit the app.
+// Old: Await synchronously to avoid a CS9123 because of our reference to &data.
 // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/warning-waves
-doomTask.GetAwaiter().GetResult();
-// await doomTask;
+// doomTask.GetAwaiter().GetResult();
+// Older: await doomTask;
 
 class WindowMessageHandler
 {
