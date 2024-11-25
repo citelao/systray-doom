@@ -5,11 +5,12 @@ using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using System.Diagnostics;
 using Windows.Win32.UI.HiDpi;
+using static Crayon.Output;
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine("Starting doom...");
 
 var i = PInvokeDoom.rust_function();
-Console.WriteLine(i);
+Console.WriteLine(Dim($"Testing Rust connection: {i == 42} ({i})"));
 
 // Heavily inspired by https://github.com/microsoft/CsWin32/blob/99ddd314ea359d3a97afa82c735b6a25eb25ea32/test/WinRTInteropTest/Program.cs
 
