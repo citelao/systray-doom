@@ -5,7 +5,9 @@ using Windows.Win32.UI.WindowsAndMessaging;
 internal class MenuItemInfoBuilder
 {
     public uint? Id { get; set; }
+
     public bool? Enabled { get; set; }
+    public bool Default { get; set; } = false;
 
     public enum ItemType
     {
@@ -81,10 +83,17 @@ internal class MenuItemInfoBuilder
             basic.wID = Id.Value;
         }
 
+        basic.fState = 0;
         if (Enabled.HasValue)
         {
             basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
-            basic.fState = Enabled.Value ? MENU_ITEM_STATE.MFS_ENABLED : MENU_ITEM_STATE.MFS_DISABLED;
+            basic.fState |= Enabled.Value ? MENU_ITEM_STATE.MFS_ENABLED : MENU_ITEM_STATE.MFS_DISABLED;
+        }
+
+        if (Default)
+        {
+            basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
+            basic.fState |= MENU_ITEM_STATE.MFS_DEFAULT;
         }
 
         return basic;
