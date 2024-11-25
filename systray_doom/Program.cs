@@ -130,6 +130,18 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             PInvoke.PostQuitMessage(0);
             break;
 
+        case PInvoke.WM_PAINT:
+            var hdc = PInvoke.BeginPaint(hwnd, out var ps);
+
+            var rgba = Doom.LastRgbaFrame;
+            if (rgba != null)
+            {
+                // TODO
+            }
+
+            PInvoke.EndPaint(hwnd, ps);
+            break;
+
         case PInvoke.WM_SIZE:
             var isMinimize = wParam == PInvoke.SIZE_MINIMIZED;
             if (isMinimize)

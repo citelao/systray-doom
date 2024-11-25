@@ -10,7 +10,16 @@ using Windows.Win32.UI.Shell;
 public class Doom
 {
     private static CancellationTokenSource _cts = new CancellationTokenSource();
+    private static byte[]? _lastRgbaFrame = null;
     private static HICON _lastIcon = HICON.Null;
+
+    public static byte[]? LastRgbaFrame
+    {
+        get
+        {
+            return _lastRgbaFrame;
+        }
+    }
 
     public static Task RunAsync()
     {
@@ -123,6 +132,8 @@ public class Doom
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
+
+        _lastRgbaFrame = rgbaPixelArray;
 
         // Clean up the old icon.
         if (!_lastIcon.IsNull)

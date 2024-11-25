@@ -15,6 +15,9 @@ AdjustWindowRectEx
 RegisterWindowMessage
 CREATESTRUCTW
 
+BeginPaint
+EndPaint
+
 GetModuleHandle
 LoadCursor
 DefWindowProc
