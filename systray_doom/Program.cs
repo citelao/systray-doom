@@ -117,6 +117,7 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     return false;
 }
 
+var taskbarCreatedWindowMessage = PInvoke.RegisterWindowMessage("TaskbarCreated");
 var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 {
     switch (msg)
@@ -222,7 +223,15 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             break;
 
         default:
-            Console.WriteLine(Dim($"WindowProc: {msg} {wParam} {lParam}"));
+            if (msg == taskbarCreatedWindowMessage)
+            {
+                Console.WriteLine(Dim("Taskbar created message received."));
+                trayIcon.Recreate();
+            }
+            else
+            {
+                Console.WriteLine(Dim($"WindowProc: {msg} {wParam} {lParam}"));
+            }
             break;
     }
 
