@@ -20,6 +20,12 @@ EndPaint
 CreateDispatcherQueueController
 ICompositorDesktopInterop
 
+CreateCompatibleDC
+SelectObject
+BitBlt
+SelectObject
+DeleteDC
+
 GetModuleHandle
 LoadCursor
 DefWindowProc

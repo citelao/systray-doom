@@ -5,6 +5,7 @@ using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using System.Diagnostics;
 using Windows.Win32.UI.HiDpi;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.System.WinRT;
 using Windows.Win32.System.WinRT.Composition;
 using static Crayon.Output;
@@ -137,12 +138,18 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             break;
 
         case PInvoke.WM_PAINT:
+            Console.WriteLine("Painting...");
             var hdc = PInvoke.BeginPaint(hwnd, out var ps);
 
-            var rgba = Doom.LastRgbaFrame;
-            if (rgba != null)
+            // https://stackoverflow.com/a/1760571/788168
+            var icon = Doom.LastIcon;
+            if (!icon.IsNull)
             {
-                // TODO
+                var hdcIcon = PInvoke.CreateCompatibleDC(hdc);
+                var oldIcon = PInvoke.SelectObject(hdcIcon, new NoReleaseSafeHandle((int)icon.Value));
+                PInvoke.BitBlt(hdc, 0, 0, 16, 16, hdcIcon, 0, 0, ROP_CODE.SRCCOPY);
+                PInvoke.SelectObject(hdcIcon, oldIcon);
+                PInvoke.DeleteDC(hdcIcon);
             }
 
             PInvoke.EndPaint(hwnd, ps);
@@ -157,6 +164,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 // TODO: doesn't work.
                 PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
             }
+            PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
 
         // https://stackoverflow.com/a/65642709/788168
@@ -314,39 +322,39 @@ unsafe
     );
 }
 
-// https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
-var options = new DispatcherQueueOptions()
-{
-    dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
-    apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
-    threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
-};
-PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
-var compositor = new Compositor();
-var interop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
-interop.CreateDesktopWindowTarget(hwnd, false, out var target);
-
-var root = compositor.CreateContainerVisual();
-root.RelativeSizeAdjustment = Vector2.One;
-root.Offset = new Vector3(124, 12, 0);
-target.Root = root;
-
-// Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
+// // https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
+// var options = new DispatcherQueueOptions()
 // {
-//     var app = new Microsoft.UI.Xaml.Application();
-//     app.OnLaunched += (s, e) =>
-//     {
-//         var window = new Microsoft.UI.Xaml.Window();
-//         window.Activate();
-//     };
-//     app.Start();
-// });
+//     dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
+//     apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
+//     threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
+// };
+// PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
+// var compositor = new Compositor();
+// var interop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
+// interop.CreateDesktopWindowTarget(hwnd, false, out var target);
 
-var element = compositor.CreateSpriteVisual();
-var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
-element.Brush = compositor.CreateColorBrush(color);
-element.Size = new Vector2(100, 100);
-root.Children.InsertAtTop(element);
+// var root = compositor.CreateContainerVisual();
+// root.RelativeSizeAdjustment = Vector2.One;
+// root.Offset = new Vector3(124, 12, 0);
+// target.Root = root;
+
+// // Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
+// // {
+// //     var app = new Microsoft.UI.Xaml.Application();
+// //     app.OnLaunched += (s, e) =>
+// //     {
+// //         var window = new Microsoft.UI.Xaml.Window();
+// //         window.Activate();
+// //     };
+// //     app.Start();
+// // });
+
+// var element = compositor.CreateSpriteVisual();
+// var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
+// element.Brush = compositor.CreateColorBrush(color);
+// element.Size = new Vector2(100, 100);
+// root.Children.InsertAtTop(element);
 
 var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {

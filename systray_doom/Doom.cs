@@ -21,6 +21,14 @@ public class Doom
         }
     }
 
+    internal static HICON LastIcon
+    {
+        get
+        {
+            return _lastIcon;
+        }
+    }
+
     public static Task RunAsync()
     {
         return Task.Run(() => {
