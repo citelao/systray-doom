@@ -31,6 +31,32 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 //     return WndProc(hwnd, msg, wParam, lParam);
 // };
 
+HWND GetOrCreateVisualWindow()
+{
+    // Open window
+    HWND visualHwnd;
+    unsafe
+    {
+        visualHwnd = PInvoke.CreateWindowEx(
+            WINDOW_EX_STYLE.WS_EX_NOREDIRECTIONBITMAP, // dwExStyle
+            WindowClassName,
+            "Hello, Windows!", // lpWindowName
+            WINDOW_STYLE.WS_OVERLAPPEDWINDOW, // dwStyle
+            0, // x
+            0, // y
+            640, // nWidth
+            480, // nHeight
+            HWND.Null, // hWndParent
+            new NoReleaseSafeHandle(0), // hMenu
+            new NoReleaseSafeHandle(0), // hInstance
+            null
+            // &data // lpParam
+        );
+    }
+
+    return visualHwnd;
+}
+
 bool TryDisplayContextMenu(HWND hwnd, int x, int y)
 {
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
@@ -87,7 +113,13 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         }
         Console.WriteLine($"TrackPopupMenuEx complete; {response}");
 
-        if (response == 4)
+        if (response == 3)
+        {
+            // Open window
+            HWND hwnd2 = GetOrCreateVisualWindow();
+            PInvokeHelpers.THROW_IF_FALSE(PInvoke.ShowWindow(hwnd2, SHOW_WINDOW_CMD.SW_SHOWNORMAL));
+        }
+        else if (response == 4)
         {
             // Exit
             Doom.Stop();
@@ -169,6 +201,8 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 
                 case PInvoke.NIN_SELECT:
                     Console.WriteLine($"Tray icon select for {iconId} ({x}, {y}).");
+                    HWND hwnd2 = GetOrCreateVisualWindow();
+                    PInvoke.ShowWindow(hwnd2, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
                     break;
 
                 case PInvoke.NIN_BALLOONSHOW:
@@ -216,7 +250,7 @@ unsafe
     {
         var wndClass = new WNDCLASSEXW
         {
-            // You need to include the size of this struct.
+            // You need to include the size of this sWindows.Win32.UI.WindowsAndMessaging.truct.
             cbSize = (uint)Marshal.SizeOf<WNDCLASSEXW>(),
 
             // Seems to work without this, but it seems sketchy to leave it out.
