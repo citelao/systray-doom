@@ -58,6 +58,7 @@ internal class WindowMessageHandler
         };
     }
 
+    // Pass this to the WNDCLASS.lpParam field in CreateWindowEx.
     public Data LpParamData()
     {
         return _data;

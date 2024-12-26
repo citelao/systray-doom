@@ -33,6 +33,7 @@ DefWindowProc
 GetWindowLongPtr
 SetWindowLongPtr
 WINDOW_LONG_PTR_INDEX
+CallWindowProc
 
 // Pro-tip: if you ever find that a const isn't showing up when you define it
 // like `COLOR_*`, try defining the full name of one, like `COLOR_WINDOW`. You

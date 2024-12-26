@@ -172,114 +172,8 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
 
-        // https://stackoverflow.com/a/65642709/788168
-        case var value when value == trayIconMessage:
-            // Console.WriteLine("Tray icon message received.");
-            var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
-            var iconId = (uint)PInvokeHelpers.HIWORD(lParam.Value);
-            var x = PInvokeHelpers.GET_X_LPARAM(wParam.Value);
-            var y = PInvokeHelpers.GET_Y_LPARAM(wParam.Value);
-
-            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicona#remarks
-            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataa#:~:text=but%20the%20interpretation%20of%20the%20lParam%20and%20wParam%20parameters%20of%20that%20message%20is%20changed%20as%20follows%3A
-            switch (ev)
-            {
-                case PInvoke.WM_CONTEXTMENU:
-                    Console.WriteLine(Dim($"Tray icon context menu for {iconId} ({x}, {y})."));
-                    // var pt = new Point(x, y);
-                    // var client = PInvoke.ScreenToClient(hwnd, ref pt);
-                    // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
-                    TryDisplayContextMenu(hwnd, x, y);
-                    break;
-
-                case PInvoke.WM_MOUSEMOVE:
-                    Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_LBUTTONDOWN:
-                    Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_LBUTTONUP:
-                    Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_LBUTTONDBLCLK:
-                    Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_RBUTTONDOWN:
-                    Console.WriteLine(Dim($"Tray icon right button down for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_RBUTTONUP:
-                    Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_MBUTTONDOWN:
-                    Console.WriteLine(Dim($"Tray icon middle button down for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.WM_MBUTTONUP:
-                    Console.WriteLine(Dim($"Tray icon middle button up for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.NIN_SELECT:
-                    Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
-                    PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
-                    PInvoke.SetForegroundWindow(hwnd);
-                    break;
-
-                case PInvoke.NIN_BALLOONSHOW:
-                    Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.NIN_BALLOONHIDE:
-                    Console.WriteLine(Dim($"Tray icon balloon hide for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.NIN_BALLOONTIMEOUT:
-                    Console.WriteLine(Dim($"Tray icon balloon timeout for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.NIN_BALLOONUSERCLICK:
-                    Console.WriteLine(Dim($"Tray icon balloon user click for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.NIN_POPUPOPEN:
-                    Console.WriteLine(Dim($"Tray icon popup open for {iconId} ({x}, {y})."));
-                    break;
-
-                case PInvoke.NIN_POPUPCLOSE:
-                    Console.WriteLine(Dim($"Tray icon popup close for {iconId} ({x}, {y})."));
-                    break;
-
-                default:
-                    Console.WriteLine(Dim($"Tray icon message: {ev}"));
-                    break;
-            }
-
-            break;
-
         default:
-            if (msg == taskbarCreatedWindowMessage)
-            {
-                // Fired if Explorer crashes & restarts, or if the primary
-                // display DPI changes.
-                //
-                // https://learn.microsoft.com/en-us/windows/win32/shell/taskbar#taskbar-creation-notification
-                Console.WriteLine(Dim("Taskbar created message received."));
-                // TODO: recreate icon.
-                //
-                // Notes: it's clear that the Shell_NotifyIcon itself cannot be
-                // the source of truth, since it disappears if Explorer crashes
-                // (and I don't believe you can read any data from it). So we
-                // need a proxy if we want a reliable icon.
-            }
-            else
-            {
-                Console.WriteLine(Dim($"WindowProc: {msg} {wParam} {lParam}"));
-            }
+            Console.WriteLine(Dim($"WindowProc: {msg} {wParam} {lParam}"));
             break;
     }
 
@@ -370,6 +264,123 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {
     Tooltip = "Hello, Windows!"
 };
+
+var subclass = new WindowSubclassHandler(hwnd, (hwnd, msg, wParam, lParam) =>
+{
+    switch (msg)
+    {
+        // https://stackoverflow.com/a/65642709/788168
+        case var value when value == trayIconMessage:
+            // Console.WriteLine("Tray icon message received.");
+            var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
+            var iconId = (uint)PInvokeHelpers.HIWORD(lParam.Value);
+            var x = PInvokeHelpers.GET_X_LPARAM(wParam.Value);
+            var y = PInvokeHelpers.GET_Y_LPARAM(wParam.Value);
+
+            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicona#remarks
+            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataa#:~:text=but%20the%20interpretation%20of%20the%20lParam%20and%20wParam%20parameters%20of%20that%20message%20is%20changed%20as%20follows%3A
+            switch (ev)
+            {
+                case PInvoke.WM_CONTEXTMENU:
+                    Console.WriteLine(Dim($"Tray icon context menu for {iconId} ({x}, {y})."));
+                    // var pt = new Point(x, y);
+                    // var client = PInvoke.ScreenToClient(hwnd, ref pt);
+                    // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
+                    TryDisplayContextMenu(hwnd, x, y);
+                    break;
+
+                case PInvoke.WM_MOUSEMOVE:
+                    Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_LBUTTONDOWN:
+                    Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_LBUTTONUP:
+                    Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_LBUTTONDBLCLK:
+                    Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_RBUTTONDOWN:
+                    Console.WriteLine(Dim($"Tray icon right button down for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_RBUTTONUP:
+                    Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_MBUTTONDOWN:
+                    Console.WriteLine(Dim($"Tray icon middle button down for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.WM_MBUTTONUP:
+                    Console.WriteLine(Dim($"Tray icon middle button up for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.NIN_SELECT:
+                    Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
+                    PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+                    PInvoke.SetForegroundWindow(hwnd);
+                    break;
+
+                case PInvoke.NIN_BALLOONSHOW:
+                    Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.NIN_BALLOONHIDE:
+                    Console.WriteLine(Dim($"Tray icon balloon hide for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.NIN_BALLOONTIMEOUT:
+                    Console.WriteLine(Dim($"Tray icon balloon timeout for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.NIN_BALLOONUSERCLICK:
+                    Console.WriteLine(Dim($"Tray icon balloon user click for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.NIN_POPUPOPEN:
+                    Console.WriteLine(Dim($"Tray icon popup open for {iconId} ({x}, {y})."));
+                    break;
+
+                case PInvoke.NIN_POPUPCLOSE:
+                    Console.WriteLine(Dim($"Tray icon popup close for {iconId} ({x}, {y})."));
+                    break;
+
+                default:
+                    Console.WriteLine(Dim($"Tray icon message: {ev}"));
+                    break;
+            }
+
+            // Short-circuit the default window proc.
+            return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
+
+        case var value when value == taskbarCreatedWindowMessage:
+            // Fired if Explorer crashes & restarts, or if the primary
+            // display DPI changes.
+            //
+            // https://learn.microsoft.com/en-us/windows/win32/shell/taskbar#taskbar-creation-notification
+            Console.WriteLine(Dim("Taskbar created message received."));
+            // TODO: recreate icon.
+            //
+            // Notes: it's clear that the Shell_NotifyIcon itself cannot be
+            // the source of truth, since it disappears if Explorer crashes
+            // (and I don't believe you can read any data from it). So we
+            // need a proxy if we want a reliable icon.
+
+            // TODO: recreate icon.
+
+            // Short-circuit the default window proc.
+            return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+
+    // Fall back to whatever the main window proc does.
+    return null;
+});
 
 var doomTask = Doom.RunAsync();
 
