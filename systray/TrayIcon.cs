@@ -124,6 +124,9 @@ public class TrayIcon
         // Console.WriteLine("Tray icon message received.");
         var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
         var iconId = (uint)PInvokeHelpers.HIWORD(lParam.Value);
+
+        // TODO: what coordinate system is this? I think it's global, but
+        // affected by the DPI setting.
         var x = PInvokeHelpers.GET_X_LPARAM(wParam.Value);
         var y = PInvokeHelpers.GET_Y_LPARAM(wParam.Value);
 
