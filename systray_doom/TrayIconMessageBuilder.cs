@@ -4,8 +4,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-// TODO: public
-internal class TrayIconMessageBuilder
+public class TrayIconMessageBuilder
 {
     public Guid Guid;
     public HWND? HWND = null;

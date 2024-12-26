@@ -6,7 +6,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 using static Crayon.Output;
 
-internal class WindowSubclassHandler
+public class WindowSubclassHandler
 {
     private readonly WNDPROC _delegate;
 

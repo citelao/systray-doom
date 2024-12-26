@@ -3,7 +3,7 @@ using Windows.Win32;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
-// This is not a trustworthy class.
+// This is not a trustworthy class. Internal only.
 internal class MenuHelpers
 {
     public static void InsertMenuItem(HMENU menu, uint index, string text)

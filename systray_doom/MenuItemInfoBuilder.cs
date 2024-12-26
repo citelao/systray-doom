@@ -1,8 +1,7 @@
 using System.Runtime.InteropServices;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-// TODO: public
-internal class MenuItemInfoBuilder
+public class MenuItemInfoBuilder
 {
     public uint? Id { get; set; }
 

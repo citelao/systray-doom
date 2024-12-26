@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 //
 // Adapted from:
 // https://github.com/microsoft/CsWin32/blob/99ddd314ea359d3a97afa82c735b6a25eb25ea32/test/WinRTInteropTest/Program.cs#L144
-internal class NoReleaseSafeHandle : SafeHandle
+public class NoReleaseSafeHandle : SafeHandle
 {
     public static NoReleaseSafeHandle Null = new NoReleaseSafeHandle(0);
 

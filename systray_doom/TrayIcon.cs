@@ -6,7 +6,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 using static Crayon.Output;
 
-internal class TrayIcon
+public class TrayIcon
 {
     private string _tooltip = string.Empty;
     public string Tooltip {
