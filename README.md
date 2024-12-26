@@ -28,7 +28,7 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 * [ ] Automatically build the Rust bindings before building & launching the C#.
 * [ ] Deploy the Rust DLL alongside the C# so that you can run `dotnet run` anywhere.
 * [ ] Support AnyCPU target
-* [ ] Split off systray code into a library
+* [x] Split off systray code into a library
 
 ### TODO Features
 

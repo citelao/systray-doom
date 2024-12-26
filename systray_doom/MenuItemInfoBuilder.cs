@@ -1,3 +1,5 @@
+namespace systray_doom;
+
 using System.Runtime.InteropServices;
 using Windows.Win32.UI.WindowsAndMessaging;
 

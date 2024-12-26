@@ -1,3 +1,5 @@
+namespace systray_doom;
+
 using System.Runtime.InteropServices;
 
 public static partial class PInvokeDoom

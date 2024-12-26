@@ -1,3 +1,5 @@
+namespace systray_doom;
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Win32;
