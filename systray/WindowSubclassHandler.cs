@@ -13,7 +13,7 @@ public class WindowSubclassHandler
     // TODO: destructor
     public WindowSubclassHandler(HWND hwnd, WindowMessageHandler.WndProcDelegate wndProc)
     {
-        var originalWndProc = PInvoke.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
+        var originalWndProc = PInvokeSystray.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
         var originalWndProcDel = Marshal.GetDelegateForFunctionPointer<WNDPROC>(originalWndProc);
         _delegate = (hwnd, msg, wParam, lParam) =>
         {
@@ -22,10 +22,10 @@ public class WindowSubclassHandler
             {
                 return result.Value;
             }
-            return PInvoke.CallWindowProc(originalWndProcDel, hwnd, msg, wParam, lParam);
+            return PInvokeSystray.CallWindowProc(originalWndProcDel, hwnd, msg, wParam, lParam);
         };
 
-        var otherWndProc = PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
+        var otherWndProc = PInvokeSystray.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
         Debug.Assert(otherWndProc == originalWndProc);
     }
 }

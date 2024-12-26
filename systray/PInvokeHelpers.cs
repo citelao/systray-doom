@@ -23,7 +23,7 @@ public static class PInvokeHelpers
         return (int)(wParam >> 16);
     }
 
-    internal static void THROW_IF_FALSE(BOOL boolResult, string? message = null)
+    public static void THROW_IF_FALSE(BOOL boolResult, string? message = null)
     {
         if (!boolResult)
         {

@@ -105,7 +105,7 @@ public class TrayIconMessageBuilder
                 //
                 // https://stackoverflow.com/q/41649303/788168
                 // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicona#remarks
-                uVersion = PInvoke.NOTIFYICON_VERSION_4
+                uVersion = PInvokeSystray.NOTIFYICON_VERSION_4
             },
 
             // Unused

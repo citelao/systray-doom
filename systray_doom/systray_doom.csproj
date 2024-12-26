@@ -37,4 +37,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Systray\Systray.csproj" />
+  </ItemGroup>
 </Project>

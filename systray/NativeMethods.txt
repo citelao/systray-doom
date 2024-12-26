@@ -4,7 +4,6 @@ NOTIFY_ICON_DATA_FLAGS
 
 LoadIcon
 CreateIcon
-DestroyIcon
 IDI_*
 
 // Window fns
@@ -15,11 +14,6 @@ UpdateWindow
 AdjustWindowRectEx
 RegisterWindowMessage
 CREATESTRUCTW
-
-BeginPaint
-EndPaint
-CreateDispatcherQueueController
-ICompositorDesktopInterop
 
 CreateCompatibleDC
 SelectObject
@@ -66,7 +60,6 @@ CreatePopupMenu
 InsertMenuItem
 AppendMenu
 TrackPopupMenuEx
-DestroyMenu
 TRACK_POPUP_MENU_FLAGS
 
 CalculatePopupWindowPosition

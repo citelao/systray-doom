@@ -14,7 +14,7 @@ public class TrayIcon
         get { return _tooltip; }
     }
 
-    private HICON _icon = PInvoke.LoadIcon(HINSTANCE.Null, PInvoke.IDI_APPLICATION);
+    private HICON _icon = PInvokeSystray.LoadIcon(HINSTANCE.Null, PInvokeSystray.IDI_APPLICATION);
     public HICON Icon {
         set { SetIcon(value); }
         get { return _icon; }
@@ -39,7 +39,7 @@ public class TrayIcon
     private readonly WindowSubclassHandler? _windowSubclassHandler = null;
 
     // Fired if Explorer crashes & restarts, or if the primary display DPI changes.
-    private static readonly uint s_taskbarCreatedWindowMessage = PInvoke.RegisterWindowMessage("TaskbarCreated");
+    private static readonly uint s_taskbarCreatedWindowMessage = PInvokeSystray.RegisterWindowMessage("TaskbarCreated");
 
     public TrayIcon(Guid guid, HWND ownerHwnd, bool shouldHandleMessages = true, uint? callbackMessage = null)
     {
@@ -56,7 +56,7 @@ public class TrayIcon
             // Against: https://stackoverflow.com/questions/4406909/using-wm-user-wm-app-or-registerwindowmessage
             // For: http://www.flounder.com/messages.htm
             // See also: https://stackoverflow.com/questions/30843497/wm-user-vs-wm-app
-            callbackMessage ??= PInvoke.RegisterWindowMessage($"TrayIconMessage-{Guid}");
+            callbackMessage ??= PInvokeSystray.RegisterWindowMessage($"TrayIconMessage-{Guid}");
         }
         CallbackMessage = callbackMessage;
 
@@ -74,14 +74,14 @@ public class TrayIcon
             Icon = _icon,
             CallbackMessage = CallbackMessage,
         }.Build();
-        PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
-        PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
+        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
+        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
     }
 
     public void Focus()
     {
         // TODO: doesn't work?
-        PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(
+        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(
             NOTIFY_ICON_MESSAGE.NIM_SETFOCUS,
             new TrayIconMessageBuilder(guid: Guid).Build()));
     }
@@ -95,7 +95,7 @@ public class TrayIcon
                 var result = HandleCallbackMessage(hwnd, msg, wParam, lParam);
 
                 // Short-circuit the default window proc.
-                return result ?? PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
+                return result ?? PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam);
 
             case var tkwm when tkwm == s_taskbarCreatedWindowMessage:
                 // Fired if Explorer crashes & restarts, or if the primary
@@ -106,12 +106,12 @@ public class TrayIcon
 
                 // Re-create the icon.
                 var notificationIconData = new TrayIconMessageBuilder(guid: Guid).Build();
-                // PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
-                PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
+                // PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
+                PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
                 Create();
 
                 // Short-circuit the default window proc.
-                return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
+                return PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam);
         }
         return null;
     }
@@ -129,69 +129,69 @@ public class TrayIcon
         // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataa#:~:text=but%20the%20interpretation%20of%20the%20lParam%20and%20wParam%20parameters%20of%20that%20message%20is%20changed%20as%20follows%3A
         switch (ev)
         {
-            case PInvoke.WM_CONTEXTMENU:
+            case PInvokeSystray.WM_CONTEXTMENU:
                 // var pt = new Point(x, y);
-                // var client = PInvoke.ScreenToClient(hwnd, ref pt);
+                // var client = PInvokeSystray.ScreenToClient(hwnd, ref pt);
                 // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
                 return (ContextMenu?.Invoke(hwnd, x, y) ?? false) ? new LRESULT(0) : null;
 
-            case PInvoke.WM_MOUSEMOVE:
+            case PInvokeSystray.WM_MOUSEMOVE:
                 Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_LBUTTONDOWN:
+            case PInvokeSystray.WM_LBUTTONDOWN:
                 Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_LBUTTONUP:
+            case PInvokeSystray.WM_LBUTTONUP:
                 Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_LBUTTONDBLCLK:
+            case PInvokeSystray.WM_LBUTTONDBLCLK:
                 Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_RBUTTONDOWN:
+            case PInvokeSystray.WM_RBUTTONDOWN:
                 Console.WriteLine(Dim($"Tray icon right button down for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_RBUTTONUP:
+            case PInvokeSystray.WM_RBUTTONUP:
                 Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_MBUTTONDOWN:
+            case PInvokeSystray.WM_MBUTTONDOWN:
                 Console.WriteLine(Dim($"Tray icon middle button down for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.WM_MBUTTONUP:
+            case PInvokeSystray.WM_MBUTTONUP:
                 Console.WriteLine(Dim($"Tray icon middle button up for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.NIN_SELECT:
+            case PInvokeSystray.NIN_SELECT:
                 Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
                 return (Select?.Invoke(hwnd, x, y) ?? false) ? new LRESULT(0) : null;
 
-            case PInvoke.NIN_BALLOONSHOW:
+            case PInvokeSystray.NIN_BALLOONSHOW:
                 Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.NIN_BALLOONHIDE:
+            case PInvokeSystray.NIN_BALLOONHIDE:
                 Console.WriteLine(Dim($"Tray icon balloon hide for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.NIN_BALLOONTIMEOUT:
+            case PInvokeSystray.NIN_BALLOONTIMEOUT:
                 Console.WriteLine(Dim($"Tray icon balloon timeout for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.NIN_BALLOONUSERCLICK:
+            case PInvokeSystray.NIN_BALLOONUSERCLICK:
                 Console.WriteLine(Dim($"Tray icon balloon user click for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.NIN_POPUPOPEN:
+            case PInvokeSystray.NIN_POPUPOPEN:
                 Console.WriteLine(Dim($"Tray icon popup open for {iconId} ({x}, {y})."));
                 break;
 
-            case PInvoke.NIN_POPUPCLOSE:
+            case PInvokeSystray.NIN_POPUPCLOSE:
                 Console.WriteLine(Dim($"Tray icon popup close for {iconId} ({x}, {y})."));
                 break;
 
@@ -209,7 +209,7 @@ public class TrayIcon
         {
             Tooltip = newTip,
         }.Build();
-        if (!PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+        if (!PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
@@ -222,7 +222,7 @@ public class TrayIcon
         {
             Icon = newIcon,
         }.Build();
-        if (!PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+        if (!PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
