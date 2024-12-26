@@ -73,3 +73,5 @@ GetClientRect
 ScreenToClient
 PtInRect
 ClientToScreen
+
+HRESULT

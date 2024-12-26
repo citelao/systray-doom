@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -17,6 +18,7 @@ using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Systray;
 using systray_doom;
+using Windows.Graphics.DirectX;
 
 Console.WriteLine("Starting doom...");
 
@@ -190,7 +192,7 @@ unsafe
     {
         var wndClass = new WNDCLASSEXW
         {
-            // You need to include the size of this sWindows.Win32.UI.WindowsAndMessaging.truct.
+            // You need to include the size of this struct.
             cbSize = (uint)Marshal.SizeOf<WNDCLASSEXW>(),
 
             // Seems to work without this, but it seems sketchy to leave it out.
@@ -243,8 +245,15 @@ var options = new DispatcherQueueOptions()
 };
 PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
 var compositor = new Compositor();
-var interop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
-interop.CreateDesktopWindowTarget(hwnd, false, out var target);
+var desktopInterop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
+desktopInterop.CreateDesktopWindowTarget(hwnd, false, out var target);
+
+// auto-generate a factory
+var d3dDevice = CompositionHelpers.CreateDirect3DDevice();
+var d2dDevice = CompositionHelpers.GetD2DDevice(d3dDevice.Device, factory: null);
+
+var interop = compositor.As<ICompositorInterop>() ?? throw new InvalidOperationException("ICompositorInterop not supported.");
+interop.CreateGraphicsDevice(d2dDevice, out var graphicsDevice);
 
 var root = compositor.CreateContainerVisual();
 root.RelativeSizeAdjustment = Vector2.One;
@@ -261,6 +270,36 @@ target.Root = root;
 //     };
 //     app.Start();
 // });
+
+var drawingSurface = graphicsDevice.CreateDrawingSurface(
+    new Size { Width = 100, Height = 100 },
+    DirectXPixelFormat.B8G8R8A8UIntNormalized,
+    DirectXAlphaMode.Premultiplied
+);
+var drawingInterop = drawingSurface.As<ICompositionDrawingSurfaceInterop>() ?? throw new InvalidOperationException("ICompositionDrawingSurfaceInterop not supported.");
+unsafe {
+    System.Drawing.Point point = new System.Drawing.Point(0, 0);
+    Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
+    var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
+    drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
+
+    var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
+    context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
+
+    context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
+    context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 50, bottom = 50 }, brush);
+
+    drawingInterop.EndDraw();
+}
+
+// var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
+
+var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
+var d2dElement = compositor.CreateSpriteVisual();
+d2dElement.Brush = surfaceBrush;
+d2dElement.Size = new Vector2(100, 100);
+d2dElement.Offset = new Vector3(100, 100, 0);
+root.Children.InsertAtTop(d2dElement);
 
 var element = compositor.CreateSpriteVisual();
 var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };

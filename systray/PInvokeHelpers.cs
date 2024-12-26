@@ -32,4 +32,12 @@ public static class PInvokeHelpers
             throw new System.ComponentModel.Win32Exception(message);
         }
     }
+
+    public static void THROW_IF_FAILED(HRESULT result, string? message = null)
+    {
+        if (result < 0)
+        {
+            throw new System.ComponentModel.Win32Exception(message);
+        }
+    }
 }

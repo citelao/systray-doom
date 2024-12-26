@@ -20,6 +20,8 @@ BeginPaint
 EndPaint
 CreateDispatcherQueueController
 ICompositorDesktopInterop
+ICompositorInterop
+ICompositionDrawingSurfaceInterop
 
 CreateCompatibleDC
 SelectObject
@@ -80,3 +82,12 @@ GetClientRect
 ScreenToClient
 PtInRect
 ClientToScreen
+
+// Direct3D
+D3D11CreateDevice
+D3D11_SDK_VERSION
+
+ID2D1Factory
+ID2D1Factory1
+D2D1CreateFactory
+ID2D1Device
