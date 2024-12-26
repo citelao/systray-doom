@@ -274,6 +274,7 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
     },
     Select = (hwnd, x, y) =>
     {
+        // TODO: reactivate any window that has been covered.
         var isVisible = PInvoke.IsWindowVisible(hwnd);
         if (isVisible)
         {
