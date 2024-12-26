@@ -24,12 +24,15 @@ internal class TrayIcon
     public readonly HWND OwnerHwnd;
     public readonly uint? CallbackMessage = null;
 
-    // public delegate LRESULT? ContextMenuHandler(HWND hwnd, int x, int y);
-    // public ContextMenuHandler? ContextMenu;
+    // Return true to indicate that the message was handled.
+    public delegate bool ContextMenuHandler(HWND hwnd, int x, int y);
+    public ContextMenuHandler? ContextMenu;
+    public delegate bool SelectHandler(HWND hwnd, int x, int y);
+    public SelectHandler? Select;
     // public delegate LRESULT? MouseMoveHandler(HWND hwnd, int x, int y);
     // public MouseMoveHandler? MouseMove;
-    public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
-    public CallbackMessageHandlerDelegate? CallbackMessageHandler;
+    // public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+    // public CallbackMessageHandlerDelegate? CallbackMessageHandler;
 
     // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
     // owns the window proc delegate.
@@ -89,7 +92,7 @@ internal class TrayIcon
         {
             // https://stackoverflow.com/a/65642709/788168
             case var cb when cb == CallbackMessage:
-                var result = CallbackMessageHandler?.Invoke(hwnd, msg, wParam, lParam);
+                var result = HandleCallbackMessage(hwnd, msg, wParam, lParam);
 
                 // Short-circuit the default window proc.
                 return result ?? PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
@@ -110,6 +113,93 @@ internal class TrayIcon
                 // Short-circuit the default window proc.
                 return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
         }
+        return null;
+    }
+
+    // Parse & dispatch well-known messages.
+    private LRESULT? HandleCallbackMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
+    {
+        // Console.WriteLine("Tray icon message received.");
+        var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
+        var iconId = (uint)PInvokeHelpers.HIWORD(lParam.Value);
+        var x = PInvokeHelpers.GET_X_LPARAM(wParam.Value);
+        var y = PInvokeHelpers.GET_Y_LPARAM(wParam.Value);
+
+        // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicona#remarks
+        // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataa#:~:text=but%20the%20interpretation%20of%20the%20lParam%20and%20wParam%20parameters%20of%20that%20message%20is%20changed%20as%20follows%3A
+        switch (ev)
+        {
+            case PInvoke.WM_CONTEXTMENU:
+                // var pt = new Point(x, y);
+                // var client = PInvoke.ScreenToClient(hwnd, ref pt);
+                // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
+                return (ContextMenu?.Invoke(hwnd, x, y) ?? false) ? new LRESULT(0) : null;
+
+            case PInvoke.WM_MOUSEMOVE:
+                Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_LBUTTONDOWN:
+                Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_LBUTTONUP:
+                Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_LBUTTONDBLCLK:
+                Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_RBUTTONDOWN:
+                Console.WriteLine(Dim($"Tray icon right button down for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_RBUTTONUP:
+                Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_MBUTTONDOWN:
+                Console.WriteLine(Dim($"Tray icon middle button down for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.WM_MBUTTONUP:
+                Console.WriteLine(Dim($"Tray icon middle button up for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.NIN_SELECT:
+                Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
+                return (Select?.Invoke(hwnd, x, y) ?? false) ? new LRESULT(0) : null;
+
+            case PInvoke.NIN_BALLOONSHOW:
+                Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.NIN_BALLOONHIDE:
+                Console.WriteLine(Dim($"Tray icon balloon hide for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.NIN_BALLOONTIMEOUT:
+                Console.WriteLine(Dim($"Tray icon balloon timeout for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.NIN_BALLOONUSERCLICK:
+                Console.WriteLine(Dim($"Tray icon balloon user click for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.NIN_POPUPOPEN:
+                Console.WriteLine(Dim($"Tray icon popup open for {iconId} ({x}, {y})."));
+                break;
+
+            case PInvoke.NIN_POPUPCLOSE:
+                Console.WriteLine(Dim($"Tray icon popup close for {iconId} ({x}, {y})."));
+                break;
+
+            default:
+                Console.WriteLine(Dim($"Tray icon message: {ev}"));
+                break;
+        }
+
         return null;
     }
 
