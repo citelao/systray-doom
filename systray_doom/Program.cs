@@ -33,6 +33,8 @@ Console.WriteLine(Dim($"Testing Rust connection: {i == 42} ({i})"));
 PInvokeHelpers.THROW_IF_FALSE(PInvoke.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
 
 const string WindowClassName = "SimpleSystrayWindow";
+
+// TODO: WM_APP+1?
 var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 
 // Use the variable style function here to get easy access to the full function
@@ -169,7 +171,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
                 // TODO: doesn't work.
-                PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
+                trayIcon.Focus();
             }
             PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
