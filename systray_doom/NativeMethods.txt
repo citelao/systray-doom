@@ -49,6 +49,8 @@ GetSystemMetrics
 SYSTEM_METRICS_INDEX
 
 SetForegroundWindow
+GetForegroundWindow
+IsWindowVisible
 DestroyWindow
 PostQuitMessage
 

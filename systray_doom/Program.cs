@@ -274,8 +274,18 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
     },
     Select = (hwnd, x, y) =>
     {
-        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
-        PInvoke.SetForegroundWindow(hwnd);
+        var isVisible = PInvoke.IsWindowVisible(hwnd);
+        if (isVisible)
+        {
+            // Send minimize message.
+            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_MINIMIZE);
+        }
+        else
+        {
+            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+            PInvoke.SetForegroundWindow(hwnd);
+        }
+
         return true;
     },
 };
