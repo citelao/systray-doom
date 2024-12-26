@@ -31,6 +31,8 @@ internal class TrayIcon
     public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
     public CallbackMessageHandlerDelegate? CallbackMessageHandler;
 
+    // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
+    // owns the window proc delegate.
     private readonly WindowSubclassHandler? _windowSubclassHandler = null;
 
     // Fired if Explorer crashes & restarts, or if the primary display DPI changes.
@@ -69,24 +71,9 @@ internal class TrayIcon
             Icon = _icon,
             CallbackMessage = CallbackMessage,
         }.Build();
-        // PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
         PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
     }
-
-    // public bool TryCreate()
-    // {
-    //     try
-    //     {
-    //         Create();
-    //         return true;
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         // Console.Error.WriteLine($"Failed to create tray icon: {ex.Message}");
-    //         return false;
-    //     }
-    // }
 
     public void Focus()
     {
@@ -128,11 +115,6 @@ internal class TrayIcon
 
     private void SetTooltip(string newTip)
     {
-        // if (!TryCreate())
-        // {
-        //     return;
-        // }
-
         var notificationIconData = new TrayIconMessageBuilder(guid: Guid)
         {
             Tooltip = newTip,
@@ -144,14 +126,8 @@ internal class TrayIcon
         _tooltip = newTip;
     }
 
-    // TODO: hangs if called when explorer has crashed (or the icon has been removed)
     private void SetIcon(HICON newIcon)
     {
-        // if (!TryCreate())
-        // {
-        //     return;
-        // }
-
         var notificationIconData = new TrayIconMessageBuilder(guid: Guid)
         {
             Icon = newIcon,
