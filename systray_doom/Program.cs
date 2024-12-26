@@ -198,6 +198,10 @@ unsafe
 
             // Required to identify the window class in CreateWindowEx.
             lpszClassName = pClassName,
+
+            // If you don't set this, the cursor in the window will be whatever
+            // it was before entering the window.
+            hCursor = PInvoke.LoadCursor(default, PInvoke.IDC_ARROW),
         };
 
         // We ignore the returned class atom & use the class name directly.
