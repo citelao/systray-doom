@@ -67,6 +67,22 @@ internal class Doom
 
     unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
     {
+        try
+        {
+            DrawFrameInternal(frame, xres, yres);
+        }
+        catch (Exception e)
+        {
+            // Best-effort. Any exceptions here will disappear.
+            //
+            // Particularly: setting TrayIcon.Icon will throw if explorer has
+            // crashed (e.g. there's no icon).
+            Console.Error.WriteLine($"Error in DrawFrame: {e}");
+        }
+    }
+
+    unsafe void DrawFrameInternal(UInt32* frame, nint xres, nint yres)
+    {
         if (_cts.Token.IsCancellationRequested)
         {
             return;
@@ -142,9 +158,7 @@ internal class Doom
 
         pinnedArray.Free();
 
-        // Console.WriteLine("DrawFrame");
         TrayIcon.Icon = icon;
-        // Console.WriteLine("DrawFrame complete");
 
         _lastRgbaFrame = rgbaPixelArray;
 
@@ -169,6 +183,19 @@ internal class Doom
     }
 
     unsafe void SetWindowTitle(byte* title, nint size)
+    {
+        try
+        {
+            SetWindowTitleInternal(title, size);
+        }
+        catch (Exception e)
+        {
+            // Best-effort. Any exceptions here will disappear.
+            Console.Error.WriteLine($"Error in SetWindowTitle: {e}");
+        }
+    }
+
+    unsafe void SetWindowTitleInternal(byte* title, nint size)
     {
         if (_cts.Token.IsCancellationRequested)
         {
