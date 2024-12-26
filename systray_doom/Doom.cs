@@ -7,12 +7,13 @@ using Windows.Win32.UI.Shell;
 
 // TODO: this is secretly a static singleton class. It would be nice to
 // generalize it.
-public class Doom
+internal class Doom
 {
-    private static CancellationTokenSource _cts = new CancellationTokenSource();
-    private static byte[]? _lastRgbaFrame = null;
-    private static HICON _lastIcon = HICON.Null;
+    private readonly CancellationTokenSource _cts = new();
+    private byte[]? _lastRgbaFrame = null;
+    private HICON _lastIcon = HICON.Null;
 
+    public readonly TrayIcon TrayIcon;
 
     // Console.WriteLine($"DrawFrame: {xres}x{yres}");
     // var desiredSizePx = (height: 200, width: 200);
@@ -21,7 +22,7 @@ public class Doom
     // var desiredSizePx = (height: (int)yres, width: (int)xres);
     public static readonly (int width, int height) DesiredSizePx = (320, 320);
 
-    public static byte[]? LastRgbaFrame
+    public byte[]? LastRgbaFrame
     {
         get
         {
@@ -29,7 +30,7 @@ public class Doom
         }
     }
 
-    internal static HICON LastIcon
+    internal HICON LastIcon
     {
         get
         {
@@ -37,7 +38,12 @@ public class Doom
         }
     }
 
-    public static Task RunAsync()
+    public Doom(TrayIcon trayIcon)
+    {
+        TrayIcon = trayIcon;
+    }
+
+    public Task RunAsync()
     {
         return Task.Run(() => {
             unsafe
@@ -53,12 +59,13 @@ public class Doom
         }, _cts.Token);
     }
 
-    public static void Stop()
+    public void Stop()
     {
+        Console.WriteLine("Stopping Doom");
         _cts.Cancel();
     }
 
-    static unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
+    unsafe void DrawFrame(UInt32* frame, nint xres, nint yres)
     {
         if (_cts.Token.IsCancellationRequested)
         {
@@ -135,15 +142,9 @@ public class Doom
 
         pinnedArray.Free();
 
-        // trayIcon.Icon = icon;
-        var notificationIconData = new TrayIconMessageBuilder(guid: Constants.SystrayGuid)
-        {
-            Icon = icon,
-        }.Build();
-        if (!PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
-        {
-            throw new Exception("Failed to modify icon in the notification area.");
-        }
+        // Console.WriteLine("DrawFrame");
+        TrayIcon.Icon = icon;
+        // Console.WriteLine("DrawFrame complete");
 
         _lastRgbaFrame = rgbaPixelArray;
 
@@ -156,7 +157,7 @@ public class Doom
         _lastIcon = icon;
     }
 
-    static unsafe PInvokeDoom.CKeyData* KeyCallback()
+    unsafe PInvokeDoom.CKeyData* KeyCallback()
     {
         if (_cts.Token.IsCancellationRequested)
         {
@@ -167,7 +168,7 @@ public class Doom
         return null;
     }
 
-    static unsafe void SetWindowTitle(byte* title, nint size)
+    unsafe void SetWindowTitle(byte* title, nint size)
     {
         if (_cts.Token.IsCancellationRequested)
         {
@@ -177,13 +178,6 @@ public class Doom
         var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
         Console.WriteLine($"SetWindowTitle: {titleString}");
 
-        var notificationIconData = new TrayIconMessageBuilder(guid: Constants.SystrayGuid)
-        {
-            Tooltip = titleString,
-        }.Build();
-        if (!PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
-        {
-            throw new Exception("Failed to modify icon in the notification area.");
-        }
+        TrayIcon.Tooltip = titleString;
     }
 }

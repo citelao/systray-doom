@@ -42,6 +42,7 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 
 // Forward declare
 TrayIcon trayIcon = null!;
+Doom doom = null!;
 
 bool TryDisplayContextMenu(HWND hwnd, int x, int y)
 {
@@ -108,7 +109,7 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
         else if (response == 4)
         {
             // Exit
-            Doom.Stop();
+            doom.Stop();
             PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
         }
 
@@ -353,7 +354,8 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
     }
 };
 
-var doomTask = Doom.RunAsync();
+doom = new Doom(trayIcon);
+var doomTask = doom.RunAsync();
 
 // TODO: we can't use LoadedImageSurface because it's XAML.
 // https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.loadedimagesurface?view=winrt-26100
