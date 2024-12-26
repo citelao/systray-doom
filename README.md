@@ -26,10 +26,12 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 
 * [ ] Upgrade to a newer commit of Doomgeneric (specifically, one after the [sound commit](https://github.com/ozkl/doomgeneric/commit/d0946b46cf617467f014a25e264fd952698a13f9))
 * [ ] Automatically build the Rust bindings before building & launching the C#.
-* [ ] Deploy the Rust DLL alongisde the C# so that you can run `dotnet run` anywhere.
+* [ ] Deploy the Rust DLL alongside the C# so that you can run `dotnet run` anywhere.
+* [ ] Support AnyCPU target
+* [ ] Split off systray code into a library
 
 ### TODO Features
 
 * [ ] Double-click to show full window
-* [ ] Right-click menu
+* [x] Right-click menu
 * [ ] Click to play/pause(?) (invisible input window to play?)

@@ -68,18 +68,19 @@ public class TrayIconMessageBuilder
             // Required. You need to include the size of this struct.
             cbSize = (uint)Marshal.SizeOf<NOTIFYICONDATAW>(),
 
-            // Required. An HWND is required to register the icon with the system.
-            // Window messages go there.
+            // Required (for ADD). An HWND is required to register the icon with
+            // the system. Window messages go there.
             hWnd = HWND ?? default,
 
             // Required. Indicates which of the other members contain valid data.
             // NIF_TIP and NIF_SHOWTIP are only required if you want to use szTip.
             uFlags = flags,
 
-            // Basically required. The WM to use for tray icon messages.
+            // Basically required  (for ADD). The WM to use for tray icon
+            // messages.
             uCallbackMessage = CallbackMessage ?? 0,
 
-            // Required. The icon to display.
+            // Required (for ADD). The icon to display.
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadicona
             // https://learn.microsoft.com/en-us/windows/win32/menurc/about-icons
             hIcon = Icon,
