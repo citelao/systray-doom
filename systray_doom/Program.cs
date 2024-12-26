@@ -15,6 +15,7 @@ using WinRT;
 using System.Numerics;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+using Systray;
 
 Console.WriteLine("Starting doom...");
 

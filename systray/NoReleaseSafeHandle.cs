@@ -1,3 +1,5 @@
+namespace Systray;
+
 using System.Runtime.InteropServices;
 
 // CsWin32 loves SafeHandles params in the safe wrappers it generates (rather

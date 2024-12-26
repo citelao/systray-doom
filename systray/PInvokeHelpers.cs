@@ -1,3 +1,5 @@
+namespace Systray;
+
 using Windows.Win32.Foundation;
 
 public static class PInvokeHelpers

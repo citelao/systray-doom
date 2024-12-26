@@ -4,6 +4,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using Windows.Win32.UI.Shell;
+using Systray;
 
 // TODO: this is secretly a static singleton class. It would be nice to
 // generalize it.

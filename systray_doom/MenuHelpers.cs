@@ -2,6 +2,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using Windows.Win32;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
+using Systray;
 
 // This is not a trustworthy class. Internal only.
 internal class MenuHelpers
