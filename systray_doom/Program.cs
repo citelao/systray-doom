@@ -40,6 +40,9 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 //     return WndProc(hwnd, msg, wParam, lParam);
 // };
 
+// Forward declare
+TrayIcon trayIcon = null!;
+
 bool TryDisplayContextMenu(HWND hwnd, int x, int y)
 {
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
@@ -111,7 +114,7 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
 
         // TODO: return focus to systray after dismissing the menu. This line
         // doesn't work:
-        PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETFOCUS, new TrayIconMessageBuilder(guid: Constants.SystrayGuid).Build()));
+        trayIcon.Focus();
     }
     finally
     {
@@ -267,6 +270,11 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 // https://learn.microsoft.com/en-us/windows/win32/shell/taskbar#taskbar-creation-notification
                 Console.WriteLine(Dim("Taskbar created message received."));
                 // TODO: recreate icon.
+                //
+                // Notes: it's clear that the Shell_NotifyIcon itself cannot be
+                // the source of truth, since it disappears if Explorer crashes
+                // (and I don't believe you can read any data from it). So we
+                // need a proxy if we want a reliable icon.
             }
             else
             {
@@ -358,7 +366,7 @@ element.Brush = compositor.CreateColorBrush(color);
 element.Size = new Vector2(100, 100);
 root.Children.InsertAtTop(element);
 
-var trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
+trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, trayIconMessage)
 {
     Tooltip = "Hello, Windows!"
 };

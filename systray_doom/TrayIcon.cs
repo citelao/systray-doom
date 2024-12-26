@@ -45,6 +45,14 @@ internal class TrayIcon
         }
     }
 
+    public void Focus()
+    {
+        // TODO: doesn't work?
+        PInvokeHelpers.THROW_IF_FALSE(PInvoke.Shell_NotifyIcon(
+            NOTIFY_ICON_MESSAGE.NIM_SETFOCUS,
+            new TrayIconMessageBuilder(guid: Guid).Build()));
+    }
+
     private void SetTooltip(string newTip)
     {
         var notificationIconData = new TrayIconMessageBuilder(guid: Guid)
