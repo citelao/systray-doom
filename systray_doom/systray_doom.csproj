@@ -30,6 +30,12 @@
     <MSBuild Condition=" '$(Platform)' == 'x86' " Projects="$(MSBuildProjectFile)" Properties="Platform=x64;PlatFormTarget=x64" RunEachTargetSeparately="true" />
   </Target>
 
+  <!-- Build Rust -->
+  <Target Name="BuildRustBindings" BeforeTargets="Build">
+    <Exec Command="cargo build --manifest-path ../rust_bindings/Cargo.toml" />
+    <Copy SourceFiles="../rust_bindings/target/debug/systray_doom_bindings.dll" DestinationFolder="$(OutputPath)" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="crayon" Version="2.0.69" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
