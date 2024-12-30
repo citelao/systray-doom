@@ -1,0 +1,15 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemGroup>
+        <Compile Include="src\**\*.rs" />
+    </ItemGroup>
+    <!-- https://www.reddit.com/r/dotnet/comments/k0ml1w/comment/gdqgos7/ -->
+    <Target Name="Build"
+        Inputs="@(Compile);cargo.toml;cargo.lock"
+        Outputs="build$(Configuration)\foo.dll">
+        <PropertyGroup>
+            <CargoBuildCommand Condition="'$(Configuration)' == 'Release'">cargo build -r</CargoBuildCommand>
+            <CargoBuildCommand Condition="'$(Configuration)' != 'Release'">cargo build</CargoBuildCommand>
+        </PropertyGroup>
+        <Exec Command="$(CargoBuildCommand)" />
+    </Target>
+</Project>
