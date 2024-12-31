@@ -394,18 +394,29 @@ doom.FrameDrawn += async (rgbaFrame) =>
         {
             Console.WriteLine("Frame drawing...");
             // Console.WriteLine($"First pixel: {rgbaFrame[0]} {rgbaFrame[1]} {rgbaFrame[2]} {rgbaFrame[3]}");
-            System.Drawing.Point point = new System.Drawing.Point(0, 0);
+
+            // Drawing seems to be double-buffered; we get an offset to draw to
+            // the correct point.
+            System.Drawing.Point offset = new System.Drawing.Point(0, 0);
+
             Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
             var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
-            drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
+            drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &offset);
+            Console.WriteLine($"BeginDraw: {offset.X} {offset.Y}");
 
             var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
-            // context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = frameA ? 0 : 1, a = 1 });
+            context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = frameA ? 0 : 1, a = 1 });
             frameA = !frameA;
 
-            // Test rect.
+            // Test rect. Make sure to factor in the offset, since
+            // double-buffering means we use different parts of the surface.
             context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = frameA ? 0 : 1, a = 1 }, null, out var brush);
-            context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
+            context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { 
+                left = offset.X,
+                top = offset.Y,
+                right = offset.X + 10,
+                bottom = offset.Y + 10
+            }, brush);
 
             // var bitmap = CreateBitmapFromFrame(context, rgbaFrame, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
 
