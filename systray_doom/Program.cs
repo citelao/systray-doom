@@ -135,6 +135,54 @@ bool TryDisplayContextMenu(HWND hwnd, int x, int y)
     return false;
 }
 
+// https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
+var options = new DispatcherQueueOptions()
+{
+    dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
+    apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
+    threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
+};
+PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
+var compositor = new Compositor();
+var desktopInterop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
+
+var d3dDevice = CompositionHelpers.CreateDirect3DDevice();
+var d2dDevice = CompositionHelpers.GetD2DDevice(d3dDevice.Device, factory: null);
+
+var interop = compositor.As<ICompositorInterop>() ?? throw new InvalidOperationException("ICompositorInterop not supported.");
+interop.CreateGraphicsDevice(d2dDevice, out var graphicsDevice);
+
+var root = compositor.CreateContainerVisual();
+root.RelativeSizeAdjustment = Vector2.One;
+root.Offset = new Vector3(0, 0, 0);
+
+// Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
+// {
+//     var app = new Microsoft.UI.Xaml.Application();
+//     app.OnLaunched += (s, e) =>
+//     {
+//         var window = new Microsoft.UI.Xaml.Window();
+//         window.Activate();
+//     };
+//     app.Start();
+// });
+
+var drawingSurface = graphicsDevice.CreateDrawingSurface(
+    new Size { Width = 320, Height = 320 },
+    DirectXPixelFormat.B8G8R8A8UIntNormalized,
+    DirectXAlphaMode.Premultiplied
+);
+var drawingInterop = drawingSurface.As<ICompositionDrawingSurfaceInterop>() ?? throw new InvalidOperationException("ICompositionDrawingSurfaceInterop not supported.");
+Windows.Graphics.SizeInt32 windowSize = new() { Width = 320, Height = 320 };
+
+void UpdateDrawingSurfaceSize(ICompositionDrawingSurfaceInterop drawingInterop, int width, int height)
+{
+    var newSize = new Windows.Graphics.SizeInt32 { Width = width, Height = height };
+    var theSIZE = new Windows.Win32.Foundation.SIZE(width, height);
+    drawingInterop.Resize(theSIZE);
+    windowSize = newSize;
+}
+
 var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 {
     switch (msg)
@@ -178,8 +226,9 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             {
                 var width = PInvokeHelpers.LOWORD(lParam);
                 var height = PInvokeHelpers.HIWORD(lParam);
+                UpdateDrawingSurfaceSize(drawingInterop, (int)width, (int)height);
                 var newSize = new Windows.Graphics.SizeInt32 { Width = (int)width, Height = (int)height };
-                Console.WriteLine($"Resizing to {newSize}");
+                Console.WriteLine($"Resizing to {newSize.Width}x{newSize.Height}");
             }
             PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
@@ -242,46 +291,8 @@ unsafe
     );
 }
 
-// https://github.com/microsoft/CsWin32/blob/58e949951dbcba2a84a35158bb10ff89beb2300d/test/WinRTInteropTest/CompositionHost.cs#L84
-var options = new DispatcherQueueOptions()
-{
-    dwSize = (uint)Marshal.SizeOf<DispatcherQueueOptions>(),
-    apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
-    threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT,
-};
-PInvoke.CreateDispatcherQueueController(options, out var controller).ThrowOnFailure();
-var compositor = new Compositor();
-var desktopInterop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
 desktopInterop.CreateDesktopWindowTarget(hwnd, false, out var target);
-
-var d3dDevice = CompositionHelpers.CreateDirect3DDevice();
-var d2dDevice = CompositionHelpers.GetD2DDevice(d3dDevice.Device, factory: null);
-
-var interop = compositor.As<ICompositorInterop>() ?? throw new InvalidOperationException("ICompositorInterop not supported.");
-interop.CreateGraphicsDevice(d2dDevice, out var graphicsDevice);
-
-var root = compositor.CreateContainerVisual();
-root.RelativeSizeAdjustment = Vector2.One;
-root.Offset = new Vector3(0, 0, 0);
 target.Root = root;
-
-// Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
-// {
-//     var app = new Microsoft.UI.Xaml.Application();
-//     app.OnLaunched += (s, e) =>
-//     {
-//         var window = new Microsoft.UI.Xaml.Window();
-//         window.Activate();
-//     };
-//     app.Start();
-// });
-
-var drawingSurface = graphicsDevice.CreateDrawingSurface(
-    new Size { Width = 400, Height = 400 },
-    DirectXPixelFormat.B8G8R8A8UIntNormalized,
-    DirectXAlphaMode.Premultiplied
-);
-var drawingInterop = drawingSurface.As<ICompositionDrawingSurfaceInterop>() ?? throw new InvalidOperationException("ICompositionDrawingSurfaceInterop not supported.");
 
 // TODO: generalize for other pixel formats.
 static Windows.Win32.Graphics.Direct2D.ID2D1Bitmap1 CreateBitmapFromFrame(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext context, byte[] rgbaFrame, int width, int height)
@@ -375,10 +386,35 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
                             context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
 
                             var bitmap = CreateBitmapFromFrame(context, pinned, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
-                            var rect2 = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 10, top = 10, right = 330, bottom = 330 };
+
+                            // Calculate the aspect ratio and adjust the render rectangle
+                            var aspectRatio = (double)Doom.DesiredSizePx.width / Doom.DesiredSizePx.height;
+                            var renderWidth = windowSize.Width;
+                            var renderHeight = (int)((double)windowSize.Width / aspectRatio);
+                            if (renderHeight > windowSize.Height)
+                            {
+                                renderHeight = windowSize.Height;
+                                renderWidth = (int)((double)windowSize.Height * aspectRatio);
+                            }
+
+                            // Limit to 320 in either direction
+                            if (renderWidth > 320)
+                            {
+                                renderWidth = 320;
+                                renderHeight = (int)(320 / aspectRatio);
+                            }
+                            if (renderHeight > 320)
+                            {
+                                renderHeight = 320;
+                                renderWidth = (int)(320 * aspectRatio);
+                            }
+
+                            // Console.WriteLine($"Render size: {renderWidth}x{renderHeight}");
+                            var renderBitmapRect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = renderWidth, bottom = renderHeight };
+
                             context.DrawBitmap(
                                 bitmap,
-                                &rect2,
+                                &renderBitmapRect,
                                 1.0f,
                                 Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
                         }
