@@ -343,40 +343,45 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
         }
         else
         {
-            unsafe {
-                System.Drawing.Point point = new System.Drawing.Point(0, 0);
-                Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
-                var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
-                drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
-
-                var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
-                context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
-
-                // Test rect.
-                context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
-                context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
-
-                var bitmap = CreateBitmapFromFrame(context, doom.LastRgbaFrame!, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
-                var rect2 = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 10, top = 10, right = 330, bottom = 330 };
-                context.DrawBitmap(
-                    bitmap,
-                    &rect2,
-                    1.0f,
-                    Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
-
-                drawingInterop.EndDraw();
-            }
-
             // var r = 0.0f;
             // 
-            // Task.Run(async () => {
-            //     while (true)
-            //     {
-            //         await Task.Delay(1000 / 60);
-            //         Console.WriteLine("Drawing frame...");
+            Task.Run(async () => {
+                while (true)
+                {
+                    await Task.Delay(1000 / 60);
+                    // Console.WriteLine("Drawing frame...");
 
-            //     }
-            // });
+                    unsafe {
+                        var pinned = doom.LastRgbaFrame;
+                        if (pinned != null)
+                        {
+
+                            System.Drawing.Point point = new System.Drawing.Point(0, 0);
+                            Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
+                            var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
+                            drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
+
+                            var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
+                            context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
+
+                            // Test rect.
+                            context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
+                            context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
+
+                            var bitmap = CreateBitmapFromFrame(context, pinned, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
+                            var rect2 = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 10, top = 10, right = 330, bottom = 330 };
+                            context.DrawBitmap(
+                                bitmap,
+                                &rect2,
+                                1.0f,
+                                Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+                        }
+
+
+                        drawingInterop.EndDraw();
+                    }
+                }
+            });
 
 
             // var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
