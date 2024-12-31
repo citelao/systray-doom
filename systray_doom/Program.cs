@@ -248,7 +248,6 @@ var compositor = new Compositor();
 var desktopInterop = compositor.As<ICompositorDesktopInterop>() ?? throw new InvalidOperationException("ICompositorDesktopInterop not supported.");
 desktopInterop.CreateDesktopWindowTarget(hwnd, false, out var target);
 
-// auto-generate a factory
 var d3dDevice = CompositionHelpers.CreateDirect3DDevice();
 var d2dDevice = CompositionHelpers.GetD2DDevice(d3dDevice.Device, factory: null);
 
@@ -272,40 +271,12 @@ target.Root = root;
 // });
 
 var drawingSurface = graphicsDevice.CreateDrawingSurface(
-    new Size { Width = 100, Height = 100 },
+    new Size { Width = 400, Height = 400 },
     DirectXPixelFormat.B8G8R8A8UIntNormalized,
     DirectXAlphaMode.Premultiplied
 );
 var drawingInterop = drawingSurface.As<ICompositionDrawingSurfaceInterop>() ?? throw new InvalidOperationException("ICompositionDrawingSurfaceInterop not supported.");
-unsafe {
-    System.Drawing.Point point = new System.Drawing.Point(0, 0);
-    Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
-    var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
-    drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
 
-    var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
-    context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
-
-    context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
-    context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 50, bottom = 50 }, brush);
-
-    drawingInterop.EndDraw();
-}
-
-// var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
-
-var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
-var d2dElement = compositor.CreateSpriteVisual();
-d2dElement.Brush = surfaceBrush;
-d2dElement.Size = new Vector2(100, 100);
-d2dElement.Offset = new Vector3(100, 100, 0);
-root.Children.InsertAtTop(d2dElement);
-
-var element = compositor.CreateSpriteVisual();
-var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
-element.Brush = compositor.CreateColorBrush(color);
-element.Size = new Vector2(100, 100);
-root.Children.InsertAtTop(element);
 
 trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMessage)
 {
@@ -326,6 +297,87 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
         }
         else
         {
+            unsafe {
+                System.Drawing.Point point = new System.Drawing.Point(0, 0);
+                Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
+                var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
+                drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
+
+                var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
+                context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
+
+                // pinned doom.LastRgbaFrame
+                fixed (byte* pRgbaFrame = doom.LastRgbaFrame)
+                {
+                    // var bitmapData = new Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_DATA
+                    // {
+                    //     pixelFormat = new Windows.Win32.Graphics.Direct2D.Common.D2D1_PIXEL_FORMAT
+                    //     {
+                    //         format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
+                    //         alphaMode = Windows.Win32.Graphics.Direct2D.Common.D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
+                    //     },
+                    //     stride = Doom.DesiredSizePx.width * 4,
+                    //     pixelSize = 4,
+                    //     buffer = (IntPtr)pRgbaFrame,
+                    //     bufferSize = (uint)Doom.DesiredSizePx.width * Doom.DesiredSizePx.height * 4,
+                    // };
+                    // context.CreateBitmapFromDxgiSurface(drawingSurface, bitmapData, out var bitmap);
+
+                    context.CreateBitmap(
+                        new Windows.Win32.Graphics.Direct2D.Common.D2D_SIZE_U { width = 100, height = 100 },
+                        pRgbaFrame,
+                        4,
+                        new Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_PROPERTIES1
+                        {
+                            pixelFormat = new Windows.Win32.Graphics.Direct2D.Common.D2D1_PIXEL_FORMAT
+                            {
+                                format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+                                // format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
+                                alphaMode = Windows.Win32.Graphics.Direct2D.Common.D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
+                            },
+                            bitmapOptions = Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_TARGET, // |
+                                // Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+                            colorContext = null,
+                        },
+                        out var bitmap);
+
+                    var rect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 10, top = 10, right = 40, bottom = 40 };
+                    context.DrawBitmap(
+                        bitmap,
+                        &rect,
+                        1.0f,
+                        Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+                }
+
+                context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
+                context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 80, bottom = 80 }, brush);
+
+                drawingInterop.EndDraw();
+            }
+
+            // var r = 0.0f;
+            // 
+            // Task.Run(async () => {
+            //     while (true)
+            //     {
+            //         await Task.Delay(1000 / 60);
+            //         Console.WriteLine("Drawing frame...");
+
+            //     }
+            // });
+
+
+            // var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
+
+            var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
+            var d2dElement = compositor.CreateSpriteVisual();
+            d2dElement.Brush = surfaceBrush;
+            d2dElement.Size = new Vector2(100, 100);
+            d2dElement.Offset = new Vector3(100, 100, 0);
+            root.Children.InsertAtTop(d2dElement);
+
+
+
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
             PInvoke.SetForegroundWindow(hwnd);
         }
@@ -336,6 +388,12 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
 
 doom = new Doom(trayIcon);
 var doomTask = doom.RunAsync();
+
+var element = compositor.CreateSpriteVisual();
+var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
+element.Brush = compositor.CreateColorBrush(color);
+element.Size = new Vector2(100, 100);
+root.Children.InsertAtTop(element);
 
 // TODO: we can't use LoadedImageSurface because it's XAML.
 // https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.loadedimagesurface?view=winrt-26100

@@ -31,8 +31,11 @@
   </Target>
 
   <!-- Build Rust -->
-  <Target Name="BuildRustBindings" BeforeTargets="Build">
+  <Target Name="BuildRustBindings" BeforeTargets="Build" Condition="!Exists('$(OutputPath)systray_doom_bindings.dll')">
     <Exec Command="cargo build --manifest-path ../rust_bindings/Cargo.toml" />
+  </Target>
+
+  <Target Name="CopyRustBindings" AfterTargets="BuildRustBindings" Condition="Exists('../rust_bindings/target/debug/systray_doom_bindings.dll')" Outputs="$(OutputPath)systray_doom_bindings.dll">
     <Copy SourceFiles="../rust_bindings/target/debug/systray_doom_bindings.dll" DestinationFolder="$(OutputPath)" />
   </Target>
 
