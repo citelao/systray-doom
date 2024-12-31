@@ -380,17 +380,17 @@ doom.FrameDrawn += async (rgbaFrame) =>
 {
     unsafe
     {
-        Console.WriteLine("Frame drawing...");
+        // Console.WriteLine("Frame drawing...");
         // Console.WriteLine($"First pixel: {rgbaFrame[0]} {rgbaFrame[1]} {rgbaFrame[2]} {rgbaFrame[3]}");
 
-        // Drawing seems to be double-buffered; we get an offset to draw to
+        // Drawing seems to be double-buffered (or more!); we get an offset to draw to
         // the correct point.
         System.Drawing.Point offset = new System.Drawing.Point(0, 0);
 
         Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
         var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
         drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &offset);
-        Console.WriteLine($"BeginDraw: {offset.X} {offset.Y}");
+        // Console.WriteLine($"BeginDraw: {offset.X} {offset.Y}");
 
         var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
         context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
@@ -444,7 +444,7 @@ doom.FrameDrawn += async (rgbaFrame) =>
             Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
 
         drawingInterop.EndDraw();
-        Console.WriteLine("Frame drawn.");
+        // Console.WriteLine("Frame drawn.");
     }
 };
 
