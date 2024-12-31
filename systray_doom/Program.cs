@@ -417,10 +417,9 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
                                 &renderBitmapRect,
                                 1.0f,
                                 Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+
+                            drawingInterop.EndDraw();
                         }
-
-
-                        drawingInterop.EndDraw();
                     }
                 }
             });
