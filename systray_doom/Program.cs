@@ -418,38 +418,43 @@ doom.FrameDrawn += async (rgbaFrame) =>
                 bottom = offset.Y + 10
             }, brush);
 
-            // var bitmap = CreateBitmapFromFrame(context, rgbaFrame, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
+            var bitmap = CreateBitmapFromFrame(context, rgbaFrame, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
 
-            // // Calculate the aspect ratio and adjust the render rectangle
-            // var aspectRatio = (double)Doom.DesiredSizePx.width / Doom.DesiredSizePx.height;
-            // var renderWidth = windowSize.Width;
-            // var renderHeight = (int)((double)windowSize.Width / aspectRatio);
-            // if (renderHeight > windowSize.Height)
-            // {
-            //     renderHeight = windowSize.Height;
-            //     renderWidth = (int)((double)windowSize.Height * aspectRatio);
-            // }
+            // Calculate the aspect ratio and adjust the render rectangle
+            var aspectRatio = (double)Doom.DesiredSizePx.width / Doom.DesiredSizePx.height;
+            var renderWidth = windowSize.Width;
+            var renderHeight = (int)((double)windowSize.Width / aspectRatio);
+            if (renderHeight > windowSize.Height)
+            {
+                renderHeight = windowSize.Height;
+                renderWidth = (int)((double)windowSize.Height * aspectRatio);
+            }
 
-            // // Limit to 320 in either direction
-            // if (renderWidth > 320)
-            // {
-            //     renderWidth = 320;
-            //     renderHeight = (int)(320 / aspectRatio);
-            // }
-            // if (renderHeight > 320)
-            // {
-            //     renderHeight = 320;
-            //     renderWidth = (int)(320 * aspectRatio);
-            // }
+            // Limit to 320 in either direction
+            if (renderWidth > 320)
+            {
+                renderWidth = 320;
+                renderHeight = (int)(320 / aspectRatio);
+            }
+            if (renderHeight > 320)
+            {
+                renderHeight = 320;
+                renderWidth = (int)(320 * aspectRatio);
+            }
 
-            // // Console.WriteLine($"Render size: {renderWidth}x{renderHeight}");
-            // var renderBitmapRect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = renderWidth, bottom = renderHeight };
+            // Console.WriteLine($"Render size: {renderWidth}x{renderHeight}");
+            var renderBitmapRect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F {
+                left = offset.X,
+                top = offset.Y,
+                right = offset.X + renderWidth,
+                bottom = offset.Y + renderHeight
+            };
 
-            // context.DrawBitmap(
-            //     bitmap,
-            //     &renderBitmapRect,
-            //     1.0f,
-            //     Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+            context.DrawBitmap(
+                bitmap,
+                &renderBitmapRect,
+                1.0f,
+                Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
 
             drawingInterop.EndDraw();
             Console.WriteLine("Frame drawn.");
