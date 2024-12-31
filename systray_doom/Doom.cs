@@ -113,6 +113,7 @@ internal class Doom
         );
 
         var rgbaPixelArray = new byte[desiredSizePx.width * desiredSizePx.height * 4];
+        var bgraPixelArray = new byte[desiredSizePx.width * desiredSizePx.height * 4];
 
         // Convert the frame pointer array to a managed array.
         var currentPixelIndex = 0;
@@ -141,6 +142,11 @@ internal class Doom
             rgbaPixelArray[currentPixelIndex++] = b;
             rgbaPixelArray[currentPixelIndex++] = a;
 
+            bgraPixelArray[currentPixelIndex - 4] = b;
+            bgraPixelArray[currentPixelIndex - 3] = g;
+            bgraPixelArray[currentPixelIndex - 2] = r;
+            bgraPixelArray[currentPixelIndex - 1] = a;
+
             // if (i == 0)
             // {
             //     Console.WriteLine($"First pixel: 0x{frame[i]:x} -> R: {rgbaPixelArray[i * 4 + 0]:x}, G: {rgbaPixelArray[i * 4 + 1]:x}, B: {rgbaPixelArray[i * 4 + 2]:x}, A: {rgbaPixelArray[i * 4 + 3]:x}");
@@ -151,9 +157,12 @@ internal class Doom
         FrameDrawn?.Invoke(rgbaPixelArray);
 
         // https://stackoverflow.com/a/537722/788168
-        GCHandle pinnedArray = GCHandle.Alloc(rgbaPixelArray, GCHandleType.Pinned);
+        GCHandle pinnedArray = GCHandle.Alloc(bgraPixelArray, GCHandleType.Pinned);
         IntPtr pointer = pinnedArray.AddrOfPinnedObject();
 
+        // Expects BGRA
+        // https://learn.microsoft.com/en-us/windows/win32/gdi/colorref
+        // https://stackoverflow.com/questions/41533158/create-32-bit-color-icon-programmatically#comment70312712_41538939
         var icon = PInvoke.CreateIcon(
             default(HINSTANCE),
             desiredSizePx.width,
@@ -166,6 +175,7 @@ internal class Doom
 
         pinnedArray.Free();
 
+        // TODO: migrate to FrameDrawn handler.
         TrayIcon.Icon = icon;
 
         _lastRgbaFrame = rgbaPixelArray;
@@ -213,6 +223,7 @@ internal class Doom
         var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
         Console.WriteLine($"SetWindowTitle: {titleString}");
 
+        // TODO: migrate to event.
         TrayIcon.Tooltip = titleString;
     }
 }
