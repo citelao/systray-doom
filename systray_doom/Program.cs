@@ -32,7 +32,6 @@ Console.WriteLine(Dim($"Testing Rust connection: {i == 42} ({i})"));
 //
 // https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 // https://stackoverflow.com/questions/23551112/how-can-i-set-the-dpiaware-property-in-a-windows-application-manifest-to-per-mo/
-PInvokeHelpers.THROW_IF_FALSE(PInvoke.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
 
 const string WindowClassName = "SimpleSystrayWindow";
 
@@ -175,6 +174,13 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 // TODO: doesn't work.
                 trayIcon.Focus();
             }
+            else
+            {
+                var width = PInvokeHelpers.LOWORD(lParam);
+                var height = PInvokeHelpers.HIWORD(lParam);
+                var newSize = new Windows.Graphics.SizeInt32 { Width = (int)width, Height = (int)height };
+                Console.WriteLine($"Resizing to {newSize}");
+            }
             PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
 
@@ -256,7 +262,7 @@ interop.CreateGraphicsDevice(d2dDevice, out var graphicsDevice);
 
 var root = compositor.CreateContainerVisual();
 root.RelativeSizeAdjustment = Vector2.One;
-root.Offset = new Vector3(124, 12, 0);
+root.Offset = new Vector3(0, 0, 0);
 target.Root = root;
 
 // Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
@@ -389,8 +395,7 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
             var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
             var d2dElement = compositor.CreateSpriteVisual();
             d2dElement.Brush = surfaceBrush;
-            d2dElement.Size = new Vector2(100, 100);
-            d2dElement.Offset = new Vector3(100, 100, 0);
+            d2dElement.RelativeSizeAdjustment = Vector2.One; // Make the element fill the window
             root.Children.InsertAtTop(d2dElement);
 
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
