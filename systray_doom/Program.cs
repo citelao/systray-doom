@@ -306,6 +306,11 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
                 var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
                 context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
 
+                // Test rect.
+                context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
+                context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
+
+
                 // pinned doom.LastRgbaFrame
                 fixed (byte* pRgbaFrame = doom.LastRgbaFrame)
                 {
@@ -323,34 +328,53 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
                     // };
                     // context.CreateBitmapFromDxgiSurface(drawingSurface, bitmapData, out var bitmap);
 
-                    context.CreateBitmap(
-                        new Windows.Win32.Graphics.Direct2D.Common.D2D_SIZE_U { width = 100, height = 100 },
-                        pRgbaFrame,
-                        4,
-                        new Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_PROPERTIES1
-                        {
-                            pixelFormat = new Windows.Win32.Graphics.Direct2D.Common.D2D1_PIXEL_FORMAT
-                            {
-                                format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-                                // format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
-                                alphaMode = Windows.Win32.Graphics.Direct2D.Common.D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
-                            },
-                            bitmapOptions = Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_TARGET, // |
-                                // Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-                            colorContext = null,
-                        },
-                        out var bitmap);
+                    // Write the 10th pixel
+                    Console.WriteLine($"10th pixel: {pRgbaFrame[10]} {pRgbaFrame[11]} {pRgbaFrame[12]} {pRgbaFrame[13]}");
 
-                    var rect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 10, top = 10, right = 40, bottom = 40 };
-                    context.DrawBitmap(
-                        bitmap,
-                        &rect,
-                        1.0f,
-                        Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+                    // Manually draw rectangles for the first 10 pixels
+                    for (var i = 0; i < 100; i++)
+                    {
+                        var pixel = i * 4;
+                        var rect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = i * 10, top = 50, right = i * 10 + 10, bottom = 70 };
+                        // var rect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 100, bottom = 100 };
+                        context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F {
+                            r = pRgbaFrame[pixel] / 255.0f,
+                            g = pRgbaFrame[pixel + 1] / 255.0f,
+                            b = pRgbaFrame[pixel + 2] / 255.0f,
+                            a = pRgbaFrame[pixel + 3] / 255.0f,
+                            // r = 0,
+                            // g = 0,
+                            // b = 1,
+                            // a = 1,
+                        }, null, out var brush2);
+                        context.FillRectangle(rect, brush2);
+                    }
+
+                    // context.CreateBitmap(
+                    //     new Windows.Win32.Graphics.Direct2D.Common.D2D_SIZE_U { width = 100, height = 100 },
+                    //     pRgbaFrame,
+                    //     (uint)(Doom.DesiredSizePx.width * 4),
+                    //     new Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_PROPERTIES1
+                    //     {
+                    //         pixelFormat = new Windows.Win32.Graphics.Direct2D.Common.D2D1_PIXEL_FORMAT
+                    //         {
+                    //             // format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+                    //             format = Windows.Win32.Graphics.Dxgi.Common.DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
+                    //             alphaMode = Windows.Win32.Graphics.Direct2D.Common.D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
+                    //         },
+                    //         bitmapOptions = Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_NONE, // |
+                    //             // Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+                    //         colorContext = null,
+                    //     },
+                    //     out var bitmap);
+
+                    // var rect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 10, top = 10, right = 40, bottom = 40 };
+                    // context.DrawBitmap(
+                    //     bitmap,
+                    //     &rect,
+                    //     1.0f,
+                    //     Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
                 }
-
-                context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
-                context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 80, bottom = 80 }, brush);
 
                 drawingInterop.EndDraw();
             }
