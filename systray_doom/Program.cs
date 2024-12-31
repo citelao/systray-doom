@@ -360,14 +360,6 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
         }
         else
         {
-            // var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
-
-            var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
-            var d2dElement = compositor.CreateSpriteVisual();
-            d2dElement.Brush = surfaceBrush;
-            d2dElement.RelativeSizeAdjustment = Vector2.One; // Make the element fill the window
-            root.Children.InsertAtTop(d2dElement);
-
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
             PInvoke.SetForegroundWindow(hwnd);
         }
@@ -452,6 +444,14 @@ var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
 element.Brush = compositor.CreateColorBrush(color);
 element.Size = new Vector2(100, 100);
 root.Children.InsertAtTop(element);
+
+// var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
+
+var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
+var d2dElement = compositor.CreateSpriteVisual();
+d2dElement.Brush = surfaceBrush;
+d2dElement.RelativeSizeAdjustment = Vector2.One; // Make the element fill the window
+root.Children.InsertAtTop(d2dElement);
 
 // TODO: we can't use LoadedImageSurface because it's XAML.
 // https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.loadedimagesurface?view=winrt-26100
