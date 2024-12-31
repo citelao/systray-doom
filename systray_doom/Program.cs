@@ -360,71 +360,6 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
         }
         else
         {
-            // var r = 0.0f;
-            // 
-            Task.Run(async () => {
-                while (true)
-                {
-                    await Task.Delay(1000 / 60);
-                    // Console.WriteLine("Drawing frame...");
-
-                    unsafe {
-                        var pinned = doom.LastRgbaFrame;
-                        if (pinned != null)
-                        {
-
-                            System.Drawing.Point point = new System.Drawing.Point(0, 0);
-                            Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
-                            var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
-                            drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
-
-                            var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
-                            context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
-
-                            // Test rect.
-                            context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
-                            context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
-
-                            var bitmap = CreateBitmapFromFrame(context, pinned, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
-
-                            // Calculate the aspect ratio and adjust the render rectangle
-                            var aspectRatio = (double)Doom.DesiredSizePx.width / Doom.DesiredSizePx.height;
-                            var renderWidth = windowSize.Width;
-                            var renderHeight = (int)((double)windowSize.Width / aspectRatio);
-                            if (renderHeight > windowSize.Height)
-                            {
-                                renderHeight = windowSize.Height;
-                                renderWidth = (int)((double)windowSize.Height * aspectRatio);
-                            }
-
-                            // Limit to 320 in either direction
-                            if (renderWidth > 320)
-                            {
-                                renderWidth = 320;
-                                renderHeight = (int)(320 / aspectRatio);
-                            }
-                            if (renderHeight > 320)
-                            {
-                                renderHeight = 320;
-                                renderWidth = (int)(320 * aspectRatio);
-                            }
-
-                            // Console.WriteLine($"Render size: {renderWidth}x{renderHeight}");
-                            var renderBitmapRect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = renderWidth, bottom = renderHeight };
-
-                            context.DrawBitmap(
-                                bitmap,
-                                &renderBitmapRect,
-                                1.0f,
-                                Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
-
-                            drawingInterop.EndDraw();
-                        }
-                    }
-                }
-            });
-
-
             // var surface = drawingInterop.As<ICompositionSurface>() ?? throw new InvalidOperationException("ICompositionSurface not supported.");
 
             var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
@@ -443,6 +378,61 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
 
 doom = new Doom(trayIcon);
 var doomTask = doom.RunAsync();
+
+doom.FrameDrawn += (rgbaFrame) =>
+{
+    unsafe
+    {
+        // Console.WriteLine("Frame drawn.");
+        // Console.WriteLine($"First pixel: {rgbaFrame[0]} {rgbaFrame[1]} {rgbaFrame[2]} {rgbaFrame[3]}");
+        System.Drawing.Point point = new System.Drawing.Point(0, 0);
+        Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
+        var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
+        drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &point);
+
+        var context = (Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext)updateContext;
+        context.Clear(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 0, g = 0, b = 0, a = 1 });
+
+        // Test rect.
+        context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 0, a = 1 }, null, out var brush);
+        context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = 10, bottom = 10 }, brush);
+
+        var bitmap = CreateBitmapFromFrame(context, rgbaFrame, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
+
+        // Calculate the aspect ratio and adjust the render rectangle
+        var aspectRatio = (double)Doom.DesiredSizePx.width / Doom.DesiredSizePx.height;
+        var renderWidth = windowSize.Width;
+        var renderHeight = (int)((double)windowSize.Width / aspectRatio);
+        if (renderHeight > windowSize.Height)
+        {
+            renderHeight = windowSize.Height;
+            renderWidth = (int)((double)windowSize.Height * aspectRatio);
+        }
+
+        // Limit to 320 in either direction
+        if (renderWidth > 320)
+        {
+            renderWidth = 320;
+            renderHeight = (int)(320 / aspectRatio);
+        }
+        if (renderHeight > 320)
+        {
+            renderHeight = 320;
+            renderWidth = (int)(320 * aspectRatio);
+        }
+
+        // Console.WriteLine($"Render size: {renderWidth}x{renderHeight}");
+        var renderBitmapRect = new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { left = 0, top = 0, right = renderWidth, bottom = renderHeight };
+
+        context.DrawBitmap(
+            bitmap,
+            &renderBitmapRect,
+            1.0f,
+            Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+
+        drawingInterop.EndDraw();
+    }
+};
 
 var element = compositor.CreateSpriteVisual();
 var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };

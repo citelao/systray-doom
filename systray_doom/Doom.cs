@@ -41,6 +41,8 @@ internal class Doom
         }
     }
 
+    public event Action<byte[]>? FrameDrawn;
+
     public Doom(TrayIcon trayIcon)
     {
         TrayIcon = trayIcon;
@@ -144,6 +146,9 @@ internal class Doom
             //     Console.WriteLine($"First pixel: 0x{frame[i]:x} -> R: {rgbaPixelArray[i * 4 + 0]:x}, G: {rgbaPixelArray[i * 4 + 1]:x}, B: {rgbaPixelArray[i * 4 + 2]:x}, A: {rgbaPixelArray[i * 4 + 3]:x}");
             // }
         }
+
+        // Fire the FrameDrawn event
+        FrameDrawn?.Invoke(rgbaPixelArray);
 
         // https://stackoverflow.com/a/537722/788168
         GCHandle pinnedArray = GCHandle.Alloc(rgbaPixelArray, GCHandleType.Pinned);
