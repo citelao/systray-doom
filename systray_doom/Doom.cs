@@ -1,6 +1,7 @@
 namespace systray_doom;
 
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -22,6 +23,9 @@ internal class Doom
     // var desiredSizePx = (height: (int)yres, width: (int)xres);
     public static readonly (int width, int height) DesiredSizePx = (320, 320);
 
+    // Our Doom happens to render at 640x400.
+    public static readonly Size OriginalSize = new(640, 400);
+
     public byte[]? LastRgbaFrame
     {
         get
@@ -34,13 +38,16 @@ internal class Doom
     {
         public required byte[] RgbaFrame;
         public required byte[] BgraFrame;
+
+        public required Size FullSize;
+        public required byte[] FullRgbaFrame;
     }
     public event Action<FrameDrawnEventArgs>? FrameDrawn;
     public event Action<string>? TitleChanged;
 
     public Doom()
     {
-}
+    }
 
     public Task RunAsync()
     {
@@ -147,11 +154,29 @@ internal class Doom
             // }
         }
 
+        var fullRgbaPixelArray = new byte[xres * yres * 4];
+        for (var i = 0; i < totalPixels; i++)
+        {
+            var argb = frame[i];
+            var r = (byte)((argb >> 16) & 0xFF);
+            var g = (byte)((argb >> 8) & 0xFF);
+            var b = (byte)((argb >> 0) & 0xFF);
+            // Alpha seems to be opacity. Inverting it.
+            var a = (byte)(255 - (argb >> 24) & 0xFF);
+            fullRgbaPixelArray[i * 4 + 0] = r;
+            fullRgbaPixelArray[i * 4 + 1] = g;
+            fullRgbaPixelArray[i * 4 + 2] = b;
+            fullRgbaPixelArray[i * 4 + 3] = a;
+        }
+
         // Fire the FrameDrawn event
         FrameDrawn?.Invoke(new FrameDrawnEventArgs
         {
             RgbaFrame = rgbaPixelArray,
-            BgraFrame = bgraPixelArray
+            BgraFrame = bgraPixelArray,
+
+            FullSize = OriginalSize,
+            FullRgbaFrame = fullRgbaPixelArray
         });
 
         _lastRgbaFrame = rgbaPixelArray;

@@ -157,7 +157,6 @@ var root = compositor.CreateContainerVisual();
 root.RelativeSizeAdjustment = Vector2.One;
 root.Offset = new Vector3(0, 0, 0);
 
-
 // Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
 // {
 //     var app = new Microsoft.UI.Xaml.Application();
@@ -170,7 +169,7 @@ root.Offset = new Vector3(0, 0, 0);
 // });
 
 var drawingSurface = graphicsDevice.CreateDrawingSurface(
-    new Size { Width = 320, Height = 320 },
+    new Windows.Foundation.Size(Doom.OriginalSize.Width, Doom.OriginalSize.Height),
     DirectXPixelFormat.B8G8R8A8UIntNormalized,
     DirectXAlphaMode.Premultiplied
 );
@@ -180,7 +179,7 @@ graphicsDevice.RenderingDeviceReplaced += (s, e) =>
 };
 
 var drawingInterop = drawingSurface.As<ICompositionDrawingSurfaceInterop>() ?? throw new InvalidOperationException("ICompositionDrawingSurfaceInterop not supported.");
-Windows.Graphics.SizeInt32 windowSize = new() { Width = 320, Height = 320 };
+Windows.Graphics.SizeInt32 windowSize = new() { Width = Doom.OriginalSize.Width, Height = Doom.OriginalSize.Height };
 
 void UpdateDrawingSurfaceSize(ICompositionDrawingSurfaceInterop drawingInterop, int width, int height)
 {
@@ -423,7 +422,8 @@ doom.FrameDrawn += async (args) =>
     // TODO: read size
     updateTrayIconFn(args.BgraFrame, 320, 320);
 
-    var rgbaFrame = args.RgbaFrame;
+    Debug.Assert(Doom.OriginalSize == args.FullSize);
+    var rgbaFrame = args.FullRgbaFrame;
     unsafe
     {
         // Oh, boy, would it be nice to use LoadedImageSurface. We can't because
@@ -459,10 +459,10 @@ doom.FrameDrawn += async (args) =>
             bottom = offset.Y + 10
         }, brush);
 
-        var bitmap = CreateBitmapFromFrame(context, rgbaFrame, Doom.DesiredSizePx.width, Doom.DesiredSizePx.height);
+        var bitmap = CreateBitmapFromFrame(context, rgbaFrame, args.FullSize.Width, args.FullSize.Height);
 
         // Calculate the aspect ratio and adjust the render rectangle
-        var aspectRatio = (double)Doom.DesiredSizePx.width / Doom.DesiredSizePx.height;
+        var aspectRatio = (double)args.FullSize.Width / args.FullSize.Height;
         var renderWidth = windowSize.Width;
         var renderHeight = (int)((double)windowSize.Width / aspectRatio);
         if (renderHeight > windowSize.Height)
@@ -471,16 +471,16 @@ doom.FrameDrawn += async (args) =>
             renderWidth = (int)((double)windowSize.Height * aspectRatio);
         }
 
-        // Limit to 320 in either direction
-        if (renderWidth > 320)
+        // Limit to FullSize in either direction
+        if (renderWidth > args.FullSize.Width)
         {
-            renderWidth = 320;
-            renderHeight = (int)(320 / aspectRatio);
+            renderWidth = args.FullSize.Width;
+            renderHeight = (int)(args.FullSize.Width / aspectRatio);
         }
-        if (renderHeight > 320)
+        if (renderHeight > args.FullSize.Height)
         {
-            renderHeight = 320;
-            renderWidth = (int)(320 * aspectRatio);
+            renderHeight = args.FullSize.Height;
+            renderWidth = (int)(args.FullSize.Height * aspectRatio);
         }
 
         // Console.WriteLine($"Render size: {renderWidth}x{renderHeight}");
