@@ -412,8 +412,12 @@ var updateTrayIconFn = (byte[] bgraFrame, int width, int height) =>
     lastIcon = icon;
 };
 
-doom = new Doom(trayIcon);
+doom = new Doom();
 var doomTask = doom.RunAsync();
+doom.TitleChanged += (title) =>
+{
+    trayIcon.Tooltip = title;
+};
 doom.FrameDrawn += async (args) =>
 {
     // TODO: read size

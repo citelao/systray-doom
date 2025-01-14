@@ -15,8 +15,6 @@ internal class Doom
     private readonly CancellationTokenSource _cts = new();
     private byte[]? _lastRgbaFrame = null;
 
-    public readonly TrayIcon TrayIcon;
-
     // Console.WriteLine($"DrawFrame: {xres}x{yres}");
     // var desiredSizePx = (height: 200, width: 200);
     // var desiredSizePx = (height: 320, width: 320);
@@ -38,11 +36,11 @@ internal class Doom
         public required byte[] BgraFrame;
     }
     public event Action<FrameDrawnEventArgs>? FrameDrawn;
+    public event Action<string>? TitleChanged;
 
-    public Doom(TrayIcon trayIcon)
+    public Doom()
     {
-        TrayIcon = trayIcon;
-    }
+}
 
     public Task RunAsync()
     {
@@ -193,7 +191,6 @@ internal class Doom
         var titleString = System.Text.Encoding.UTF8.GetString(title, (int)size);
         Console.WriteLine($"SetWindowTitle: {titleString}");
 
-        // TODO: migrate to event.
-        TrayIcon.Tooltip = titleString;
+        TitleChanged?.Invoke(titleString);
     }
 }
