@@ -156,6 +156,7 @@ var root = compositor.CreateContainerVisual();
 root.RelativeSizeAdjustment = Vector2.One;
 root.Offset = new Vector3(0, 0, 0);
 
+
 // Microsoft.UI.DispatchQueue.GetForCurrentThread().TryEnqueue(() =>
 // {
 //     var app = new Microsoft.UI.Xaml.Application();
@@ -448,10 +449,17 @@ doom.FrameDrawn += async (rgbaFrame) =>
     }
 };
 
+// A black rectangle that fills the window.
+var background = compositor.CreateSpriteVisual();
+background.Brush = compositor.CreateColorBrush(new Windows.UI.Color { R = 0, G = 0, B = 0, A = 255 });
+background.RelativeSizeAdjustment = Vector2.One;
+root.Children.InsertAtTop(background);
+
+// A green square in the top-left corner, for testing
 var element = compositor.CreateSpriteVisual();
-var color = new Windows.UI.Color { R = 0, G = 0, B = 255, A = 255 };
+var color = new Windows.UI.Color { R = 34, G = 139, B = 34, A = 255 }; // ForestGreen
 element.Brush = compositor.CreateColorBrush(color);
-element.Size = new Vector2(100, 100);
+element.Size = new Vector2(5, 5);
 root.Children.InsertAtTop(element);
 
 var surfaceBrush = compositor.CreateSurfaceBrush(drawingSurface);
