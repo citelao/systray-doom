@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!--
+      TODO: use WinExe to prevent the console window from spawning.
+      https://xkln.net/blog/improve-c-console-app-startup-and-runtimes-with-aot-and-avoid-spawning-conhostexe/
+     -->
     <OutputType>Exe</OutputType>
     <!--
       TODO: can we go to lower versions of Windows? We only set this to allow
@@ -31,6 +35,7 @@
   </Target>
 
   <!-- Build Rust -->
+  <!-- TODO: avoid running if the DLL is up to date? -->
   <Target Name="BuildRustBindings" BeforeTargets="Build" Condition="!Exists('$(OutputPath)systray_doom_bindings.dll')">
     <Exec Command="cargo build --manifest-path ../rust_bindings/Cargo.toml" />
   </Target>
