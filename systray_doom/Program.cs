@@ -32,6 +32,7 @@ Console.WriteLine(Dim($"Testing Rust connection: {i == 42} ({i})"));
 //
 // https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 // https://stackoverflow.com/questions/23551112/how-can-i-set-the-dpiaware-property-in-a-windows-application-manifest-to-per-mo/
+PInvokeHelpers.THROW_IF_FALSE(PInvoke.SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
 
 const string WindowClassName = "SimpleSystrayWindow";
 
@@ -377,8 +378,9 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
 doom = new Doom(trayIcon);
 var doomTask = doom.RunAsync();
 
-doom.FrameDrawn += async (rgbaFrame) =>
+doom.FrameDrawn += async (args) =>
 {
+    var rgbaFrame = args.RgbaFrame;
     unsafe
     {
         // Oh, boy, would it be nice to use LoadedImageSurface. We can't because
