@@ -14,7 +14,6 @@ internal class Doom
 {
     private readonly CancellationTokenSource _cts = new();
     private byte[]? _lastRgbaFrame = null;
-    private HICON _lastIcon = HICON.Null;
 
     public readonly TrayIcon TrayIcon;
 
@@ -30,14 +29,6 @@ internal class Doom
         get
         {
             return _lastRgbaFrame;
-        }
-    }
-
-    internal HICON LastIcon
-    {
-        get
-        {
-            return _lastIcon;
         }
     }
 
@@ -165,37 +156,7 @@ internal class Doom
             BgraFrame = bgraPixelArray
         });
 
-        // https://stackoverflow.com/a/537722/788168
-        GCHandle pinnedArray = GCHandle.Alloc(bgraPixelArray, GCHandleType.Pinned);
-        IntPtr pointer = pinnedArray.AddrOfPinnedObject();
-
-        // Expects BGRA
-        // https://learn.microsoft.com/en-us/windows/win32/gdi/colorref
-        // https://stackoverflow.com/questions/41533158/create-32-bit-color-icon-programmatically#comment70312712_41538939
-        var icon = PInvoke.CreateIcon(
-            default(HINSTANCE),
-            desiredSizePx.width,
-            desiredSizePx.height,
-            4,
-            8,
-            (byte*)pointer.ToPointer(),
-            (byte*)pointer.ToPointer()
-        );
-
-        pinnedArray.Free();
-
-        // TODO: migrate to FrameDrawn handler.
-        TrayIcon.Icon = icon;
-
         _lastRgbaFrame = rgbaPixelArray;
-
-        // Clean up the old icon.
-        if (!_lastIcon.IsNull)
-        {
-            PInvoke.DestroyIcon(_lastIcon);
-        }
-
-        _lastIcon = icon;
     }
 
     unsafe PInvokeDoom.CKeyData* KeyCallback()

@@ -375,11 +375,50 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
     },
 };
 
+HICON lastIcon = HICON.Null;
+var updateTrayIconFn = (byte[] bgraFrame, int width, int height) =>
+{
+    HICON icon;
+    unsafe
+    {
+        // https://stackoverflow.com/a/537722/788168
+        GCHandle pinnedArray = GCHandle.Alloc(bgraFrame, GCHandleType.Pinned);
+        IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
+        // Expects BGRA
+        // https://learn.microsoft.com/en-us/windows/win32/gdi/colorref
+        // https://stackoverflow.com/questions/41533158/create-32-bit-color-icon-programmatically#comment70312712_41538939
+        icon = PInvoke.CreateIcon(
+            default(HINSTANCE),
+            width,
+            height,
+            4,
+            8,
+            (byte*)pointer.ToPointer(),
+            (byte*)pointer.ToPointer()
+        );
+
+        pinnedArray.Free();
+    }
+
+    trayIcon.Icon = icon;
+
+    // Clean up the old icon.
+    if (!lastIcon.IsNull)
+    {
+        PInvoke.DestroyIcon(lastIcon);
+    }
+
+    lastIcon = icon;
+};
+
 doom = new Doom(trayIcon);
 var doomTask = doom.RunAsync();
-
 doom.FrameDrawn += async (args) =>
 {
+    // TODO: read size
+    updateTrayIconFn(args.BgraFrame, 320, 320);
+
     var rgbaFrame = args.RgbaFrame;
     unsafe
     {
