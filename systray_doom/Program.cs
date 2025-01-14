@@ -381,13 +381,21 @@ doom.FrameDrawn += async (rgbaFrame) =>
 {
     unsafe
     {
-        // Console.WriteLine("Frame drawing...");
-        // Console.WriteLine($"First pixel: {rgbaFrame[0]} {rgbaFrame[1]} {rgbaFrame[2]} {rgbaFrame[3]}");
+        // Oh, boy, would it be nice to use LoadedImageSurface. We can't because
+        // it's XAML. So welcome to the world of Direct2D :).
+        // https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.loadedimagesurface?view=winrt-26100
+        //
+        // await Task.Delay(100); IRandomAccessStream memoryStream = new
+        // InMemoryRandomAccessStream(); var encoder = await
+        // BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, memoryStream);
+        // encoder.SetPixelData(BitmapPixelFormat.Bgra8,
+        // BitmapAlphaMode.Premultiplied, (uint)Doom.DesiredSizePx.height,
+        // (uint)Doom.DesiredSizePx.width, 96, 96, Doom.LastRgbaFrame); await
+        // encoder.FlushAsync();
 
-        // Drawing seems to be double-buffered (or more!); we get an offset to draw to
-        // the correct point.
+        // Drawing is double-buffered (or more, based on framerate!); we get an
+        // offset to use as the origin for our drawing.
         System.Drawing.Point offset = new System.Drawing.Point(0, 0);
-
         Windows.Win32.Foundation.RECT* updateRect = null; // Update the whole thing
         var guid = typeof(Windows.Win32.Graphics.Direct2D.ID2D1DeviceContext).GUID;
         drawingInterop.BeginDraw(updateRect, &guid, out var updateContext, &offset);
@@ -445,7 +453,6 @@ doom.FrameDrawn += async (rgbaFrame) =>
             Windows.Win32.Graphics.Direct2D.D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
 
         drawingInterop.EndDraw();
-        // Console.WriteLine("Frame drawn.");
     }
 };
 
@@ -467,15 +474,6 @@ var d2dElement = compositor.CreateSpriteVisual();
 d2dElement.Brush = surfaceBrush;
 d2dElement.RelativeSizeAdjustment = Vector2.One; // Make the element fill the window
 root.Children.InsertAtTop(d2dElement);
-
-// TODO: we can't use LoadedImageSurface because it's XAML.
-// https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.loadedimagesurface?view=winrt-26100
-//
-// await Task.Delay(100);
-// IRandomAccessStream memoryStream = new InMemoryRandomAccessStream();
-// var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, memoryStream);
-// encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied, (uint)Doom.DesiredSizePx.height, (uint)Doom.DesiredSizePx.width, 96, 96, Doom.LastRgbaFrame);
-// await encoder.FlushAsync();
 
 Console.WriteLine("Starting message loop...");
 Console.WriteLine("Press Ctrl-C to exit.");
