@@ -23,6 +23,14 @@
       https://github.com/microsoft/CsWin32/discussions/592
     -->
     <PlatformTarget>x64</PlatformTarget>
+
+    <!--
+      Set the assembly title. This is used to group apps in Task Manager.
+
+      Look in the Details pane of the Properties page for the exe
+     -->
+    <AssemblyTitle>Systray Doom EXE</AssemblyTitle>
+    <Product>Systray Doom</Product>
   </PropertyGroup>
 
   <!--

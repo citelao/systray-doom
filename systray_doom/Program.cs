@@ -5,6 +5,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using System.Diagnostics;
+using System.Reflection;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.System.WinRT;
@@ -19,6 +20,9 @@ using Windows.Storage.Streams;
 using Systray;
 using systray_doom;
 using Windows.Graphics.DirectX;
+
+// Set in csproj, FYI.
+// [assembly:AssemblyTitle("Systray Doom")]
 
 Console.WriteLine("Starting doom...");
 
@@ -269,6 +273,8 @@ unsafe
             // If you don't set this, the cursor in the window will be whatever
             // it was before entering the window.
             hCursor = PInvoke.LoadCursor(default, PInvoke.IDC_ARROW),
+
+            // hIcon = 
         };
 
         // We ignore the returned class atom & use the class name directly.
@@ -404,6 +410,7 @@ var updateTrayIconFn = (byte[] bgraFrame, int width, int height) =>
     }
 
     trayIcon.Icon = icon;
+    PInvoke.PostMessage(hwnd, PInvoke.WM_SETICON, PInvoke.ICON_SMALL, (LPARAM)icon.Value);
 
     // Clean up the old icon.
     if (!lastIcon.IsNull)
