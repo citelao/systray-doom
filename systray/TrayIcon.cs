@@ -8,6 +8,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 using static Crayon.Output;
 
+// TODO: better name in Taskbar Personalization menu
 public class TrayIcon
 {
     private string _tooltip = string.Empty;

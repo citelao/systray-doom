@@ -372,6 +372,9 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
 
         return true;
     },
+
+    // TODO: a better default icon, so it displays nicely in Taskbar
+    // Personalization settings.
 };
 
 HICON lastIcon = HICON.Null;
