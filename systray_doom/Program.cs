@@ -410,7 +410,12 @@ var updateTrayIconFn = (byte[] bgraFrame, int width, int height) =>
     }
 
     trayIcon.Icon = icon;
+
+    // Also the taskbar icon (and the top-left corner icon, and the alt-tab
+    // icon, and the icon in Task Manager, although that one is currently
+    // garbage data).
     PInvoke.PostMessage(hwnd, PInvoke.WM_SETICON, PInvoke.ICON_SMALL, (LPARAM)icon.Value);
+    PInvoke.PostMessage(hwnd, PInvoke.WM_SETICON, PInvoke.ICON_BIG, (LPARAM)icon.Value);
 
     // Clean up the old icon.
     if (!lastIcon.IsNull)
