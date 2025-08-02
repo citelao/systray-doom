@@ -27,7 +27,11 @@
     <!--
       Set the assembly title. This is used to group apps in Task Manager.
 
-      Look in the Details pane of the Properties page for the exe
+      Look in the Details pane of the Properties page for the exe.
+
+      Interestingly, AssemblyTitle appears as the app name on my Surface Book,
+      where I didn't code the feature. If you don't launch from terminal via
+      `dotnet run`, it also appears as the app name when sorted by "Name".
      -->
     <AssemblyTitle>Systray Doom EXE</AssemblyTitle>
     <Product>Systray Doom</Product>
