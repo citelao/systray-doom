@@ -7,7 +7,7 @@ namespace Systray.NativeTypes;
 // TODO: can we simply make a subset of PInvoke types public?
 public struct NoReleaseHwnd
 {
-    internal readonly IntPtr Value;
+    public readonly IntPtr Value;
 
     public static NoReleaseHwnd Null = new(IntPtr.Zero);
 

@@ -20,6 +20,7 @@ using Windows.Storage.Streams;
 using Systray;
 using systray_doom;
 using Windows.Graphics.DirectX;
+using Systray.NativeTypes;
 
 // Set in csproj, FYI.
 // [assembly:AssemblyTitle("Systray Doom")]
@@ -54,7 +55,12 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 TrayIcon trayIcon = null!;
 Doom doom = null!;
 
-bool TryDisplayContextMenu(HWND hwnd, int x, int y)
+bool TryDisplayContextMenu(NoReleaseHwnd hwnd, int x, int y)
+{
+    return TryDisplayContextMenuRaw(new(hwnd.Value), x, y);
+}
+
+bool TryDisplayContextMenuRaw(HWND hwnd, int x, int y)
 {
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
     PInvoke.SetForegroundWindow(hwnd);
@@ -274,7 +280,7 @@ unsafe
             // it was before entering the window.
             hCursor = PInvoke.LoadCursor(default, PInvoke.IDC_ARROW),
 
-            // hIcon = 
+            // hIcon =
         };
 
         // We ignore the returned class atom & use the class name directly.
@@ -353,7 +359,7 @@ static Windows.Win32.Graphics.Direct2D.ID2D1Bitmap1 CreateBitmapFromFrame(Window
     }
 }
 
-trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMessage)
+trayIcon = new TrayIcon(Constants.SystrayGuid, new(hwnd), callbackMessage: trayIconMessage)
 {
     Tooltip = "Hello, Windows!",
     ContextMenu = (hwnd, x, y) =>
@@ -364,16 +370,17 @@ trayIcon = new TrayIcon(Constants.SystrayGuid, hwnd, callbackMessage: trayIconMe
     Select = (hwnd, x, y) =>
     {
         // TODO: reactivate any window that has been covered.
-        var isVisible = PInvoke.IsWindowVisible(hwnd);
+        var fullHwnd = new HWND(hwnd.Value);
+        var isVisible = PInvoke.IsWindowVisible(fullHwnd);
         if (isVisible)
         {
             // Send minimize message.
-            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_MINIMIZE);
+            PInvoke.ShowWindow(fullHwnd, SHOW_WINDOW_CMD.SW_MINIMIZE);
         }
         else
         {
-            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
-            PInvoke.SetForegroundWindow(hwnd);
+            PInvoke.ShowWindow(fullHwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+            PInvoke.SetForegroundWindow(fullHwnd);
         }
 
         return true;
@@ -409,7 +416,7 @@ var updateTrayIconFn = (byte[] bgraFrame, int width, int height) =>
         pinnedArray.Free();
     }
 
-    trayIcon.Icon = icon;
+    trayIcon.Icon = new(icon);
 
     // Also the taskbar icon (and the top-left corner icon, and the alt-tab
     // icon, and the icon in Task Manager, although that one is currently
@@ -467,7 +474,7 @@ doom.FrameDrawn += async (args) =>
         // Test rect. Make sure to factor in the offset, since
         // double-buffering means we use different parts of the surface.
         context.CreateSolidColorBrush(new Windows.Win32.Graphics.Direct2D.Common.D2D1_COLOR_F { r = 1, g = 0, b = 1, a = 1 }, null, out var brush);
-        context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F { 
+        context.FillRectangle(new Windows.Win32.Graphics.Direct2D.Common.D2D_RECT_F {
             left = offset.X,
             top = offset.Y,
             right = offset.X + 10,
