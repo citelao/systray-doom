@@ -1,6 +1,7 @@
 namespace Systray;
 
 using System.Runtime.InteropServices;
+using Systray.NativeTypes;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -17,20 +18,20 @@ public class TrayIcon
         get { return _tooltip; }
     }
 
-    private HICON _icon = PInvokeSystray.LoadIcon(HINSTANCE.Null, PInvokeSystray.IDI_APPLICATION);
-    public HICON Icon {
+    private NoReleaseHicon _icon = new(PInvokeSystray.LoadIcon(HINSTANCE.Null, PInvokeSystray.IDI_APPLICATION));
+    public NoReleaseHicon Icon {
         set { SetIcon(value); }
         get { return _icon; }
     }
 
     public readonly Guid Guid;
-    public readonly HWND OwnerHwnd;
+    public readonly NoReleaseHwnd OwnerHwnd;
     public readonly uint? CallbackMessage = null;
 
     // Return true to indicate that the message was handled.
-    public delegate bool ContextMenuHandler(HWND hwnd, int x, int y);
+    public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, int x, int y);
     public ContextMenuHandler? ContextMenu;
-    public delegate bool SelectHandler(HWND hwnd, int x, int y);
+    public delegate bool SelectHandler(NoReleaseHwnd hwnd, int x, int y);
     public SelectHandler? Select;
     // public delegate LRESULT? MouseMoveHandler(HWND hwnd, int x, int y);
     // public MouseMoveHandler? MouseMove;
@@ -44,7 +45,7 @@ public class TrayIcon
     // Fired if Explorer crashes & restarts, or if the primary display DPI changes.
     private static readonly uint s_taskbarCreatedWindowMessage = PInvokeSystray.RegisterWindowMessage("TaskbarCreated");
 
-    public TrayIcon(Guid guid, HWND ownerHwnd, bool shouldHandleMessages = true, uint? callbackMessage = null)
+    public TrayIcon(Guid guid, NoReleaseHwnd ownerHwnd, bool shouldHandleMessages = true, uint? callbackMessage = null)
     {
         Guid = guid;
         OwnerHwnd = ownerHwnd;
@@ -139,7 +140,7 @@ public class TrayIcon
                 // var pt = new Point(x, y);
                 // var client = PInvokeSystray.ScreenToClient(hwnd, ref pt);
                 // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
-                return (ContextMenu?.Invoke(hwnd, x, y) ?? false) ? new LRESULT(0) : null;
+                return (ContextMenu?.Invoke(new(hwnd), x, y) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.WM_MOUSEMOVE:
                 Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
@@ -175,7 +176,7 @@ public class TrayIcon
 
             case PInvokeSystray.NIN_SELECT:
                 Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
-                return (Select?.Invoke(hwnd, x, y) ?? false) ? new LRESULT(0) : null;
+                return (Select?.Invoke(new(hwnd), x, y) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.NIN_BALLOONSHOW:
                 Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
@@ -222,7 +223,7 @@ public class TrayIcon
         _tooltip = newTip;
     }
 
-    private void SetIcon(HICON newIcon)
+    private void SetIcon(NoReleaseHicon newIcon)
     {
         var notificationIconData = new TrayIconMessageBuilder(guid: Guid)
         {

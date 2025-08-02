@@ -1,15 +1,18 @@
 namespace Systray;
 
 using System.Runtime.InteropServices;
+using Systray.NativeTypes;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-public class TrayIconMessageBuilder
+// TODO: should this be public? We'd need an opaque-ish wrapper for the
+// NOTIFYICONDATAW.
+internal class TrayIconMessageBuilder
 {
     public Guid Guid;
-    public HWND? HWND = null;
+    public NoReleaseHwnd? HWND = null;
 
     public uint? CallbackMessage = null;
 
@@ -25,7 +28,7 @@ public class TrayIconMessageBuilder
     // tooltips, set this to false.
     public bool ShowTooltip = true;
 
-    public HICON Icon;
+    public NoReleaseHicon Icon = NoReleaseHicon.Null;
 
     // TODO: balloon? e.g. szInfo; szInfoTitle; dwInfoFlags; hBalloonIcon
 
@@ -50,7 +53,7 @@ public class TrayIconMessageBuilder
         {
             flags |= NOTIFY_ICON_DATA_FLAGS.NIF_TIP;
         }
-        if (Icon != HICON.Null)
+        if (Icon != NoReleaseHicon.Null)
         {
             flags |= NOTIFY_ICON_DATA_FLAGS.NIF_ICON;
         }
@@ -72,7 +75,7 @@ public class TrayIconMessageBuilder
 
             // Required (for ADD). An HWND is required to register the icon with
             // the system. Window messages go there.
-            hWnd = HWND ?? default,
+            hWnd = HWND?.AsHWND() ?? default,
 
             // Required. Indicates which of the other members contain valid data.
             // NIF_TIP and NIF_SHOWTIP are only required if you want to use szTip.
@@ -85,7 +88,7 @@ public class TrayIconMessageBuilder
             // Required (for ADD). The icon to display.
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadicona
             // https://learn.microsoft.com/en-us/windows/win32/menurc/about-icons
-            hIcon = Icon,
+            hIcon = Icon.AsHICON(),
 
             // Optional. You probably want a tooltip for your icon, though.
             szTip = Tooltip,

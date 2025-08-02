@@ -25,7 +25,7 @@ public static class PInvokeHelpers
         return (int)(wParam >> 16);
     }
 
-    public static void THROW_IF_FALSE(BOOL boolResult, string? message = null)
+    internal static void THROW_IF_FALSE(BOOL boolResult, string? message = null)
     {
         if (!boolResult)
         {
@@ -33,11 +33,21 @@ public static class PInvokeHelpers
         }
     }
 
-    public static void THROW_IF_FAILED(HRESULT result, string? message = null)
+    public static void THROW_IF_FALSE(int boolResult, string? message = null)
+    {
+        THROW_IF_FALSE(new BOOL(boolResult), message);
+    }
+
+    internal static void THROW_IF_FAILED(HRESULT result, string? message = null)
     {
         if (result < 0)
         {
             throw new System.ComponentModel.Win32Exception(message);
         }
+    }
+
+    public static void THROW_IF_FAILED(int result, string? message = null)
+    {
+        THROW_IF_FAILED(new HRESULT(result), message);
     }
 }
