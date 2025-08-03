@@ -69,7 +69,7 @@ public class WindowMessageHandler
     public WindowMessageHandler(WndProcDelegate del)
         : this(ToInternalDelegate(del))
     {
-        // no-op
+        // No addl work.
     }
 
     internal WindowMessageHandler(WndProcDelegateInternal del)
