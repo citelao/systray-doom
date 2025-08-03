@@ -113,8 +113,8 @@ public class TrayIcon
             Icon = _icon,
             CallbackMessage = CallbackMessage,
         }.Build();
-        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
-        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
+        PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
+        PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
     }
 
     // *Should* set focus to the tray icon. Doesn't work.
@@ -126,7 +126,7 @@ public class TrayIcon
     // TODO: fix?
     public void Focus()
     {
-        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(
+        PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(
             NOTIFY_ICON_MESSAGE.NIM_SETFOCUS,
             new TrayIconMessageBuilder(guid: Guid).Build()));
     }
@@ -159,8 +159,8 @@ public class TrayIcon
 
                 // Re-create the icon.
                 var notificationIconData = new TrayIconMessageBuilder(guid: Guid).Build();
-                // PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
-                PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
+                // PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
+                NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
                 Create();
 
                 // Don't replace the default window proc.
@@ -270,7 +270,7 @@ public class TrayIcon
         {
             Tooltip = newTip,
         }.Build();
-        if (!PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+        if (!NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
@@ -283,7 +283,7 @@ public class TrayIcon
         {
             Icon = newIcon,
         }.Build();
-        if (!PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+        if (!NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
