@@ -81,7 +81,7 @@ internal class TrayIconMessageBuilder
             // NIF_TIP and NIF_SHOWTIP are only required if you want to use szTip.
             uFlags = flags,
 
-            // Basically required  (for ADD). The WM to use for tray icon
+            // Basically required (for ADD). The WM to use for tray icon
             // messages.
             uCallbackMessage = CallbackMessage ?? 0,
 
