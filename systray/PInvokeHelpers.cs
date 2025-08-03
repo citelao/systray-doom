@@ -1,7 +1,8 @@
 namespace Systray;
 
+using System.Drawing;
+using Windows.Win32;
 using Windows.Win32.Foundation;
-
 public static class PInvokeHelpers
 {
     public static nint LOWORD(nint n)
@@ -23,6 +24,20 @@ public static class PInvokeHelpers
     public static int GET_Y_LPARAM(nuint wParam)
     {
         return (int)(wParam >> 16);
+    }
+
+    unsafe internal static Point PhysicalToLogicalPointForPerMonitorDPI(HWND hwnd, Point point)
+    {
+        var copy = point;
+        THROW_IF_FALSE(PInvokeSystray.PhysicalToLogicalPointForPerMonitorDPI(hwnd, &copy));
+        return copy;
+    }
+
+    unsafe internal static Point ClientToScreen(HWND hwnd, Point point)
+    {
+        var copy = point;
+        THROW_IF_FALSE(PInvokeSystray.ClientToScreen(hwnd, &copy));
+        return copy;
     }
 
     internal static void THROW_IF_FALSE(BOOL boolResult, string? message = null)

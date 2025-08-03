@@ -1,5 +1,6 @@
 namespace Systray;
 
+using System.Drawing;
 using System.Runtime.InteropServices;
 using Systray.NativeTypes;
 using Windows.Win32;
@@ -36,11 +37,19 @@ public class TrayIcon
     public readonly NoReleaseHwnd OwnerHwnd;
     public readonly uint? CallbackMessage = null;
 
+    // Context menu handler callback. Fired when a user right-clicks on the
+    // systray icon or presses Shift-F10 on the keyboard with the icon focused.
+    //
+    // Includes the clicked coordinate: this is *always* in physical pixels &
+    // screen coordinates, no matter what your app is.
+    //
     // Return true to indicate that the message was handled.
-    public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, Point pt);
     public ContextMenuHandler? ContextMenu;
-    public delegate bool SelectHandler(NoReleaseHwnd hwnd, Point pt);
+    public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, PhysicalPoint pt);
+
+    // TBD: coordinate space.
     public SelectHandler? Select;
+    public delegate bool SelectHandler(NoReleaseHwnd hwnd, Point pt);
     // public delegate LRESULT? MouseMoveHandler(HWND hwnd, int x, int y);
     // public MouseMoveHandler? MouseMove;
     // public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
