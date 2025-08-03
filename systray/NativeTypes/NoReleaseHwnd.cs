@@ -6,37 +6,37 @@ namespace Systray.NativeTypes;
 
 // TODO: generalize into TypedIntPtr?
 // TODO: can we simply make a subset of PInvoke types public?
-[DebuggerDisplay("{Value}")]
-public readonly partial struct NativeType<RawType>
-    : IEquatable<NativeType<RawType>>
-    where RawType : class, IEquatable<RawType>
-{
-    public readonly RawType Value;
+// [DebuggerDisplay("{Value}")]
+// public readonly partial struct NativeType<RawType>
+//     : IEquatable<NativeType<RawType>>
+//     where RawType : class, IEquatable<RawType>
+// {
+//     public readonly RawType Value;
 
-    public NativeType(RawType value) => this.Value = value;
+//     public NativeType(RawType value) => this.Value = value;
 
-    public static NativeType<RawType> Null => default;
+//     public static NativeType<RawType> Null => default;
 
-    public bool IsNull => Value == default;
+//     public bool IsNull => Value == default;
 
-    public static implicit operator RawType(NativeType<RawType> value) => value.Value;
+//     public static implicit operator RawType(NativeType<RawType> value) => value.Value;
 
-    public static explicit operator NativeType<RawType>(RawType value) => new NativeType<RawType>(value);
+//     public static explicit operator NativeType<RawType>(RawType value) => new NativeType<RawType>(value);
 
-    public static bool operator ==(NativeType<RawType> left, NativeType<RawType> right) => left.Value == right.Value;
+//     public static bool operator ==(NativeType<RawType> left, NativeType<RawType> right) => left.Value == right.Value;
 
-    public static bool operator !=(NativeType<RawType> left, NativeType<RawType> right) => !(left == right);
+//     public static bool operator !=(NativeType<RawType> left, NativeType<RawType> right) => !(left == right);
 
-    public bool Equals(NativeType<RawType> other) => this.Value == other.Value;
+//     public bool Equals(NativeType<RawType> other) => this.Value == other.Value;
 
-    public override bool Equals(object obj) => obj is NativeType<RawType> other && this.Equals(other);
+//     public override bool Equals(object obj) => obj is NativeType<RawType> other && this.Equals(other);
 
-    public override int GetHashCode() => this.Value.GetHashCode();
+//     public override int GetHashCode() => this.Value.GetHashCode();
 
-    public override string ToString() => $"0x{this.Value:x}";
+//     public override string ToString() => $"0x{this.Value:x}";
 
-    // public static implicit operator HANDLE(NativeType<RawType> value) => new HANDLE(value.Value);
-}
+//     // public static implicit operator HANDLE(NativeType<RawType> value) => new HANDLE(value.Value);
+// }
 
 public struct NoReleaseHwnd
 {
