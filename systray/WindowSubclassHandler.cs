@@ -11,9 +11,10 @@ using static Crayon.Output;
 
 public class WindowSubclassHandler
 {
+    private WNDCLASSEXW test;
     private readonly WNDPROC _delegate;
 
-    // TODO: destructor
+    // TODO: destructor. Needs to handle other folks subclassing our window.
     public WindowSubclassHandler(NoReleaseHwnd hwnd, WindowMessageHandler.WndProcDelegate wndProc)
     {
         var originalWndProc = PInvokeSystray.GetWindowLongPtr(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);

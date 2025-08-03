@@ -7,6 +7,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 public class WindowMessageHandler
 {
+    // Nope: return types aren't compatible
+    // public static nint StaticWndProc2(IntPtr hwnd, uint msg, nuint wparam, nint lparam)
+    // {
+    //     return 0;
+    // }
+
     public static LRESULT StaticWndProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
     {
         switch (msg)
