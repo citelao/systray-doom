@@ -94,6 +94,9 @@ public class TrayIcon
     {
         switch (msg)
         {
+            // This is the special WM we registered, fired when something
+            // happens in the systray.
+            //
             // https://stackoverflow.com/a/65642709/788168
             case var cb when cb == CallbackMessage:
                 var result = HandleCallbackMessage(hwnd, msg, wParam, lParam);
@@ -119,6 +122,7 @@ public class TrayIcon
                 PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
                 Create();
 
+                // Don't replace the default window proc.
                 return new(PInvokeSystray.DefWindowProc(hwnd.AsHWND(), msg, wParam.AsWPARAM(), lParam.AsLPARAM()));
         }
         return null;
@@ -133,6 +137,11 @@ public class TrayIcon
 
         // TODO: what coordinate system is this? I think it's global, but
         // affected by the DPI setting.
+        //
+        // A few months later: probably screen coordinates (the "official" term
+        // for global coordinates), which are scaled on non-DPI-aware apps. If
+        // your app *is* per-monitor aware, then these are legit, physical
+        // pixels.
         var x = PInvokeHelpers.GET_X_LPARAM(wParam.Value);
         var y = PInvokeHelpers.GET_Y_LPARAM(wParam.Value);
 
