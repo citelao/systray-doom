@@ -63,8 +63,6 @@ bool TryDisplayContextMenu(NoReleaseHwnd hwnd, Systray.PhysicalPoint pt)
 bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
 {
     Console.WriteLine($"Context menu: {pt}");
-    // Console.WriteLine($"Client:       {pt.ToClientCoordinate(new(hwnd))}");
-    // Console.WriteLine($"Screen:       {pt.ToScaledScreenCoordinate(new(hwnd))}");
 
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
     PInvoke.SetForegroundWindow(hwnd);

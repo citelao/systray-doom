@@ -26,20 +26,6 @@ public static class PInvokeHelpers
         return (int)(wParam >> 16);
     }
 
-    unsafe internal static Point PhysicalToLogicalPointForPerMonitorDPI(HWND hwnd, Point point)
-    {
-        var copy = point;
-        THROW_IF_FALSE(PInvokeSystray.PhysicalToLogicalPointForPerMonitorDPI(hwnd, &copy));
-        return copy;
-    }
-
-    unsafe internal static Point ClientToScreen(HWND hwnd, Point point)
-    {
-        var copy = point;
-        THROW_IF_FALSE(PInvokeSystray.ClientToScreen(hwnd, &copy));
-        return copy;
-    }
-
     internal static void THROW_IF_FALSE(BOOL boolResult, string? message = null)
     {
         if (!boolResult)
