@@ -9,6 +9,8 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 using static Crayon.Output;
 
+// A systray icon.
+//
 // TODO: better name in Taskbar Personalization menu
 public class TrayIcon
 {
@@ -88,9 +90,15 @@ public class TrayIcon
         PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
     }
 
+    // *Should* set focus to the tray icon. Doesn't work.
+    //
+    // NIM_SETFOCUS seems completely broken on modern Windows 11. I cannot find
+    // a tray icon that moves focus back correctly. I wonder if this was a
+    // security change & the docs have not been updated?
+    //
+    // TODO: fix?
     public void Focus()
     {
-        // TODO: doesn't work?
         PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.Shell_NotifyIcon(
             NOTIFY_ICON_MESSAGE.NIM_SETFOCUS,
             new TrayIconMessageBuilder(guid: Guid).Build()));

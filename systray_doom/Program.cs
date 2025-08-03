@@ -431,7 +431,7 @@ var updateTrayIconFn = (byte[] bgraFrame, int width, int height) =>
     // icon, and the icon in Task Manager, although that one is currently
     // garbage data).
     //
-    // TODO: better icon when hovering app in Taskbar (it's still default icon).
+    // TODO: better icon when right-clicking app in Taskbar (it's still default icon).
     PInvoke.PostMessage(hwnd, PInvoke.WM_SETICON, PInvoke.ICON_SMALL, (LPARAM)icon.Value);
     PInvoke.PostMessage(hwnd, PInvoke.WM_SETICON, PInvoke.ICON_BIG, (LPARAM)icon.Value);
 
