@@ -199,6 +199,9 @@ void UpdateDrawingSurfaceSize(ICompositionDrawingSurfaceInterop drawingInterop, 
     windowSize = newSize;
 }
 
+// Not-quite-documented. TODO.
+const uint WM_NCUAHDRAWCAPTION = 174u; // 0xAE
+
 var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
 {
     switch (msg)
@@ -247,6 +250,12 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 Console.WriteLine($"Resizing to {newSize.Width}x{newSize.Height}");
             }
             PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(new(hwnd.Value)));
+            break;
+
+        case PInvoke.WM_SETICON:
+        case PInvoke.WM_GETICON:
+        case WM_NCUAHDRAWCAPTION:
+            // We change the icons so, so, so much (every frame), so let's not log.
             break;
 
         default:
