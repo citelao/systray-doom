@@ -37,19 +37,30 @@ public class TrayIcon
     public readonly NoReleaseHwnd OwnerHwnd;
     public readonly uint? CallbackMessage = null;
 
+    //
+    // EVENT HANDLERS!
+    //
+
     // Context menu handler callback. Fired when a user right-clicks on the
-    // systray icon or presses Shift-F10 on the keyboard with the icon focused.
+    // systray icon or presses Shift-F10 with the icon focused.
     //
     // Includes the clicked coordinate: this is *always* in physical pixels &
-    // screen coordinates, no matter what your app is.
+    // screen coordinates, even if your app is not DPI-aware.
     //
     // Return true to indicate that the message was handled.
     public ContextMenuHandler? ContextMenu;
     public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, PhysicalPoint pt);
 
-    // TBD: coordinate space.
+    // Select handler callback. Fired when a user clicks the systray icon or
+    // presses Enter with the icon focused.
+    //
+    // Includes the clicked coordinate: this is *always* in physical pixels &
+    // screen coordinates, even if your app is not DPI-aware.
+    //
+    // Return true to indicate that the message was handled.
     public SelectHandler? Select;
     public delegate bool SelectHandler(NoReleaseHwnd hwnd, Point pt);
+
     // public delegate LRESULT? MouseMoveHandler(HWND hwnd, int x, int y);
     // public MouseMoveHandler? MouseMove;
     // public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
