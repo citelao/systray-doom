@@ -12,19 +12,19 @@ internal class WindowMessageHandler
     {
         switch (msg)
         {
-            case PInvokeSystray.WM_NCCREATE:
+            case PInvoke.WM_NCCREATE:
                 unsafe
                 {
                     var createStruct = (CREATESTRUCTW*)lParam.Value;
                     var data = (Data*)createStruct->lpCreateParams;
-                    PInvokeSystray.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, (nint)data);
+                    PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, (nint)data);
                 }
-                return PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam);
+                return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
 
             default:
                 unsafe
                 {
-                    var data = (Data*)PInvokeSystray.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
+                    var data = (Data*)PInvoke.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
                     if (data != null)
                     {
                         var that = Marshal.GetDelegateForFunctionPointer<WndProcDelegate>(data->WndProcDelegate);
@@ -36,7 +36,7 @@ internal class WindowMessageHandler
                     }
                 }
 
-                return PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam);
+                return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
         }
     }
 

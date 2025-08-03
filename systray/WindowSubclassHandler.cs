@@ -2,6 +2,7 @@ namespace Systray;
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Systray.NativeTypes;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -36,10 +37,18 @@ public class WindowSubclassHandler
         // No addl work.
     }
 
+    internal unsafe delegate LRESULT CustomWNDPROC(HWND param0, uint param1, WPARAM param2, LPARAM param3);
+
+    [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "CallWindowProcW")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [SupportedOSPlatform("windows5.0")]
+    internal static extern LRESULT CallWindowProc(Delegate lpPrevWndFunc, HWND hWnd, uint Msg, WPARAM wParam, LPARAM lParam);
+
     internal WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegateInternal wndProc)
     {
         var originalWndProc = PInvokeSystray.GetWindowLongPtr(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
-        var originalWndProcDel = Marshal.GetDelegateForFunctionPointer<WNDPROC>(originalWndProc);
+        var originalWndProcDel = Marshal.GetDelegateForFunctionPointer(originalWndProc, typeof(WNDPROC));
+        // WNDPROC originalWndProcV2 = (hwnd, msg, wparam, lparam) => originalWndProcDel(hwnd, msg, wparam, lparam);
         _delegate = (hwnd, msg, wParam, lParam) =>
         {
             var result = wndProc(hwnd, msg, wParam, lParam);
@@ -47,7 +56,7 @@ public class WindowSubclassHandler
             {
                 return result.Value;
             }
-            return PInvokeSystray.CallWindowProc(originalWndProcDel, hwnd, msg, wParam, lParam);
+            return CallWindowProc(originalWndProcDel!, hwnd, msg, wParam, lParam);
         };
 
         var otherWndProc = PInvokeSystray.SetWindowLongPtr(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
