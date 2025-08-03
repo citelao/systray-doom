@@ -90,7 +90,7 @@ public class TrayIcon
             new TrayIconMessageBuilder(guid: Guid).Build()));
     }
 
-    private Lresult? HandleMessage(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam)
+    private LRESULT? HandleMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
     {
         switch (msg)
         {
@@ -107,7 +107,7 @@ public class TrayIcon
                     return result;
                 }
 
-                return new(PInvokeSystray.DefWindowProc(hwnd.AsHWND(), msg, wParam.AsWPARAM(), lParam.AsLPARAM()));
+                return new(PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam));
 
             case var tkwm when tkwm == s_taskbarCreatedWindowMessage:
                 // Fired if Explorer crashes & restarts, or if the primary
@@ -123,13 +123,13 @@ public class TrayIcon
                 Create();
 
                 // Don't replace the default window proc.
-                return new(PInvokeSystray.DefWindowProc(hwnd.AsHWND(), msg, wParam.AsWPARAM(), lParam.AsLPARAM()));
+                return new(PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam));
         }
         return null;
     }
 
     // Parse & dispatch well-known messages.
-    private Lresult? HandleCallbackMessage(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam)
+    private LRESULT? HandleCallbackMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
     {
         // Console.WriteLine("Tray icon message received.");
         var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
@@ -153,7 +153,7 @@ public class TrayIcon
                 // var pt = new Point(x, y);
                 // var client = PInvokeSystray.ScreenToClient(hwnd, ref pt);
                 // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
-                return (ContextMenu?.Invoke(hwnd, x, y) ?? false) ? new Lresult(0) : null;
+                return (ContextMenu?.Invoke(new(hwnd), x, y) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.WM_MOUSEMOVE:
                 Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
@@ -189,7 +189,7 @@ public class TrayIcon
 
             case PInvokeSystray.NIN_SELECT:
                 Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
-                return (Select?.Invoke(hwnd, x, y) ?? false) ? new Lresult(0) : null;
+                return (Select?.Invoke(new(hwnd), x, y) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.NIN_BALLOONSHOW:
                 Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
