@@ -37,9 +37,9 @@ public class TrayIcon
     public readonly uint? CallbackMessage = null;
 
     // Return true to indicate that the message was handled.
-    public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, int x, int y);
+    public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, Point pt);
     public ContextMenuHandler? ContextMenu;
-    public delegate bool SelectHandler(NoReleaseHwnd hwnd, int x, int y);
+    public delegate bool SelectHandler(NoReleaseHwnd hwnd, Point pt);
     public SelectHandler? Select;
     // public delegate LRESULT? MouseMoveHandler(HWND hwnd, int x, int y);
     // public MouseMoveHandler? MouseMove;
@@ -167,7 +167,7 @@ public class TrayIcon
                 // var pt = new Point(x, y);
                 // var client = PInvokeSystray.ScreenToClient(hwnd, ref pt);
                 // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
-                return (ContextMenu?.Invoke(new(hwnd), x, y) ?? false) ? new LRESULT(0) : null;
+                return (ContextMenu?.Invoke(new(hwnd), new(x, y)) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.WM_MOUSEMOVE:
                 Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
@@ -203,7 +203,7 @@ public class TrayIcon
 
             case PInvokeSystray.NIN_SELECT:
                 Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
-                return (Select?.Invoke(new(hwnd), x, y) ?? false) ? new LRESULT(0) : null;
+                return (Select?.Invoke(new(hwnd), new(x, y)) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.NIN_BALLOONSHOW:
                 Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));

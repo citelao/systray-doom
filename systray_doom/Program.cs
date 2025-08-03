@@ -55,12 +55,12 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 TrayIcon trayIcon = null!;
 Doom doom = null!;
 
-bool TryDisplayContextMenu(NoReleaseHwnd hwnd, int x, int y)
+bool TryDisplayContextMenu(NoReleaseHwnd hwnd, Systray.Point pt)
 {
-    return TryDisplayContextMenuRaw(new(hwnd.Value), x, y);
+    return TryDisplayContextMenuRaw(new(hwnd.Value), pt);
 }
 
-bool TryDisplayContextMenuRaw(HWND hwnd, int x, int y)
+bool TryDisplayContextMenuRaw(HWND hwnd, Systray.Point pt)
 {
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
     PInvoke.SetForegroundWindow(hwnd);
@@ -105,8 +105,8 @@ bool TryDisplayContextMenuRaw(HWND hwnd, int x, int y)
         var response = PInvoke.TrackPopupMenuEx(
             new NoReleaseSafeHandle((int)menu.Value),
             (uint)(flags),
-            x,
-            y,
+            pt.X,
+            pt.Y,
             hwnd,
             null);
         if (response == 0)
@@ -371,12 +371,13 @@ static Windows.Win32.Graphics.Direct2D.ID2D1Bitmap1 CreateBitmapFromFrame(Window
 trayIcon = new TrayIcon(Constants.SystrayGuid, new(hwnd), callbackMessage: trayIconMessage)
 {
     Tooltip = "Hello, Windows!",
-    ContextMenu = (hwnd, x, y) =>
+    ContextMenu = (hwnd, pt) =>
     {
-        TryDisplayContextMenu(hwnd, x, y);
+        // TODO: why is this behind the taskbar when invoked via keyboard?
+        TryDisplayContextMenu(hwnd, pt);
         return true;
     },
-    Select = (hwnd, x, y) =>
+    Select = (hwnd, pt) =>
     {
         // TODO: reactivate any window that has been covered.
         var fullHwnd = new HWND(hwnd.Value);
