@@ -41,8 +41,8 @@ public class TrayIcon
     // EVENT HANDLERS!
     //
 
-    // Context menu handler callback. Fired when a user right-clicks on the
-    // systray icon or presses Shift-F10 with the icon focused.
+    // Context menu callback. Fired when a user right-clicks on the systray icon
+    // or presses Shift-F10 with the icon focused.
     //
     // Includes the clicked coordinate: this is *always* in physical pixels &
     // screen coordinates, even if your app is not DPI-aware.
@@ -51,18 +51,25 @@ public class TrayIcon
     public ContextMenuHandler? ContextMenu;
     public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, PhysicalPoint pt);
 
-    // Select handler callback. Fired when a user clicks the systray icon or
-    // presses Enter with the icon focused.
+    // Select callback. Fired when a user clicks the systray icon or presses
+    // Enter with the icon focused.
     //
     // Includes the clicked coordinate: this is *always* in physical pixels &
     // screen coordinates, even if your app is not DPI-aware.
     //
     // Return true to indicate that the message was handled.
     public SelectHandler? Select;
-    public delegate bool SelectHandler(NoReleaseHwnd hwnd, Point pt);
+    public delegate bool SelectHandler(NoReleaseHwnd hwnd, PhysicalPoint pt);
 
-    // public delegate LRESULT? MouseMoveHandler(HWND hwnd, int x, int y);
-    // public MouseMoveHandler? MouseMove;
+    // Mouse move callback. Fired when the mouse moves over the systray icon.
+    //
+    // Includes the hovered coordinate: this is *always* in physical pixels &
+    // screen coordinates, even if your app is not DPI-aware.
+    //
+    // Return true to indicate that the message was handled.
+    public MouseMoveHandler? MouseMove;
+    public delegate bool MouseMoveHandler(NoReleaseHwnd hwnd, Point point);
+
     // public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
     // public CallbackMessageHandlerDelegate? CallbackMessageHandler;
 
@@ -191,7 +198,7 @@ public class TrayIcon
 
             case PInvokeSystray.WM_MOUSEMOVE:
                 Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
-                break;
+                return (MouseMove?.Invoke(new(hwnd), new(x, y)) ?? false) ? new LRESULT(0) : null;
 
             case PInvokeSystray.WM_LBUTTONDOWN:
                 Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
