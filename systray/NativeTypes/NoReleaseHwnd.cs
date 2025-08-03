@@ -4,12 +4,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
-// TODO: generalize into TypedIntPtr?
-// TODO: can we simply make a subset of PInvoke types public?
+// // TODO: generalize into TypedIntPtr?
+// // TODO: can we simply make a subset of PInvoke types public?
 // [DebuggerDisplay("{Value}")]
 // public readonly partial struct NativeType<RawType>
 //     : IEquatable<NativeType<RawType>>
-//     where RawType : class, IEquatable<RawType>
+//     where RawType : IEquatable<RawType>
 // {
 //     public readonly RawType Value;
 
@@ -17,7 +17,8 @@ namespace Systray.NativeTypes;
 
 //     public static NativeType<RawType> Null => default;
 
-//     public bool IsNull => Value == default;
+//     // public bool IsNull => Value == default;
+//     public bool IsNull => this == Null;
 
 //     public static implicit operator RawType(NativeType<RawType> value) => value.Value;
 
@@ -102,6 +103,18 @@ public struct Wparam
     }
 
     internal WPARAM AsWPARAM() => new WPARAM(Value);
+}
+
+public struct Lresult
+{
+    public readonly nint Value;
+
+    public Lresult(nint value)
+    {
+        Value = value;
+    }
+
+    internal LRESULT AsLRESULT() => new LRESULT(Value);
 }
 
 public struct Lparam

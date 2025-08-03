@@ -1,6 +1,7 @@
 namespace Systray;
 
 using System.Runtime.InteropServices;
+using Systray.NativeTypes;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -33,10 +34,10 @@ public class WindowMessageHandler
                     if (data != null)
                     {
                         var that = Marshal.GetDelegateForFunctionPointer<WndProcDelegate>(data->WndProcDelegate);
-                        var result = that(hwnd, msg, wParam, lParam);
+                        var result = that(new(hwnd), msg, new(wParam), new(lParam));
                         if (result != null)
                         {
-                            return result.Value;
+                            return result.Value.AsLRESULT();
                         }
                     }
                 }
@@ -45,7 +46,7 @@ public class WindowMessageHandler
         }
     }
 
-    public delegate LRESULT? WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+    public delegate Lresult? WndProcDelegate(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam);
 
     public struct Data
     {

@@ -11,7 +11,6 @@ using static Crayon.Output;
 
 public class WindowSubclassHandler
 {
-    private WNDCLASSEXW test;
     private readonly WNDPROC _delegate;
 
     // TODO: destructor. Needs to handle other folks subclassing our window.
@@ -21,10 +20,10 @@ public class WindowSubclassHandler
         var originalWndProcDel = Marshal.GetDelegateForFunctionPointer<WNDPROC>(originalWndProc);
         _delegate = (hwnd, msg, wParam, lParam) =>
         {
-            var result = wndProc(hwnd, msg, wParam, lParam);
+            var result = wndProc(new(hwnd), msg, new(wParam), new(lParam));
             if (result != null)
             {
-                return result.Value;
+                return result.Value.AsLRESULT();
             }
             return PInvokeSystray.CallWindowProc(originalWndProcDel, hwnd, msg, wParam, lParam);
         };
