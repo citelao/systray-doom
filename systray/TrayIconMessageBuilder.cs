@@ -16,8 +16,16 @@ internal class TrayIconMessageBuilder
 
     public uint? CallbackMessage = null;
 
-    // Limited to 128 chars in Win2000+? Otherwise 64?
-    // TODO: validate
+    // Limited to 128 chars in Win2000+? Otherwise 64? The 128-char limit is
+    // certainly true on Windows 11. Anything longer than 127 chars + null will
+    // be truncated. You can test this by setting a long tooltip:
+    //
+    // ```
+    // var tenString = "1234567890";
+    // var longString = tenString + tenString + tenString + tenString + tenString +
+    //                  tenString + tenString + tenString + tenString + tenString +
+    //                  tenString + tenString + "1234567";
+    // ```
     public string? Tooltip = null;
 
     // By default, if you update an existing (v4) tray icon but *don't* specify

@@ -13,13 +13,19 @@ using static Crayon.Output;
 public class TrayIcon
 {
     private string _tooltip = string.Empty;
-    public string Tooltip {
+
+    // Tooltip to display when hovering the icon, also used as its accessible
+    // name. Will be truncated to 128 characters (including the terminating
+    // null).
+    public string Tooltip
+    {
         set { SetTooltip(value); }
         get { return _tooltip; }
     }
 
     private NoReleaseHicon _icon = new(PInvokeSystray.LoadIcon(HINSTANCE.Null, PInvokeSystray.IDI_APPLICATION));
-    public NoReleaseHicon Icon {
+    public NoReleaseHicon Icon
+    {
         set { SetIcon(value); }
         get { return _icon; }
     }
