@@ -209,7 +209,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
     switch (msg)
     {
         case PInvoke.WM_CLOSE:
-            PInvoke.DestroyWindow(new(hwnd.Value));
+            PInvoke.DestroyWindow(hwnd);
             break;
 
         case PInvoke.WM_DESTROY:
@@ -235,23 +235,23 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             break;
 
         case PInvoke.WM_SIZE:
-            var isMinimize = wParam.Value == PInvoke.SIZE_MINIMIZED;
+            var isMinimize = wParam == PInvoke.SIZE_MINIMIZED;
             if (isMinimize)
             {
-                PInvoke.ShowWindow(new(hwnd.Value), SHOW_WINDOW_CMD.SW_HIDE);
+                PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
                 // TODO: doesn't work.
                 trayIcon.Focus();
             }
             else
             {
-                var width = PInvokeHelpers.LOWORD(lParam.Value);
-                var height = PInvokeHelpers.HIWORD(lParam.Value);
+                var width = PInvokeHelpers.LOWORD(lParam);
+                var height = PInvokeHelpers.HIWORD(lParam);
                 UpdateDrawingSurfaceSize(drawingInterop, (int)width, (int)height);
                 var newSize = new Windows.Graphics.SizeInt32 { Width = (int)width, Height = (int)height };
                 Console.WriteLine($"Resizing to {newSize.Width}x{newSize.Height}");
             }
-            PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(new(hwnd.Value)));
+            PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
 
         case PInvoke.WM_SETICON:

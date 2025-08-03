@@ -1,4 +1,4 @@
-namespace Systray;
+namespace systray_doom;
 
 using System.Runtime.InteropServices;
 using Systray.NativeTypes;
@@ -6,14 +6,8 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-public class WindowMessageHandler
+internal class WindowMessageHandler
 {
-    // Nope: return types aren't compatible
-    // public static nint StaticWndProc2(IntPtr hwnd, uint msg, nuint wparam, nint lparam)
-    // {
-    //     return 0;
-    // }
-
     public static LRESULT StaticWndProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
     {
         switch (msg)
@@ -33,7 +27,7 @@ public class WindowMessageHandler
                     var data = (Data*)PInvokeSystray.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
                     if (data != null)
                     {
-                        var that = Marshal.GetDelegateForFunctionPointer<WndProcDelegateInternal>(data->WndProcDelegate);
+                        var that = Marshal.GetDelegateForFunctionPointer<WndProcDelegate>(data->WndProcDelegate);
                         var result = that(hwnd, msg, wParam, lParam);
                         if (result != null)
                         {
@@ -46,17 +40,7 @@ public class WindowMessageHandler
         }
     }
 
-    internal delegate LRESULT? WndProcDelegateInternal(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
-    public delegate Lresult? WndProcDelegate(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam);
-
-    internal static WndProcDelegateInternal ToInternalDelegate(WndProcDelegate del)
-    {
-        return (HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam) =>
-        {
-            var result = del(new(hwnd), msg, new(wParam), new(lParam));
-            return result?.AsLRESULT();
-        };
-    }
+    internal delegate LRESULT? WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
 
     public struct Data
     {
@@ -64,15 +48,9 @@ public class WindowMessageHandler
     }
     private Data _data;
 
-    private readonly WndProcDelegateInternal _wndProc;
+    private readonly WndProcDelegate _wndProc;
 
     public WindowMessageHandler(WndProcDelegate del)
-        : this(ToInternalDelegate(del))
-    {
-        // No addl work.
-    }
-
-    internal WindowMessageHandler(WndProcDelegateInternal del)
     {
         // https://github.com/ControlzEx/ControlzEx/blob/cbb56cab39ffc78d9599208826f47eeab70455f7/src/ControlzEx/Controls/GlowWindow.cs#L94
         _wndProc = del;
