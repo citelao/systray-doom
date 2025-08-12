@@ -1,80 +1,32 @@
 LoadIcon
-CreateIcon
 IDI_*
 
 // Window fns
-RegisterClassEx
-CreateWindowEx
-ShowWindow
-UpdateWindow
-AdjustWindowRectEx
 RegisterWindowMessage
-CREATESTRUCTW
-
-CreateCompatibleDC
-SelectObject
-BitBlt
-SelectObject
-DeleteDC
-
-GetModuleHandle
-LoadCursor
 DefWindowProc
 
-//GetWindowLongPtr
-//SetWindowLongPtr
+// These types are platform-specific, according to CsWin32 (although they are
+// not in practice), so we define them manually elsewhere.
+//
+// See https://github.com/microsoft/CsWin32/discussions/592
+//
+// GetWindowLongPtr
+// SetWindowLongPtr
 WINDOW_LONG_PTR_INDEX
 CallWindowProc
 
 // Pro-tip: if you ever find that a const isn't showing up when you define it
 // like `COLOR_*`, try defining the full name of one, like `COLOR_WINDOW`. You
 // should get a nice warning when trying to build.
-SYS_COLOR_INDEX
-IDC_*
 WM_*
 NIN_*
-SIZE_MINIMIZED
-CW_USEDEFAULT
-
-GetSystemMetrics
-SYSTEM_METRICS_INDEX
-
-SetForegroundWindow
-GetForegroundWindow
-IsWindowVisible
-DestroyWindow
-PostQuitMessage
-
-// Message loop
-GetMessage
-TranslateMessage
-DispatchMessage
-PostMessage
-
-// Menus
-CreatePopupMenu
-InsertMenuItem
-AppendMenu
-TrackPopupMenuEx
-TRACK_POPUP_MENU_FLAGS
-
-CalculatePopupWindowPosition
-GetMenuItemRect
-
-// DPI
-SetProcessDpiAwarenessContext
-DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
-PhysicalToLogicalPointForPerMonitorDPI
-
-GetClientRect
-ScreenToClient
-PtInRect
-ClientToScreen
 
 HRESULT
 
-//NOTIFYICONDATAW
-//Shell_NotifyIcon
+// More platform-specific APIs.
+//
+// NOTIFYICONDATAW
+// Shell_NotifyIcon
 NOTIFYICON_VERSION_4
 NOTIFY_ICON_DATA_FLAGS
 NOTIFY_ICON_INFOTIP_FLAGS
