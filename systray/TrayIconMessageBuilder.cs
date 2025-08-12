@@ -8,7 +8,7 @@ using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 /// <summary>
-/// Helper class to build a NOTIFYICONDATAW structs.
+/// Helper class to build NOTIFYICONDATAW structs.
 /// </summary>
 internal class TrayIconMessageBuilder
 {

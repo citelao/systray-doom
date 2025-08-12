@@ -1,7 +1,6 @@
 namespace Systray;
 
-using System.Drawing;
-using Windows.Win32;
+using System.ComponentModel;
 using Windows.Win32.Foundation;
 public static class PInvokeHelpers
 {
@@ -30,7 +29,7 @@ public static class PInvokeHelpers
     {
         if (!boolResult)
         {
-            throw new System.ComponentModel.Win32Exception(message);
+            throw new Win32Exception(message);
         }
     }
 
@@ -43,7 +42,7 @@ public static class PInvokeHelpers
     {
         if (result < 0)
         {
-            throw new System.ComponentModel.Win32Exception(message);
+            throw new Win32Exception(message);
         }
     }
 

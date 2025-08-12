@@ -5,13 +5,14 @@ using Windows.Win32;
 
 namespace Systray;
 
-// A point in physical screen coordinates. Unlike most points, this *is not*
-// scaled if your app is not DPI-aware & will *always* correspond to a physical
-// point on-screen.
-//
+/// <summary>
+/// A point in physical screen coordinates. Unlike most points, this *is not*
+/// scaled if your app is not DPI-aware & will *always* correspond to a physical
+/// point on-screen.
+/// </summary>
 // TODO: use source generators?
 [DebuggerDisplay("({X}, {Y})")]
-public struct PhysicalPoint
+public readonly struct PhysicalPoint
 {
     public readonly int X;
     public readonly int Y;
