@@ -13,15 +13,15 @@ namespace Systray.NativeTypes;
 
 internal static partial class PInvokeCore
 {
-    [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "GetWindowLongW", SetLastError = true)]
+    [LibraryImport("USER32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.0")]
-    private static extern nint GetWindowLongW(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex);
+    private static partial nint GetWindowLongW(IntPtr hWnd, int nIndex);
 
-    [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
+    [LibraryImport("USER32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.0")]
-    private static extern nint GetWindowLongPtrW(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex);
+    private static partial nint GetWindowLongPtrW(IntPtr hWnd, int nIndex);
 
     /// <summary>
     ///  Dynamic wrapper for GetWindowLong that works on both 32 and 64 bit.
@@ -37,8 +37,8 @@ internal static partial class PInvokeCore
     public static nint GetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex)
     {
         nint result = Environment.Is64BitProcess
-            ? GetWindowLongPtrW(hWnd, nIndex)
-            : GetWindowLongW(hWnd, nIndex);
+            ? GetWindowLongPtrW(hWnd, (int)nIndex)
+            : GetWindowLongW(hWnd, (int)nIndex);
         GC.KeepAlive(hWnd);
         return result;
     }

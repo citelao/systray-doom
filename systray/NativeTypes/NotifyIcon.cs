@@ -79,19 +79,18 @@ internal unsafe struct NOTIFYICONDATAW
     }
 };
 
-internal static class NotifyIcon
+internal static partial class NotifyIcon
 {
-    // TODO: LibraryImport
-    [DllImport("SHELL32.dll", ExactSpelling = true, EntryPoint = "Shell_NotifyIconW")]
+    [LibraryImport("SHELL32.dll", EntryPoint = "Shell_NotifyIconW")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.1.2600")]
-    internal static extern unsafe BOOL Shell_NotifyIcon(NOTIFY_ICON_MESSAGE dwMessage, NOTIFYICONDATAW* lpData);
+    internal static unsafe partial int Shell_NotifyIcon(uint dwMessage, NOTIFYICONDATAW* lpData);
 
     internal static unsafe BOOL Shell_NotifyIcon(NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData)
     {
         fixed (NOTIFYICONDATAW* lpDataLocal = &lpData)
         {
-            BOOL __result = Shell_NotifyIcon(dwMessage, lpDataLocal);
+            BOOL __result = (BOOL)Shell_NotifyIcon((uint)dwMessage, lpDataLocal);
             return __result;
         }
     }

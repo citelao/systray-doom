@@ -13,21 +13,21 @@ namespace Systray.NativeTypes;
 
 internal static partial class PInvokeCore
 {
-    [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "SetWindowLongW", SetLastError = true)]
+    [LibraryImport("USER32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.0")]
-    private static extern nint SetWindowLongW(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint dwNewLong);
+    private static partial nint SetWindowLongW(IntPtr hWnd, int nIndex, nint dwNewLong);
 
-    [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
+    [LibraryImport("USER32.dll", EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.0")]
-    private static extern nint SetWindowLongPtrW(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint dwNewLong);
+    private static partial nint SetWindowLongPtrW(IntPtr hWnd, int nIndex, nint dwNewLong);
 
     public static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint newValue)
     {
         nint result = Environment.Is64BitProcess
-            ? SetWindowLongPtrW(hWnd, nIndex, newValue)
-            : SetWindowLongW(hWnd, nIndex, (int)newValue);
+            ? SetWindowLongPtrW(hWnd, (int)nIndex, newValue)
+            : SetWindowLongW(hWnd, (int)nIndex, (int)newValue);
         GC.KeepAlive(hWnd);
         return result;
     }
