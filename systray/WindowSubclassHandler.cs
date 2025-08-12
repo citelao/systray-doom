@@ -8,7 +8,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-public class WindowSubclassHandler
+public partial class WindowSubclassHandler
 {
     // This is the easiest way to expose WindowSubclassHandler publicly
     // *without* making it harder to call internally. Simply expose a public
@@ -40,12 +40,12 @@ public class WindowSubclassHandler
     // version, so simply implement a generic P/Invoke version of CallWindowProc.
     //
     // Taken from CsWin32 generated code.
-    [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "CallWindowProcW")]
+    [LibraryImport("USER32.dll", EntryPoint = "CallWindowProcW")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.0")]
-    internal static extern LRESULT CallWindowProc(Delegate lpPrevWndFunc, HWND hWnd, uint Msg, WPARAM wParam, LPARAM lParam);
+    internal static unsafe partial Lresult CallWindowProc(delegate* unmanaged[Cdecl]<NoReleaseHwnd, uint, Wparam, Lparam, Lresult> lpPrevWndFunc, NoReleaseHwnd hWnd, uint Msg, Wparam wParam, Lparam lParam);
 
-    internal WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegateInternal wndProc)
+    internal unsafe WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegateInternal wndProc)
     {
         var originalWndProc = PInvokeCore.GetWindowLong(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
         var originalWndProcDel = Marshal.GetDelegateForFunctionPointer(originalWndProc, typeof(WNDPROC))!;
@@ -56,7 +56,8 @@ public class WindowSubclassHandler
             {
                 return result.Value;
             }
-            return CallWindowProc(originalWndProcDel, hwnd, msg, wParam, lParam);
+            var originalResult = CallWindowProc((delegate* unmanaged[Cdecl]<NoReleaseHwnd, uint, Wparam, Lparam, Lresult>)originalWndProc, new NoReleaseHwnd(hwnd), msg, new Wparam(wParam), new Lparam(lParam));
+            return originalResult.AsLRESULT();
         };
 
         var otherWndProc = PInvokeCore.SetWindowLong(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
