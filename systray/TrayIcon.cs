@@ -10,63 +10,87 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 using static Crayon.Output;
 
-// A systray icon.
-//
-// TODO: better name in Taskbar Personalization menu
+/// <summary>
+/// A systray icon.
+/// </summary>
 public class TrayIcon
 {
-    private string _tooltip = string.Empty;
-
-    // Tooltip to display when hovering the icon, also used as its accessible
-    // name. Will be truncated to 128 characters (including the terminating
-    // null).
+    /// <summary>
+    /// Tooltip to display when hovering the icon, also used as its accessible
+    /// name. Will be truncated to 128 characters (including the terminating
+    /// null).
+    /// </summary>
     public string Tooltip
     {
         set { SetTooltip(value); }
         get { return _tooltip; }
     }
+    private string _tooltip = string.Empty;
 
-    private NoReleaseHicon _icon = new(PInvokeSystray.LoadIcon(HINSTANCE.Null, PInvokeSystray.IDI_APPLICATION));
+    /// <summary>
+    /// Icon to display in the systray. Defaults to the application icon.
+    /// </summary>
     public NoReleaseHicon Icon
     {
         set { SetIcon(value); }
         get { return _icon; }
     }
+    private NoReleaseHicon _icon = new(PInvokeSystray.LoadIcon(HINSTANCE.Null, PInvokeSystray.IDI_APPLICATION));
 
+    /// <summary>
+    /// Guid to uniquely identify this (class of) tray icon. Used to preserve
+    /// pinned state for this icon, so make sure to use a consistent one for
+    /// your app.
+    /// </summary>
     public readonly Guid Guid;
+
+    /// <summary>
+    /// The owning HWND for this tray icon. Handles messages.
+    /// </summary>
     public readonly NoReleaseHwnd OwnerHwnd;
+
+    /// <summary>
+    /// The callback message to use for this tray icon. If null, icon will not
+    /// send any messages.
+    /// </summary>
     public readonly uint? CallbackMessage = null;
 
     //
     // EVENT HANDLERS!
     //
 
-    // Context menu callback. Fired when a user right-clicks on the systray icon
-    // or presses Shift-F10 with the icon focused.
-    //
-    // Includes the clicked coordinate: this is *always* in physical pixels &
-    // screen coordinates, even if your app is not DPI-aware.
-    //
-    // Return true to indicate that the message was handled.
+    /// <summary>
+    /// Context menu callback. Fired when a user right-clicks on the systray icon
+    /// or presses Shift-F10 with the icon focused.
+    ///
+    /// screen coordinates, even if your app is not DPI-aware.
+    /// Includes the clicked coordinate: this is *always* in physical pixels &
+    ///
+    /// Return true to indicate that the message was handled.
+    /// </summary>
     public ContextMenuHandler? ContextMenu;
     public delegate bool ContextMenuHandler(NoReleaseHwnd hwnd, PhysicalPoint pt);
 
-    // Select callback. Fired when a user clicks the systray icon or presses
-    // Enter with the icon focused.
-    //
-    // Includes the clicked coordinate: this is *always* in physical pixels &
-    // screen coordinates, even if your app is not DPI-aware.
-    //
-    // Return true to indicate that the message was handled.
+    /// <summary>
+    /// Select callback. Fired when a user clicks the systray icon or presses
+    /// Enter with the icon focused.
+    ///
+    /// Includes the clicked coordinate: this is *always* in physical pixels &
+    /// screen coordinates, even if your app is not DPI-aware.
+    ///
+    /// Return true to indicate that the message was handled.
+    /// </summary>
     public SelectHandler? Select;
     public delegate bool SelectHandler(NoReleaseHwnd hwnd, PhysicalPoint pt);
 
-    // Mouse move callback. Fired when the mouse moves over the systray icon.
-    //
-    // Includes the hovered coordinate: this is *always* in physical pixels &
-    // screen coordinates, even if your app is not DPI-aware.
-    //
-    // Return true to indicate that the message was handled.
+    /// <summary>
+    /// Mouse move callback. Fired when the mouse moves over the systray icon.
+    ///
+    /// Includes the hovered coordinate: this is *always* in physical pixels &
+    /// screen coordinates, even if your app is not DPI-aware.
+    ///
+    /// Return true to indicate that the message was handled.
+    /// </summary>
     public MouseMoveHandler? MouseMove;
     public delegate bool MouseMoveHandler(NoReleaseHwnd hwnd, Point point);
 
@@ -102,8 +126,10 @@ public class TrayIcon
         Create();
     }
 
-    // Re-create the icon; useful if Explorer crashes (though we handle that
-    // automatically).
+    /// <summary>
+    /// Re-create the icon; useful if Explorer crashes (though we handle that
+    /// automatically).
+    /// </summary>
     public void Create()
     {
         var notificationIconData = new TrayIconMessageBuilder(guid: Guid)
@@ -117,13 +143,15 @@ public class TrayIcon
         PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
     }
 
-    // *Should* set focus to the tray icon. Doesn't work.
-    //
-    // NIM_SETFOCUS seems completely broken on modern Windows 11. I cannot find
-    // a tray icon that moves focus back correctly. I wonder if this was a
-    // security change & the docs have not been updated?
-    //
-    // TODO: fix?
+    /// <summary>
+    /// *Should* set focus to the tray icon. Doesn't work.
+    ///
+    /// NIM_SETFOCUS seems completely broken on modern Windows 11. I cannot find
+    /// a tray icon that moves focus back correctly. I wonder if this was a
+    /// security change & the docs have not been updated?
+    ///
+    /// TODO: fix?
+    /// </summary>
     public void Focus()
     {
         PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(
