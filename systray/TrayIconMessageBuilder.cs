@@ -16,9 +16,9 @@ internal class TrayIconMessageBuilder
 
     public uint? CallbackMessage = null;
 
-    // Limited to 128 chars in Win2000+? Otherwise 64? The 128-char limit is
-    // certainly true on Windows 11. Anything longer than 127 chars + null will
-    // be truncated. You can test this by setting a long tooltip:
+    // Limited to 128 chars in Win2000+ (otherwise 64?). Anything longer than
+    // 127 chars + null will be truncated. You can test this by setting a long
+    // tooltip:
     //
     // ```
     // var tenString = "1234567890";
@@ -45,7 +45,7 @@ internal class TrayIconMessageBuilder
         Guid = guid;
     }
 
-    public NOTIFYICONDATAW Build()
+    public NativeTypes.NOTIFYICONDATAW Build()
     {
         // Generate the flags for the notification.
         //
@@ -76,10 +76,10 @@ internal class TrayIconMessageBuilder
         // https://learn.microsoft.com/en-us/windows/win32/shell/notification-area
         // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataa
         // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shell_notifyicona
-        return new NOTIFYICONDATAW()
+        return new NativeTypes.NOTIFYICONDATAW()
         {
             // Required. You need to include the size of this struct.
-            cbSize = (uint)Marshal.SizeOf<NOTIFYICONDATAW>(),
+            cbSize = (uint)Marshal.SizeOf<NativeTypes.NOTIFYICONDATAW>(),
 
             // Required (for ADD). An HWND is required to register the icon with
             // the system. Window messages go there.
@@ -99,7 +99,7 @@ internal class TrayIconMessageBuilder
             hIcon = Icon.AsHICON(),
 
             // Optional. You probably want a tooltip for your icon, though.
-            szTip = Tooltip,
+            Tip = Tooltip,
 
             // Required. A GUID to identify the icon. This should be persistent
             // across launches and unique to your app!
@@ -126,8 +126,8 @@ internal class TrayIconMessageBuilder
             dwState = 0,
             dwStateMask = 0,
             hBalloonIcon = default,
-            szInfo = null,
-            szInfoTitle = null,
+            Info = null,
+            InfoTitle = null,
             uID = 0,
         };
     }

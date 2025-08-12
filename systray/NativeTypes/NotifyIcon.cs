@@ -7,37 +7,74 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
-internal struct NOTIFYICONDATAW
+// Adapted from CsWin32 definition & WinForms version.
+//
+// https://github.com/dotnet/winforms/blob/main/src/System.Windows.Forms.Primitives/src/Windows/Win32/UI/Shell/NOTIFYICONDATAW.cs
+internal unsafe struct NOTIFYICONDATAW
 {
-    internal uint cbSize;
-    internal HWND hWnd;
-    internal uint uID;
-    internal NOTIFY_ICON_DATA_FLAGS uFlags;
-    internal uint uCallbackMessage;
-    internal HICON hIcon;
-    internal __char_128 szTip;
-    internal NOTIFY_ICON_STATE dwState;
-    internal NOTIFY_ICON_STATE dwStateMask;
-    internal __char_256 szInfo;
-    internal _Anonymous_e__Union Anonymous;
-    internal __char_64 szInfoTitle;
-    internal NOTIFY_ICON_INFOTIP_FLAGS dwInfoFlags;
-    internal Guid guidItem;
-    internal HICON hBalloonIcon;
+    public uint cbSize;
+    public HWND hWnd;
+    public uint uID;
+    public NOTIFY_ICON_DATA_FLAGS uFlags;
+    public uint uCallbackMessage;
+    public HICON hIcon;
+    public fixed char _szTip[128];
+    public NOTIFY_ICON_STATE dwState;
+    public NOTIFY_ICON_STATE dwStateMask;
+    public fixed char _szInfo[256];
+    public _Anonymous_e__Union Anonymous;
+    public fixed char _szInfoTitle[64];
+    public NOTIFY_ICON_INFOTIP_FLAGS dwInfoFlags;
+    public Guid guidItem;
+    public HICON hBalloonIcon;
 
     [StructLayout(LayoutKind.Explicit)]
-    internal partial struct _Anonymous_e__Union
+    public partial struct _Anonymous_e__Union
     {
         [FieldOffset(0)]
-        internal uint uTimeout;
+        public uint uTimeout;
 
         [FieldOffset(0)]
-        internal uint uVersion;
+        public uint uVersion;
+    }
+
+    private Span<char> szTip
+    {
+        get { fixed (char* c = _szTip) { return new Span<char>(c, 128); } }
+    }
+
+    public ReadOnlySpan<char> Tip
+    {
+        get => szTip.SliceAtFirstNull();
+        set => value.CopyAndTerminate(szTip);
+    }
+
+    private Span<char> szInfo
+    {
+        get { fixed (char* c = _szInfo) { return new Span<char>(c, 256); } }
+    }
+
+    public ReadOnlySpan<char> Info
+    {
+        get => szInfo.SliceAtFirstNull();
+        set => value.CopyAndTerminate(szInfo);
+    }
+
+    private Span<char> szInfoTitle
+    {
+        get { fixed (char* c = _szInfoTitle) { return new Span<char>(c, 64); } }
+    }
+
+    public ReadOnlySpan<char> InfoTitle
+    {
+        get => szInfoTitle.SliceAtFirstNull();
+        set => value.CopyAndTerminate(szInfoTitle);
     }
 };
 
 internal static class NotifyIcon
 {
+    // TODO: LibraryImport
     [DllImport("SHELL32.dll", ExactSpelling = true, EntryPoint = "Shell_NotifyIconW")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [SupportedOSPlatform("windows5.1.2600")]
