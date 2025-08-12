@@ -8,8 +8,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-using static Crayon.Output;
-
 public class WindowSubclassHandler
 {
     // This is the easiest way to expose WindowSubclassHandler publicly
@@ -49,7 +47,7 @@ public class WindowSubclassHandler
 
     internal WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegateInternal wndProc)
     {
-        var originalWndProc = PInvokeSystray.GetWindowLongPtr(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
+        var originalWndProc = PInvokeCore.GetWindowLong(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
         var originalWndProcDel = Marshal.GetDelegateForFunctionPointer(originalWndProc, typeof(WNDPROC))!;
         _delegate = (hwnd, msg, wParam, lParam) =>
         {
@@ -61,7 +59,7 @@ public class WindowSubclassHandler
             return CallWindowProc(originalWndProcDel, hwnd, msg, wParam, lParam);
         };
 
-        var otherWndProc = PInvokeSystray.SetWindowLongPtr(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
+        var otherWndProc = PInvokeCore.SetWindowLong(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
         Debug.Assert(otherWndProc == originalWndProc);
     }
 }

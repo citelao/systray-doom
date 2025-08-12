@@ -21,8 +21,8 @@ GetModuleHandle
 LoadCursor
 DefWindowProc
 
-GetWindowLongPtr
-SetWindowLongPtr
+//GetWindowLongPtr
+//SetWindowLongPtr
 WINDOW_LONG_PTR_INDEX
 CallWindowProc
 
