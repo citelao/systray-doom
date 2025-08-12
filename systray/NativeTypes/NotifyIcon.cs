@@ -7,9 +7,15 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
+// The CsWin32-generated Shell_NotifyIcon APIs are platform-specific (and don't
+// support the AnyCpu build), even though in practice they do not change
+// per-architecture. So match WinForms & simply define the struct here.
+//
 // Adapted from CsWin32 definition & WinForms version.
 //
 // https://github.com/dotnet/winforms/blob/main/src/System.Windows.Forms.Primitives/src/Windows/Win32/UI/Shell/NOTIFYICONDATAW.cs
+//
+// See  https://github.com/microsoft/CsWin32/discussions/592
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 internal unsafe struct NOTIFYICONDATAW
 {
