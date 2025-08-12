@@ -15,7 +15,7 @@ namespace Systray.NativeTypes;
 //
 // https://github.com/dotnet/winforms/blob/main/src/System.Windows.Forms.Primitives/src/Windows/Win32/UI/Shell/NOTIFYICONDATAW.cs
 //
-// See  https://github.com/microsoft/CsWin32/discussions/592
+// See https://github.com/microsoft/CsWin32/discussions/592
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 internal unsafe struct NOTIFYICONDATAW
 {

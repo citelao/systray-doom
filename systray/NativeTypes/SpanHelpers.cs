@@ -1,5 +1,5 @@
 // From WinForms
-// https://github.com/dotnet/winforms/blob/53b30edce6ac9b61e868676d2f58e3ca97c44db0/src/System.Private.Windows.Core/src/System/SpanHelpers.cs#L31
+// https://github.com/dotnet/winforms/blob/53b30edce6ac9b61e868676d2f58e3ca97c44db0/src/System.Private.Windows.Core/src/System/SpanHelpers.cs
 //
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
