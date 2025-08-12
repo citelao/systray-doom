@@ -7,8 +7,9 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-// TODO: should this be public? We'd need an opaque-ish wrapper for the
-// NOTIFYICONDATAW.
+/// <summary>
+/// Helper class to build a NOTIFYICONDATAW structs.
+/// </summary>
 internal class TrayIconMessageBuilder
 {
     public Guid Guid;
@@ -16,24 +17,28 @@ internal class TrayIconMessageBuilder
 
     public uint? CallbackMessage = null;
 
-    // Limited to 128 chars in Win2000+ (otherwise 64?). Anything longer than
-    // 127 chars + null will be truncated. You can test this by setting a long
-    // tooltip:
-    //
-    // ```
-    // var tenString = "1234567890";
-    // var longString = tenString + tenString + tenString + tenString + tenString +
-    //                  tenString + tenString + tenString + tenString + tenString +
-    //                  tenString + tenString + "1234567";
-    // ```
+    /// <summary>
+    /// Limited to 128 chars in Win2000+ (otherwise 64?). Anything longer than
+    /// 127 chars + null will be truncated. You can test this by setting a long
+    /// tooltip:
+    ///
+    /// ```
+    /// var tenString = "1234567890";
+    /// var longString = tenString + tenString + tenString + tenString + tenString +
+    ///                  tenString + tenString + tenString + tenString + tenString +
+    ///                  tenString + tenString + "1234567";
+    /// ```
+    /// </summary>
     public string? Tooltip = null;
 
-    // By default, if you update an existing (v4) tray icon but *don't* specify
-    // that it should continue showing a tooltip, any existing tooltip will be
-    // hidden. We invert that behavior here.
-    //
-    // If you are updating a tray icon and explicitly want to hide any existing
-    // tooltips, set this to false.
+    /// <summary>
+    /// By default, if you update an existing (v4) tray icon but *don't* specify
+    /// that it should continue showing a tooltip, any existing tooltip will be
+    /// hidden. We invert that behavior here.
+    ///
+    /// If you are updating a tray icon and explicitly want to hide any existing
+    /// tooltips, set this to false.
+    /// </summary>
     public bool ShowTooltip = true;
 
     public NoReleaseHicon Icon = NoReleaseHicon.Null;
