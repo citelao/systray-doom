@@ -24,12 +24,22 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 
 ## TODO
 
+### Blockers
+
+* [x] Split off systray code into a library
+* [x] Support AnyCPU target
+* [ ] Support `<DisableRuntimeMarshalling>True</DisableRuntimeMarshalling>`
+* [ ] ^ Fix `WindowSubclassHandler` to support non-marshalled delegates.
+* [ ] License (ensure we cite WinForms)
+* [ ] Publish to NuGet
+* [ ] Add unit tests
+
+### Nice-to-have
+
+* [ ] Reorganize internal types (`NoReleaseHwnd`, `NoReleaseSafeHandle`, etc.)
 * [ ] Upgrade to a newer commit of Doomgeneric (specifically, one after the [sound commit](https://github.com/ozkl/doomgeneric/commit/d0946b46cf617467f014a25e264fd952698a13f9))
 * [x] Automatically build the Rust bindings before building & launching the C#.
 * [x] Deploy the Rust DLL alongside the C# so that you can run `dotnet run` anywhere.
-* [x] Support AnyCPU target
-* [ ] Support `<DisableRuntimeMarshalling>True</DisableRuntimeMarshalling>`
-* [x] Split off systray code into a library
 * [ ] Better name in Taskbar personalization menu
 * [ ] Better logging
 
