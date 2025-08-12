@@ -10,6 +10,7 @@ namespace Systray.NativeTypes;
 // Adapted from CsWin32 definition & WinForms version.
 //
 // https://github.com/dotnet/winforms/blob/main/src/System.Windows.Forms.Primitives/src/Windows/Win32/UI/Shell/NOTIFYICONDATAW.cs
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 internal unsafe struct NOTIFYICONDATAW
 {
     public uint cbSize;
