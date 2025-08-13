@@ -1,4 +1,4 @@
-﻿using Systray;
+﻿using Systray.NativeTypes;
 
 namespace Systray.UnitTests;
 
@@ -9,6 +9,15 @@ public class TrayIconUnitTests
     [Fact]
     public void TestBasicPropertyValidation()
     {
-        var icon = new Systray.TrayIcon(guid: s_guid, ownerHwnd: Systray.NoReleaseHwnd.Null, shouldHandleMessages: false, callbackMessage: 0x0400 + 1);
+        uint callbackMessage = 0x0400 + 1;
+        var icon = new TrayIcon(
+            guid: s_guid,
+            ownerHwnd: NoReleaseHwnd.Null,
+            shouldHandleMessages: false,
+            callbackMessage: callbackMessage);
+
+        Assert.Equal(s_guid, icon.Guid);
+        Assert.Equal(NoReleaseHwnd.Null, icon.OwnerHwnd);
+        Assert.Equal(callbackMessage, icon.CallbackMessage);
     }
 }
