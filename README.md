@@ -22,6 +22,21 @@ cd ..
 dotnet run --project .\systray_doom\systray_doom.csproj
 ```
 
+### Publishing versions
+
+```pwsh
+# Create the nupkg
+# https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
+dontnet build -c release
+dotnet pack
+# => Systray\bin\Release\Citelao.Systray.1.0.0.nupkg
+
+# Get an API key...
+
+# Push to Nuget
+dotnet nuget push .\Systray\bin\Release\Citelao.Systray.1.0.0.nupkg --api-key $apiKey
+```
+
 ## TODO
 
 ### Blockers
@@ -30,7 +45,8 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 * [x] Support AnyCPU target
 * [ ] Support `<DisableRuntimeMarshalling>True</DisableRuntimeMarshalling>`
 * [ ] ^ Fix `WindowSubclassHandler` to support non-marshalled delegates.
-* [ ] License (ensure we cite WinForms)
+* [x] License (ensure we cite WinForms)
+* [ ] Add README to package
 * [ ] Publish to NuGet
 * [ ] Add unit tests
 
