@@ -63,8 +63,8 @@ public class TrayIcon
     /// Context menu callback. Fired when a user right-clicks on the systray icon
     /// or presses Shift-F10 with the icon focused.
     ///
-    /// screen coordinates, even if your app is not DPI-aware.
     /// Includes the clicked coordinate: this is *always* in physical pixels &
+    /// screen coordinates, even if your app is not DPI-aware.
     ///
     /// Return true to indicate that the message was handled.
     /// </summary>
