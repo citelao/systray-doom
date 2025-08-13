@@ -27,7 +27,7 @@
     <!-- TODO: better repo? -->
     <PackageProjectUrl>https://github.com/citelao/systray-doom/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/citelao/systray-doom/</RepositoryUrl>
-    <PackageTags>Windows;Win32;Tray;Notify;Systray</PackageTags>
+    <PackageTags>Windows;Win32;Tray;Notify;Systray;NotifyIcon</PackageTags>
 
     <!-- TODO: readme -->
 
@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
     <None Include="LICENSE.txt" Pack="true" PackagePath="\" />
     <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>

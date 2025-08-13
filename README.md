@@ -10,6 +10,10 @@ git clone https://github.com/citelao/systray-doom
 # cp somethingsomething
 ```
 
+## Usage
+
+For usage of the systray library, see [the Systray README](./Systray/README.md).
+
 ## Dev
 
 ```pwsh
@@ -34,7 +38,7 @@ dotnet pack
 # Get an API key...
 
 # Push to Nuget
-dotnet nuget push .\Systray\bin\Release\Citelao.Systray.1.0.0.nupkg --api-key $apiKey
+dotnet nuget push .\Systray\bin\Release\Citelao.Systray.1.0.0.nupkg --api-key $apiKey --todo
 ```
 
 ## TODO
@@ -49,6 +53,7 @@ dotnet nuget push .\Systray\bin\Release\Citelao.Systray.1.0.0.nupkg --api-key $a
 * [ ] Add README to package
 * [ ] Publish to NuGet
 * [ ] Add unit tests
+* [ ] Cleaner public types
 
 ### Nice-to-have
 
