@@ -42,3 +42,7 @@ var trayIcon = new TrayIcon(
 ```
 
 For a full example, see https://github.com/citelao/systray-doom/.
+
+## Feedback
+
+The project repo is here: https://github.com/citelao/systray-doom/.

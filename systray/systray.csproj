@@ -17,19 +17,17 @@
    -->
   <PropertyGroup>
     <PackageId>citelao.SystrayIcon</PackageId>
-    <!-- TODO: increase package version -->
-    <Version>0.1.0.0</Version>
+    <Version>0.1.0.1</Version>
     <Authors>Ben Stolovitz (citelao)</Authors>
 
     <Description>An unopinionated cross-architecture library for creating systray icons (Shell_NotifyIcon). No WinForms or WPF.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright © 2024-$([System.DateTime]::Now.ToString('yyyy')) - Benjamin Stolovitz (citelao)</Copyright>
     <!-- TODO: better repo? -->
     <PackageProjectUrl>https://github.com/citelao/systray-doom/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/citelao/systray-doom/</RepositoryUrl>
     <PackageTags>Windows;Win32;Tray;Notify;Systray;NotifyIcon</PackageTags>
-
-    <!-- TODO: readme -->
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

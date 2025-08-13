@@ -29,16 +29,22 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 ### Publishing versions
 
 ```pwsh
+# Bump the version
+# In systray.csproj, bump `<Version>`.
+
 # Create the nupkg
 # https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
-dontnet build -c release
-dotnet pack
-# => Systray\bin\Release\Citelao.Systray.1.0.0.nupkg
+dotnet build -c release
+# => Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg
 
-# Get an API key...
+# Get an API key
+# https://int.nugettest.org/account/apikeys
+$apiKey = # paste from the website
 
 # Push to Nuget
-dotnet nuget push .\Systray\bin\Release\Citelao.Systray.1.0.0.nupkg --api-key $apiKey --todo
+dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+# Dummy Nuget:
+# dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg --api-key $apiKey --source https://int.nugettest.org
 ```
 
 ## TODO
@@ -50,7 +56,7 @@ dotnet nuget push .\Systray\bin\Release\Citelao.Systray.1.0.0.nupkg --api-key $a
 * [ ] Support `<DisableRuntimeMarshalling>True</DisableRuntimeMarshalling>`
 * [ ] ^ Fix `WindowSubclassHandler` to support non-marshalled delegates.
 * [x] License (ensure we cite WinForms)
-* [ ] Add README to package
+* [x] Add README to package
 * [ ] Publish to NuGet
 * [ ] Add unit tests
 * [ ] Cleaner public types
