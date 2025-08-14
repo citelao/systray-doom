@@ -97,6 +97,10 @@ public class TrayIcon
     // public delegate LRESULT? CallbackMessageHandlerDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
     // public CallbackMessageHandlerDelegate? CallbackMessageHandler;
 
+    // Delegate exposed for testing.
+    internal delegate BOOL Shell_NotifyIconDelegate(NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData);
+    internal static Shell_NotifyIconDelegate Shell_NotifyIconFn = NotifyIcon.Shell_NotifyIcon;
+
     // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
     // owns the window proc delegate.
     private readonly WindowSubclassHandler? _windowSubclassHandler = null;
@@ -139,8 +143,8 @@ public class TrayIcon
             Icon = _icon,
             CallbackMessage = CallbackMessage,
         }.Build();
-        PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
-        PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
+        PInvokeHelpers.THROW_IF_FALSE(Shell_NotifyIconFn(NOTIFY_ICON_MESSAGE.NIM_ADD, notificationIconData), "Failed to add icon to the notification area.");
+        PInvokeHelpers.THROW_IF_FALSE(Shell_NotifyIconFn(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, notificationIconData), "Failed to set version of icon in the notification area.");
     }
 
     /// <summary>
@@ -154,7 +158,7 @@ public class TrayIcon
     /// </summary>
     public void Focus()
     {
-        PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(
+        PInvokeHelpers.THROW_IF_FALSE(Shell_NotifyIconFn(
             NOTIFY_ICON_MESSAGE.NIM_SETFOCUS,
             new TrayIconMessageBuilder(guid: Guid).Build()));
     }
@@ -187,8 +191,8 @@ public class TrayIcon
 
                 // Re-create the icon.
                 var notificationIconData = new TrayIconMessageBuilder(guid: Guid).Build();
-                // PInvokeHelpers.THROW_IF_FALSE(NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
-                NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
+                // PInvokeHelpers.THROW_IF_FALSE(Shell_NotifyIconFn(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData), "Failed to add icon to the notification area.");
+                Shell_NotifyIconFn(NOTIFY_ICON_MESSAGE.NIM_DELETE, notificationIconData);
                 Create();
 
                 // Don't replace the default window proc.
@@ -298,7 +302,7 @@ public class TrayIcon
         {
             Tooltip = newTip,
         }.Build();
-        if (!NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+        if (!Shell_NotifyIconFn(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
@@ -311,7 +315,7 @@ public class TrayIcon
         {
             Icon = newIcon,
         }.Build();
-        if (!NotifyIcon.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
+        if (!Shell_NotifyIconFn(NOTIFY_ICON_MESSAGE.NIM_MODIFY, notificationIconData))
         {
             throw new Exception("Failed to modify icon in the notification area.");
         }
