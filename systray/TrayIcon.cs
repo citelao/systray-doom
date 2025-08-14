@@ -101,12 +101,16 @@ public class TrayIcon
     internal delegate BOOL Shell_NotifyIconDelegate(NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData);
     internal static Shell_NotifyIconDelegate Shell_NotifyIconFn = NotifyIcon.Shell_NotifyIcon;
 
+    // Factory delegate exposed for testing.
+    internal delegate IWindowSubclassHandler WindowSubclassHandlerFactoryDelegate(NoReleaseHwnd hwnd, WindowSubclassHandler.WndProcDelegate wndProc);
+    internal static WindowSubclassHandlerFactoryDelegate WindowSubclassHandlerFactoryFn = (hwnd, wndProc) => new WindowSubclassHandler(hwnd, wndProc);
+
     // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
     // owns the window proc delegate.
-    private readonly WindowSubclassHandler? _windowSubclassHandler = null;
+    private readonly IWindowSubclassHandler? _windowSubclassHandler = null;
 
     // Fired if Explorer crashes & restarts, or if the primary display DPI changes.
-    private static readonly uint s_taskbarCreatedWindowMessage = PInvokeSystray.RegisterWindowMessage("TaskbarCreated");
+    internal static readonly uint s_taskbarCreatedWindowMessage = PInvokeSystray.RegisterWindowMessage("TaskbarCreated");
 
     public TrayIcon(Guid guid, NoReleaseHwnd ownerHwnd, bool shouldHandleMessages = true, uint? callbackMessage = null)
     {
@@ -115,7 +119,7 @@ public class TrayIcon
 
         if (shouldHandleMessages)
         {
-            _windowSubclassHandler = new WindowSubclassHandler(ownerHwnd, HandleMessage);
+            _windowSubclassHandler = WindowSubclassHandlerFactoryFn(ownerHwnd, HandleMessage);
 
             // RegisterWindowMessage is global, so it's probably not the *best*
             // idea to take one of these slots, but opinions seem mixed.

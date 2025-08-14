@@ -9,7 +9,12 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-public partial class WindowSubclassHandler
+// Yup, it's a very bare-bones interface :)
+public interface IWindowSubclassHandler
+{
+}
+
+public partial class WindowSubclassHandler : IWindowSubclassHandler
 {
     // This is the easiest way to expose WindowSubclassHandler publicly
     // *without* making it harder to call internally. Simply expose a public
