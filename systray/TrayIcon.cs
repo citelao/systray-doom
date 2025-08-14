@@ -105,6 +105,10 @@ public class TrayIcon
     internal delegate IWindowSubclassHandler WindowSubclassHandlerFactoryDelegate(NoReleaseHwnd hwnd, WindowSubclassHandler.WndProcDelegate wndProc);
     internal static WindowSubclassHandlerFactoryDelegate WindowSubclassHandlerFactoryFn = (hwnd, wndProc) => new WindowSubclassHandler(hwnd, wndProc);
 
+    // DefWindowProc delegate exposed for testing.
+    internal delegate LRESULT DefWindowProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+    internal static DefWindowProcDelegate DefWindowProcFn = PInvokeSystray.DefWindowProc;
+
     // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
     // owns the window proc delegate.
     private readonly IWindowSubclassHandler? _windowSubclassHandler = null;
@@ -184,7 +188,7 @@ public class TrayIcon
                     return result;
                 }
 
-                return new(PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam));
+                return new(DefWindowProcFn(hwnd, msg, wParam, lParam));
 
             case var tkwm when tkwm == s_taskbarCreatedWindowMessage:
                 // Fired if Explorer crashes & restarts, or if the primary
@@ -200,7 +204,7 @@ public class TrayIcon
                 Create();
 
                 // Don't replace the default window proc.
-                return new(PInvokeSystray.DefWindowProc(hwnd, msg, wParam, lParam));
+                return new(DefWindowProcFn(hwnd, msg, wParam, lParam));
         }
         return null;
     }

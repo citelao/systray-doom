@@ -13,6 +13,7 @@ public class TrayIconUnitTests : IDisposable
     {
         TrayIcon.Shell_NotifyIconFn = NotifyIcon.Shell_NotifyIcon;
         TrayIcon.WindowSubclassHandlerFactoryFn = (hwnd, wndProc) => new WindowSubclassHandler(hwnd, wndProc);
+        TrayIcon.DefWindowProcFn = PInvokeSystray.DefWindowProc;
     }
 
     [Fact]
@@ -144,9 +145,18 @@ public class TrayIconUnitTests : IDisposable
     public void TestWindowMessageHandling_ContextMenu()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var handlerMessages = new List<(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam)>();
@@ -184,6 +194,9 @@ public class TrayIconUnitTests : IDisposable
         Assert.True(contextMenuCalled);
         Assert.Equal(0x5678, contextMenuPoint.X); // x coordinate from wParam
         Assert.Equal(0x1234, contextMenuPoint.Y); // y coordinate from wParam
+
+        // Message handled; DefWindowProc should NOT be called
+        Assert.Empty(defWindowProcCalls);
         Assert.NotNull(result);
         Assert.Equal(0, result.Value.Value);
     }
@@ -192,9 +205,18 @@ public class TrayIconUnitTests : IDisposable
     public void TestWindowMessageHandling_Select()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -231,6 +253,9 @@ public class TrayIconUnitTests : IDisposable
         Assert.True(selectCalled);
         Assert.Equal(0x4321, selectPoint.X); // x coordinate from wParam
         Assert.Equal(0x8765, selectPoint.Y); // y coordinate from wParam
+
+        // Message handled; DefWindowProc should NOT be called
+        Assert.Empty(defWindowProcCalls);
         Assert.NotNull(result);
         Assert.Equal(0, result.Value.Value);
     }
@@ -239,9 +264,18 @@ public class TrayIconUnitTests : IDisposable
     public void TestWindowMessageHandling_MouseMove()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -278,6 +312,9 @@ public class TrayIconUnitTests : IDisposable
         Assert.True(mouseMoveCalled);
         Assert.Equal(0xCCDD, mouseMovePoint.X); // x coordinate from wParam
         Assert.Equal(0xAABB, mouseMovePoint.Y); // y coordinate from wParam
+
+        // Message handled; DefWindowProc should NOT be called
+        Assert.Empty(defWindowProcCalls);
         Assert.NotNull(result);
         Assert.Equal(0, result.Value.Value);
     }
@@ -286,11 +323,20 @@ public class TrayIconUnitTests : IDisposable
     public void TestWindowMessageHandling_TaskbarCreated()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         var messages = new List<(NOTIFY_ICON_MESSAGE Message, NOTIFYICONDATAW Data)>();
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             messages.Add((dwMessage, lpData));
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -325,17 +371,30 @@ public class TrayIconUnitTests : IDisposable
         Assert.Equal(s_guid, messages[0].Data.guidItem);
         Assert.Equal(s_guid, messages[1].Data.guidItem);
         
-        // The result should indicate the message was handled by calling DefWindowProc
+        // TaskbarCreated message still go to DefWindowProc
+        Assert.Single(defWindowProcCalls);
+        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(TrayIcon.s_taskbarCreatedWindowMessage, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
+        Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
     }
 
     [Fact]
     public void TestWindowMessageHandling_UnhandledCallbackMessage()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -358,19 +417,30 @@ public class TrayIconUnitTests : IDisposable
             new Wparam(0x12345678),
             new Lparam((nint)0x0201)); // WM_LBUTTONDOWN unhandled event type
 
-        // Assert - unhandled callback messages should call DefWindowProc and return a result
-        // The TrayIcon code calls DefWindowProc for unhandled callback messages
+        // Message unhandled; DefWindowProc should be called
+        Assert.Single(defWindowProcCalls);
+        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(0x0401u, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
-        // The actual value returned depends on DefWindowProc, which we can't easily mock
+        Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
     }
 
     [Fact]
     public void TestWindowMessageHandling_CallbackReturnsFalse()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -403,19 +473,32 @@ public class TrayIconUnitTests : IDisposable
             new Lparam((nint)0x007B)); // WM_CONTEXTMENU event type
 
         // Assert
-        Assert.True(contextMenuCalled);
         // When callback returns false, HandleCallbackMessage returns null,
-        // but HandleMessage still calls DefWindowProc, so we get a non-null result
+        // so DefWindowProc IS called
+        Assert.True(contextMenuCalled);
+        Assert.Single(defWindowProcCalls);
+        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(0x0401u, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
+        Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
     }
 
     [Fact]
     public void TestWindowMessageHandling_NoCallbackHandlers()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -440,9 +523,13 @@ public class TrayIconUnitTests : IDisposable
             new Wparam(0x12345678),
             new Lparam((nint)0x007B)); // WM_CONTEXTMENU event type
 
-        // Assert - with no handler, HandleCallbackMessage returns null,
-        // but HandleMessage still calls DefWindowProc, so we get a non-null result
+        // Assert - with no handler, ContextMenu?.Invoke returns null (false),
+        // so DefWindowProc IS called
+        Assert.Single(defWindowProcCalls);
+        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(0x0401u, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
+        Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
     }
 
     [Fact]
@@ -510,9 +597,18 @@ public class TrayIconUnitTests : IDisposable
     public void TestWindowMessageHandling_NonCallbackMessage()
     {
         // Arrange
+        var defWindowProcCalls = new List<(Windows.Win32.Foundation.HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)>();
+        const int MOCK_DEFWINDOWPROC_RESULT = 0x12345678;
+
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
             return true;
+        };
+
+        TrayIcon.DefWindowProcFn = (hwnd, msg, wParam, lParam) =>
+        {
+            defWindowProcCalls.Add((hwnd, msg, wParam, lParam));
+            return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
         var mockHandler = new MockWindowSubclassHandler();
@@ -535,7 +631,10 @@ public class TrayIconUnitTests : IDisposable
             new Wparam(0x42),
             new Lparam(0));
 
-        // Assert - should return null (meaning call default window proc)
+        // Assert - this is NOT a callback message (different from CallbackMessage),
+        // so HandleMessage returns null, meaning "pass to the original window procedure"
+        // We shouldn't call DefWindowProc ourselves.
+        Assert.Empty(defWindowProcCalls);
         Assert.Null(result);
     }
 
