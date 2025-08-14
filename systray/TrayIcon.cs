@@ -99,7 +99,7 @@ public class TrayIcon
 
     // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
     // owns the window proc delegate.
-    private readonly WindowSubclassHandler? _windowSubclassHandler = null;
+    private readonly WindowSubclassHandler2? _windowSubclassHandler = null;
 
     // Fired if Explorer crashes & restarts, or if the primary display DPI changes.
     private static readonly uint s_taskbarCreatedWindowMessage = PInvokeSystray.RegisterWindowMessage("TaskbarCreated");
@@ -111,7 +111,7 @@ public class TrayIcon
 
         if (shouldHandleMessages)
         {
-            _windowSubclassHandler = new WindowSubclassHandler(ownerHwnd, HandleMessage);
+            _windowSubclassHandler = new WindowSubclassHandler2(ownerHwnd, HandleMessage);
 
             // RegisterWindowMessage is global, so it's probably not the *best*
             // idea to take one of these slots, but opinions seem mixed.
