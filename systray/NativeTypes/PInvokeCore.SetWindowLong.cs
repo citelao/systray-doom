@@ -31,19 +31,4 @@ internal static partial class PInvokeCore
         GC.KeepAlive(hWnd);
         return result;
     }
-
-    public static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, HWND newValue)
-    {
-        nint result = SetWindowLong(hWnd, nIndex, (nint)newValue);
-        GC.KeepAlive(newValue);
-        return result;
-    }
-
-    public static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, WNDPROC dwNewLong)
-    {
-        IntPtr pointer = Marshal.GetFunctionPointerForDelegate(dwNewLong);
-        IntPtr result = SetWindowLong(hWnd, nIndex, pointer);
-        GC.KeepAlive(dwNewLong);
-        return result;
-    }
 }
