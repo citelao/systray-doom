@@ -107,4 +107,35 @@ public class TrayIconUnitTests : IDisposable
 
         Assert.Equal("New Tooltip", icon.Tooltip);
     }
+
+    [Fact]
+    public void TestSetIcon()
+    {
+        var messages = new List<(NOTIFY_ICON_MESSAGE Message, NOTIFYICONDATAW Data)>();
+        TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
+        {
+            messages.Add((dwMessage, lpData));
+            return true;
+        };
+
+        var icon = new TrayIcon(
+            guid: s_guid,
+            ownerHwnd: s_fakeHwnd,
+            shouldHandleMessages: false);
+
+        Assert.Equal(2, messages.Count);
+
+        // Change the icon.
+        messages.Clear();
+        var newIcon = new NoReleaseHicon(new IntPtr(0x87654321));
+        icon.Icon = newIcon;
+
+        Assert.Single(messages);
+        Assert.Equal(NOTIFY_ICON_MESSAGE.NIM_MODIFY, messages[0].Message);
+        Assert.Equal(s_guid, messages[0].Data.guidItem);
+        Assert.Equal(NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP | NOTIFY_ICON_DATA_FLAGS.NIF_GUID, messages[0].Data.uFlags);
+        Assert.Equal(newIcon.AsHICON(), messages[0].Data.hIcon);
+
+        Assert.Equal(newIcon, icon.Icon);
+    }
 }
