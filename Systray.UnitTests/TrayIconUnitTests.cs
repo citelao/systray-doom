@@ -477,7 +477,6 @@ public class TrayIconUnitTests : IDisposable
         Assert.NotNull(createdHandler);
         Assert.Equal(s_fakeHwnd, passedHwnd);
         Assert.NotNull(passedDelegate);
-        // Note: Since IWindowSubclassHandler is now bare-bones, we can't check OwnerHwnd
     }
 
     [Fact]
@@ -559,13 +558,5 @@ public class TrayIconUnitTests : IDisposable
             var result = WndProcDelegate?.Invoke(hwnd.AsHWND(), msg, wParam.AsWPARAM(), lParam.AsLPARAM());
             return result.HasValue ? new Lresult(result.Value.Value) : null;
         }
-    }
-
-    // Mock PInvokeSystray to avoid dependency on actual Win32 APIs during testing
-    private static void SetupMockPInvokeSystray()
-    {
-        // For TaskbarCreated tests, we can't easily mock PInvokeSystray.DefWindowProc
-        // since it's called directly in the TrayIcon code. This would require more
-        // substantial refactoring to make it mockable.
     }
 }
