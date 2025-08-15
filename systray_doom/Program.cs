@@ -20,7 +20,6 @@ using Windows.Storage.Streams;
 using Systray;
 using systray_doom;
 using Windows.Graphics.DirectX;
-using Systray.NativeTypes;
 
 // Set in csproj, FYI.
 // [assembly:AssemblyTitle("Systray Doom")]
@@ -55,7 +54,7 @@ var trayIconMessage = PInvoke.RegisterWindowMessage("DoomTaskbarWM");
 TrayIcon trayIcon = null!;
 Doom doom = null!;
 
-bool TryDisplayContextMenu(NoReleaseHwnd hwnd, Systray.PhysicalPoint pt)
+bool TryDisplayContextMenu(Systray.NativeTypes.NoReleaseHwnd hwnd, PhysicalPoint pt)
 {
     return TryDisplayContextMenuRaw(new(hwnd.Value), pt);
 }

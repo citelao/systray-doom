@@ -5,7 +5,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 namespace Systray.NativeTypes;
 
 /// <summary>
-/// Base interface for native handle wrappers that don't own resources.
+/// Base interface for native handle/value wrappers that don't own resources.
+///
+/// These public wrappers are necessary because the CsWin32-generated types are
+/// `internal` and cannot be exposed publicly without exposing all the other
+/// P/Invoke goo. These wrappers are effectively identical and easily convert to
+/// the CsWin32 types, but they are public.
 /// </summary>
 /// <typeparam name="TSelf">The implementing type</typeparam>
 /// <typeparam name="TRaw">The underlying raw type</typeparam>
@@ -18,12 +23,12 @@ public interface INativeWrapper<TSelf, TRaw>
     /// The raw underlying value.
     /// </summary>
     TRaw Value { get; }
-    
+
     /// <summary>
     /// A null/empty instance of this handle type.
     /// </summary>
     static abstract TSelf Null { get; }
-    
+
     /// <summary>
     /// Whether this handle represents a null/empty value.
     /// </summary>
@@ -31,7 +36,8 @@ public interface INativeWrapper<TSelf, TRaw>
 }
 
 /// <summary>
-/// A non-owning wrapper around a Win32 HWND that doesn't automatically release the handle.
+/// A non-owning wrapper around a Win32 HWND that doesn't automatically release
+/// the handle. Build for interop with CsWin32's Windows.Win32.Foundation.HWND.
 /// </summary>
 [DebuggerDisplay("0x{Value:X}")]
 public readonly struct NoReleaseHwnd : INativeWrapper<NoReleaseHwnd, IntPtr>
@@ -53,7 +59,7 @@ public readonly struct NoReleaseHwnd : INativeWrapper<NoReleaseHwnd, IntPtr>
     }
 
     /// <summary>
-    /// Converts this handle to a Win32 HWND.
+    /// Converts this handle to a CsWin32 HWND.
     /// </summary>
     internal HWND ToHwnd() => new(Value);
 
@@ -81,7 +87,8 @@ public readonly struct NoReleaseHwnd : INativeWrapper<NoReleaseHwnd, IntPtr>
 }
 
 /// <summary>
-/// A non-owning wrapper around a Win32 HICON that doesn't automatically release the handle.
+/// A non-owning wrapper around a Win32 HICON that doesn't automatically release
+/// the handle. Build for interop with CsWin32's Windows.Win32.Foundation.HICON.
 /// </summary>
 [DebuggerDisplay("0x{Value:X}")]
 public readonly struct NoReleaseHicon : INativeWrapper<NoReleaseHicon, IntPtr>
@@ -103,7 +110,7 @@ public readonly struct NoReleaseHicon : INativeWrapper<NoReleaseHicon, IntPtr>
     }
 
     /// <summary>
-    /// Converts this handle to a Win32 HICON.
+    /// Converts this handle to a CsWin32 HICON.
     /// </summary>
     internal HICON ToHicon() => new(Value);
 
@@ -131,7 +138,8 @@ public readonly struct NoReleaseHicon : INativeWrapper<NoReleaseHicon, IntPtr>
 }
 
 /// <summary>
-/// A wrapper around Win32 WPARAM that provides type safety and consistent API.
+/// A wrapper around Win32 WPARAM. Build for interop with CsWin32's
+/// Windows.Win32.Foundation.WPARAM.
 /// </summary>
 [DebuggerDisplay("0x{Value:X}")]
 public readonly struct WPARAM : INativeWrapper<WPARAM, nuint>
@@ -148,7 +156,7 @@ public readonly struct WPARAM : INativeWrapper<WPARAM, nuint>
     }
 
     /// <summary>
-    /// Converts this to a Win32 WPARAM.
+    /// Converts this to a CsWin32 WPARAM.
     /// </summary>
     internal Windows.Win32.Foundation.WPARAM ToWin32() => new(Value);
 
@@ -176,7 +184,8 @@ public readonly struct WPARAM : INativeWrapper<WPARAM, nuint>
 }
 
 /// <summary>
-/// A wrapper around Win32 LPARAM that provides type safety and consistent API.
+/// A wrapper around Win32 LPARAM. Build for interop with CsWin32's
+/// Windows.Win32.Foundation.LPARAM.
 /// </summary>
 [DebuggerDisplay("0x{Value:X}")]
 public readonly struct LPARAM : INativeWrapper<LPARAM, nint>
@@ -193,7 +202,7 @@ public readonly struct LPARAM : INativeWrapper<LPARAM, nint>
     }
 
     /// <summary>
-    /// Converts this to a Win32 LPARAM.
+    /// Converts this to a CsWin32 LPARAM.
     /// </summary>
     internal Windows.Win32.Foundation.LPARAM ToWin32() => new(Value);
 
@@ -221,7 +230,8 @@ public readonly struct LPARAM : INativeWrapper<LPARAM, nint>
 }
 
 /// <summary>
-/// A wrapper around Win32 LRESULT that provides type safety and consistent API.
+/// A wrapper around Win32 LRESULT. Build for interop with CsWin32's
+/// Windows.Win32.Foundation.LRESULT.
 /// </summary>
 [DebuggerDisplay("0x{Value:X}")]
 public readonly struct LRESULT : INativeWrapper<LRESULT, nint>
@@ -238,7 +248,7 @@ public readonly struct LRESULT : INativeWrapper<LRESULT, nint>
     }
 
     /// <summary>
-    /// Converts this to a Win32 LRESULT.
+    /// Converts this to a CsWin32 LRESULT.
     /// </summary>
     internal Windows.Win32.Foundation.LRESULT ToWin32() => new(Value);
 

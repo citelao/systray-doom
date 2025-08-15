@@ -246,8 +246,8 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0401, // callback message
-            new Wparam(0x87654321), // x=0x4321, y=0x8765
-            new Lparam((nint)0x0400)); // NIN_SELECT event type
+            new NativeTypes.WPARAM(0x87654321), // x=0x4321, y=0x8765
+            new NativeTypes.LPARAM((nint)0x0400)); // NIN_SELECT event type
 
         // Assert
         Assert.True(selectCalled);
@@ -305,8 +305,8 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0401, // callback message
-            new Wparam(0xAABBCCDD), // x=0xCCDD, y=0xAABB
-            new Lparam((nint)0x0200)); // WM_MOUSEMOVE event type
+            new NativeTypes.WPARAM(0xAABBCCDD), // x=0xCCDD, y=0xAABB
+            new NativeTypes.LPARAM((nint)0x0200)); // WM_MOUSEMOVE event type
 
         // Assert
         Assert.True(mouseMoveCalled);
@@ -359,8 +359,8 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             TrayIcon.s_taskbarCreatedWindowMessage, // Use the actual static field
-            new Wparam(0),
-            new Lparam(0));
+            new NativeTypes.WPARAM(0),
+            new NativeTypes.LPARAM(0));
 
         // Assert - should have deleted and re-created the icon
         // The TaskbarCreated handler deletes first, then calls Create() which does NIM_ADD + NIM_SETVERSION
@@ -414,12 +414,12 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0401, // callback message
-            new Wparam(0x12345678),
-            new Lparam((nint)0x0201)); // WM_LBUTTONDOWN unhandled event type
+            new NativeTypes.WPARAM(0x12345678),
+            new NativeTypes.LPARAM((nint)0x0201)); // WM_LBUTTONDOWN unhandled event type
 
         // Message unhandled; DefWindowProc should be called
         Assert.Single(defWindowProcCalls);
-        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(s_fakeHwnd.ToHwnd(), defWindowProcCalls[0].hwnd);
         Assert.Equal(0x0401u, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
         Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
@@ -469,15 +469,15 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0401, // callback message
-            new Wparam(0x12345678), // x=0x5678, y=0x1234
-            new Lparam((nint)0x007B)); // WM_CONTEXTMENU event type
+            new NativeTypes.WPARAM(0x12345678), // x=0x5678, y=0x1234
+            new NativeTypes.LPARAM((nint)0x007B)); // WM_CONTEXTMENU event type
 
         // Assert
         // When callback returns false, HandleCallbackMessage returns null,
         // so DefWindowProc IS called
         Assert.True(contextMenuCalled);
         Assert.Single(defWindowProcCalls);
-        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(s_fakeHwnd.ToHwnd(), defWindowProcCalls[0].hwnd);
         Assert.Equal(0x0401u, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
         Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
@@ -520,13 +520,13 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0401, // callback message
-            new Wparam(0x12345678),
-            new Lparam((nint)0x007B)); // WM_CONTEXTMENU event type
+            new NativeTypes.WPARAM(0x12345678),
+            new NativeTypes.LPARAM((nint)0x007B)); // WM_CONTEXTMENU event type
 
         // Assert - with no handler, ContextMenu?.Invoke returns null (false),
         // so DefWindowProc IS called
         Assert.Single(defWindowProcCalls);
-        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(s_fakeHwnd.ToHwnd(), defWindowProcCalls[0].hwnd);
         Assert.Equal(0x0401u, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
         Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
@@ -628,8 +628,8 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0100, // WM_KEYDOWN - not our callback message
-            new Wparam(0x42),
-            new Lparam(0));
+            new NativeTypes.WPARAM(0x42),
+            new NativeTypes.LPARAM(0));
 
         // Assert - this is NOT a callback message (different from CallbackMessage),
         // so HandleMessage returns null, meaning "pass to the original window procedure"
