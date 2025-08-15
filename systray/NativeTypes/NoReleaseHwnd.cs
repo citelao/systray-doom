@@ -4,46 +4,43 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
-// // TODO: generalize into TypedIntPtr?
-// // TODO: can we simply make a subset of PInvoke types public?
-// [DebuggerDisplay("{Value}")]
-// public readonly partial struct NativeType<RawType>
-//     : IEquatable<NativeType<RawType>>
-//     where RawType : IEquatable<RawType>
-// {
-//     public readonly RawType Value;
-
-//     public NativeType(RawType value) => this.Value = value;
-
-//     public static NativeType<RawType> Null => default;
-
-//     // public bool IsNull => Value == default;
-//     public bool IsNull => this == Null;
-
-//     public static implicit operator RawType(NativeType<RawType> value) => value.Value;
-
-//     public static explicit operator NativeType<RawType>(RawType value) => new NativeType<RawType>(value);
-
-//     public static bool operator ==(NativeType<RawType> left, NativeType<RawType> right) => left.Value == right.Value;
-
-//     public static bool operator !=(NativeType<RawType> left, NativeType<RawType> right) => !(left == right);
-
-//     public bool Equals(NativeType<RawType> other) => this.Value == other.Value;
-
-//     public override bool Equals(object obj) => obj is NativeType<RawType> other && this.Equals(other);
-
-//     public override int GetHashCode() => this.Value.GetHashCode();
-
-//     public override string ToString() => $"0x{this.Value:x}";
-
-//     // public static implicit operator HANDLE(NativeType<RawType> value) => new HANDLE(value.Value);
-// }
-
-public struct NoReleaseHwnd
+/// <summary>
+/// Base interface for native handle wrappers that don't own resources.
+/// </summary>
+/// <typeparam name="TSelf">The implementing type</typeparam>
+/// <typeparam name="TRaw">The underlying raw type</typeparam>
+public interface INativeWrapper<TSelf, TRaw> 
+    : IEquatable<TSelf>, IComparable<TSelf>
+    where TSelf : struct, INativeWrapper<TSelf, TRaw>
+    where TRaw : unmanaged, IEquatable<TRaw>
 {
-    public readonly IntPtr Value;
+    /// <summary>
+    /// The raw underlying value.
+    /// </summary>
+    TRaw Value { get; }
+    
+    /// <summary>
+    /// A null/empty instance of this handle type.
+    /// </summary>
+    static abstract TSelf Null { get; }
+    
+    /// <summary>
+    /// Whether this handle represents a null/empty value.
+    /// </summary>
+    bool IsNull { get; }
+}
 
-    public static NoReleaseHwnd Null = new(IntPtr.Zero);
+/// <summary>
+/// A non-owning wrapper around a Win32 HWND that doesn't automatically release the handle.
+/// </summary>
+[DebuggerDisplay("0x{Value:X}")]
+public readonly struct NoReleaseHwnd : INativeWrapper<NoReleaseHwnd, IntPtr>
+{
+    public IntPtr Value { get; }
+
+    public static NoReleaseHwnd Null => new(IntPtr.Zero);
+
+    public bool IsNull => Value == IntPtr.Zero;
 
     public NoReleaseHwnd(IntPtr value)
     {
@@ -55,76 +52,215 @@ public struct NoReleaseHwnd
         Value = hwnd.Value;
     }
 
-    public override string ToString() => $"0x{this.Value:x}";
+    /// <summary>
+    /// Converts this handle to a Win32 HWND.
+    /// </summary>
+    internal HWND ToHwnd() => new(Value);
 
-    // Can't be internal?
-    // internal static implicit operator HWND(NoReleaseHwnd value) => new HWND(value.Value);
-    internal HWND AsHWND() => new HWND(Value);
+    public bool Equals(NoReleaseHwnd other) => Value == other.Value;
+
+    public override bool Equals(object? obj) => obj is NoReleaseHwnd other && Equals(other);
+
+    public override int GetHashCode() => Value.GetHashCode();
+
+    public int CompareTo(NoReleaseHwnd other) => Value.ToInt64().CompareTo(other.Value.ToInt64());
+
+    public static bool operator ==(NoReleaseHwnd left, NoReleaseHwnd right) => left.Equals(right);
+
+    public static bool operator !=(NoReleaseHwnd left, NoReleaseHwnd right) => !left.Equals(right);
+
+    public static bool operator <(NoReleaseHwnd left, NoReleaseHwnd right) => left.CompareTo(right) < 0;
+
+    public static bool operator >(NoReleaseHwnd left, NoReleaseHwnd right) => left.CompareTo(right) > 0;
+
+    public static bool operator <=(NoReleaseHwnd left, NoReleaseHwnd right) => left.CompareTo(right) <= 0;
+
+    public static bool operator >=(NoReleaseHwnd left, NoReleaseHwnd right) => left.CompareTo(right) >= 0;
+
+    public override string ToString() => $"0x{Value:X}";
 }
 
-public struct NoReleaseHicon : IEquatable<NoReleaseHicon>
+/// <summary>
+/// A non-owning wrapper around a Win32 HICON that doesn't automatically release the handle.
+/// </summary>
+[DebuggerDisplay("0x{Value:X}")]
+public readonly struct NoReleaseHicon : INativeWrapper<NoReleaseHicon, IntPtr>
 {
-    internal readonly IntPtr Value;
+    public IntPtr Value { get; }
 
-    public static NoReleaseHicon Null = new(IntPtr.Zero);
+    public static NoReleaseHicon Null => new(IntPtr.Zero);
+
+    public bool IsNull => Value == IntPtr.Zero;
 
     public NoReleaseHicon(IntPtr value)
     {
         Value = value;
     }
 
-    internal NoReleaseHicon(HWND hwnd)
+    internal NoReleaseHicon(HICON hicon)
     {
-        Value = hwnd.Value;
+        Value = hicon.Value;
     }
 
-    public override string ToString() => $"0x{this.Value:x}";
+    /// <summary>
+    /// Converts this handle to a Win32 HICON.
+    /// </summary>
+    internal HICON ToHicon() => new(Value);
 
-    // Can't be internal?
-    // internal static implicit operator HWND(NoReleaseHicon value) => new HWND(value.Value);
-    internal HICON AsHICON() => new HICON(Value);
+    public bool Equals(NoReleaseHicon other) => Value == other.Value;
 
-    // TODO: generalize
-    public bool Equals(NoReleaseHicon other)
-    {
-        return other.Value == this.Value;
-    }
-    public static bool operator ==(NoReleaseHicon left, NoReleaseHicon right) => left.Value == right.Value;
-    public static bool operator !=(NoReleaseHicon left, NoReleaseHicon right) => !(left == right);
+    public override bool Equals(object? obj) => obj is NoReleaseHicon other && Equals(other);
+
+    public override int GetHashCode() => Value.GetHashCode();
+
+    public int CompareTo(NoReleaseHicon other) => Value.ToInt64().CompareTo(other.Value.ToInt64());
+
+    public static bool operator ==(NoReleaseHicon left, NoReleaseHicon right) => left.Equals(right);
+
+    public static bool operator !=(NoReleaseHicon left, NoReleaseHicon right) => !left.Equals(right);
+
+    public static bool operator <(NoReleaseHicon left, NoReleaseHicon right) => left.CompareTo(right) < 0;
+
+    public static bool operator >(NoReleaseHicon left, NoReleaseHicon right) => left.CompareTo(right) > 0;
+
+    public static bool operator <=(NoReleaseHicon left, NoReleaseHicon right) => left.CompareTo(right) <= 0;
+
+    public static bool operator >=(NoReleaseHicon left, NoReleaseHicon right) => left.CompareTo(right) >= 0;
+
+    public override string ToString() => $"0x{Value:X}";
 }
 
-public struct Wparam
+/// <summary>
+/// A wrapper around Win32 WPARAM that provides type safety and consistent API.
+/// </summary>
+[DebuggerDisplay("0x{Value:X}")]
+public readonly struct WPARAM : INativeWrapper<WPARAM, nuint>
 {
-    public readonly nuint Value;
+    public nuint Value { get; }
 
-    public Wparam(nuint value)
+    public static WPARAM Null => new(0);
+
+    public bool IsNull => Value == 0;
+
+    public WPARAM(nuint value)
     {
         Value = value;
     }
 
-    internal WPARAM AsWPARAM() => new WPARAM(Value);
+    /// <summary>
+    /// Converts this to a Win32 WPARAM.
+    /// </summary>
+    internal Windows.Win32.Foundation.WPARAM ToWin32() => new(Value);
+
+    public bool Equals(WPARAM other) => Value == other.Value;
+
+    public override bool Equals(object? obj) => obj is WPARAM other && Equals(other);
+
+    public override int GetHashCode() => Value.GetHashCode();
+
+    public int CompareTo(WPARAM other) => Value.CompareTo(other.Value);
+
+    public static bool operator ==(WPARAM left, WPARAM right) => left.Equals(right);
+
+    public static bool operator !=(WPARAM left, WPARAM right) => !left.Equals(right);
+
+    public static bool operator <(WPARAM left, WPARAM right) => left.CompareTo(right) < 0;
+
+    public static bool operator >(WPARAM left, WPARAM right) => left.CompareTo(right) > 0;
+
+    public static bool operator <=(WPARAM left, WPARAM right) => left.CompareTo(right) <= 0;
+
+    public static bool operator >=(WPARAM left, WPARAM right) => left.CompareTo(right) >= 0;
+
+    public override string ToString() => $"0x{Value:X}";
 }
 
-public struct Lresult
+/// <summary>
+/// A wrapper around Win32 LPARAM that provides type safety and consistent API.
+/// </summary>
+[DebuggerDisplay("0x{Value:X}")]
+public readonly struct LPARAM : INativeWrapper<LPARAM, nint>
 {
-    public readonly nint Value;
+    public nint Value { get; }
 
-    public Lresult(nint value)
+    public static LPARAM Null => new(0);
+
+    public bool IsNull => Value == 0;
+
+    public LPARAM(nint value)
     {
         Value = value;
     }
 
-    internal LRESULT AsLRESULT() => new LRESULT(Value);
+    /// <summary>
+    /// Converts this to a Win32 LPARAM.
+    /// </summary>
+    internal Windows.Win32.Foundation.LPARAM ToWin32() => new(Value);
+
+    public bool Equals(LPARAM other) => Value == other.Value;
+
+    public override bool Equals(object? obj) => obj is LPARAM other && Equals(other);
+
+    public override int GetHashCode() => Value.GetHashCode();
+
+    public int CompareTo(LPARAM other) => Value.CompareTo(other.Value);
+
+    public static bool operator ==(LPARAM left, LPARAM right) => left.Equals(right);
+
+    public static bool operator !=(LPARAM left, LPARAM right) => !left.Equals(right);
+
+    public static bool operator <(LPARAM left, LPARAM right) => left.CompareTo(right) < 0;
+
+    public static bool operator >(LPARAM left, LPARAM right) => left.CompareTo(right) > 0;
+
+    public static bool operator <=(LPARAM left, LPARAM right) => left.CompareTo(right) <= 0;
+
+    public static bool operator >=(LPARAM left, LPARAM right) => left.CompareTo(right) >= 0;
+
+    public override string ToString() => $"0x{Value:X}";
 }
 
-public struct Lparam
+/// <summary>
+/// A wrapper around Win32 LRESULT that provides type safety and consistent API.
+/// </summary>
+[DebuggerDisplay("0x{Value:X}")]
+public readonly struct LRESULT : INativeWrapper<LRESULT, nint>
 {
-    public readonly nint Value;
+    public nint Value { get; }
 
-    public Lparam(nint value)
+    public static LRESULT Null => new(0);
+
+    public bool IsNull => Value == 0;
+
+    public LRESULT(nint value)
     {
         Value = value;
     }
 
-    internal LPARAM AsLPARAM() => new LPARAM(Value);
+    /// <summary>
+    /// Converts this to a Win32 LRESULT.
+    /// </summary>
+    internal Windows.Win32.Foundation.LRESULT ToWin32() => new(Value);
+
+    public bool Equals(LRESULT other) => Value == other.Value;
+
+    public override bool Equals(object? obj) => obj is LRESULT other && Equals(other);
+
+    public override int GetHashCode() => Value.GetHashCode();
+
+    public int CompareTo(LRESULT other) => Value.CompareTo(other.Value);
+
+    public static bool operator ==(LRESULT left, LRESULT right) => left.Equals(right);
+
+    public static bool operator !=(LRESULT left, LRESULT right) => !left.Equals(right);
+
+    public static bool operator <(LRESULT left, LRESULT right) => left.CompareTo(right) < 0;
+
+    public static bool operator >(LRESULT left, LRESULT right) => left.CompareTo(right) > 0;
+
+    public static bool operator <=(LRESULT left, LRESULT right) => left.CompareTo(right) <= 0;
+
+    public static bool operator >=(LRESULT left, LRESULT right) => left.CompareTo(right) >= 0;
+
+    public override string ToString() => $"0x{Value:X}";
 }

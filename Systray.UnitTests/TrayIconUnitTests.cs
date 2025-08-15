@@ -58,11 +58,11 @@ public class TrayIconUnitTests : IDisposable
 
         // First, we add the icon.
         Assert.Equal(NOTIFY_ICON_MESSAGE.NIM_ADD, messages[0].Message);
-        Assert.Equal(s_fakeHwnd.AsHWND(), messages[0].Data.hWnd);
+        Assert.Equal(s_fakeHwnd.ToHwnd(), messages[0].Data.hWnd);
         Assert.Equal(0u, messages[0].Data.uID);
         Assert.Equal(NOTIFY_ICON_DATA_FLAGS.NIF_GUID | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP | NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP, messages[0].Data.uFlags);
         Assert.Equal(0u, messages[0].Data.uCallbackMessage);
-        Assert.NotEqual(NoReleaseHicon.Null.AsHICON(), messages[0].Data.hIcon);
+        Assert.NotEqual(NoReleaseHicon.Null.ToHicon(), messages[0].Data.hIcon);
         Assert.Equal("", messages[0].Data.Tip.ToString());
         Assert.Equal(default, messages[0].Data.dwState);
         Assert.Equal(default, messages[0].Data.dwStateMask);
@@ -71,7 +71,7 @@ public class TrayIconUnitTests : IDisposable
         Assert.Equal("", messages[0].Data.InfoTitle);
         Assert.Equal(NOTIFY_ICON_INFOTIP_FLAGS.NIIF_NONE, messages[0].Data.dwInfoFlags);
         Assert.Equal(s_guid, messages[0].Data.guidItem);
-        Assert.Equal(NoReleaseHicon.Null.AsHICON(), messages[0].Data.hBalloonIcon);
+        Assert.Equal(NoReleaseHicon.Null.ToHicon(), messages[0].Data.hBalloonIcon);
 
         // Then, we set the version.
         Assert.Equal(NOTIFY_ICON_MESSAGE.NIM_SETVERSION, messages[1].Message);
@@ -136,7 +136,7 @@ public class TrayIconUnitTests : IDisposable
         Assert.Equal(NOTIFY_ICON_MESSAGE.NIM_MODIFY, messages[0].Message);
         Assert.Equal(s_guid, messages[0].Data.guidItem);
         Assert.Equal(NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP | NOTIFY_ICON_DATA_FLAGS.NIF_GUID, messages[0].Data.uFlags);
-        Assert.Equal(newIcon.AsHICON(), messages[0].Data.hIcon);
+        Assert.Equal(newIcon.ToHicon(), messages[0].Data.hIcon);
 
         Assert.Equal(newIcon, icon.Icon);
     }
@@ -159,7 +159,7 @@ public class TrayIconUnitTests : IDisposable
             return new Windows.Win32.Foundation.LRESULT(MOCK_DEFWINDOWPROC_RESULT);
         };
 
-        var handlerMessages = new List<(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam)>();
+        var handlerMessages = new List<(NoReleaseHwnd hwnd, uint msg, NativeTypes.WPARAM wParam, NativeTypes.LPARAM lParam)>();
         var mockHandler = new MockWindowSubclassHandler();
         TrayIcon.WindowSubclassHandlerFactoryFn = (hwnd, wndProc) =>
         {
@@ -187,8 +187,8 @@ public class TrayIconUnitTests : IDisposable
         var result = mockHandler.SimulateMessage(
             s_fakeHwnd,
             0x0401, // callback message
-            new Wparam(0x12345678), // x=0x5678, y=0x1234
-            new Lparam((nint)0x007B)); // WM_CONTEXTMENU event type
+            new NativeTypes.WPARAM(0x12345678), // x=0x5678, y=0x1234
+            new NativeTypes.LPARAM((nint)0x007B)); // WM_CONTEXTMENU event type
 
         // Assert
         Assert.True(contextMenuCalled);
@@ -373,7 +373,7 @@ public class TrayIconUnitTests : IDisposable
         
         // TaskbarCreated message still go to DefWindowProc
         Assert.Single(defWindowProcCalls);
-        Assert.Equal(s_fakeHwnd.AsHWND(), defWindowProcCalls[0].hwnd);
+        Assert.Equal(s_fakeHwnd.ToHwnd(), defWindowProcCalls[0].hwnd);
         Assert.Equal(TrayIcon.s_taskbarCreatedWindowMessage, defWindowProcCalls[0].msg);
         Assert.NotNull(result);
         Assert.Equal(MOCK_DEFWINDOWPROC_RESULT, result.Value.Value);
@@ -652,10 +652,10 @@ public class TrayIconUnitTests : IDisposable
         /// <summary>
         /// Simulates a window message being sent to the handler.
         /// </summary>
-        public Lresult? SimulateMessage(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam)
+        public NativeTypes.LRESULT? SimulateMessage(NoReleaseHwnd hwnd, uint msg, NativeTypes.WPARAM wParam, NativeTypes.LPARAM lParam)
         {
-            var result = WndProcDelegate?.Invoke(hwnd.AsHWND(), msg, wParam.AsWPARAM(), lParam.AsLPARAM());
-            return result.HasValue ? new Lresult(result.Value.Value) : null;
+            var result = WndProcDelegate?.Invoke(hwnd.ToHwnd(), msg, wParam.ToWin32(), lParam.ToWin32());
+            return result.HasValue ? new NativeTypes.LRESULT(result.Value.Value) : null;
         }
     }
 }

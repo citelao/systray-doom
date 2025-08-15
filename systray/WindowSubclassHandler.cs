@@ -20,16 +20,16 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
     // *without* making it harder to call internally. Simply expose a public
     // delegate with the public types, but allow use of the internal types
     // directly.
-    public delegate Lresult? UserDelegate(NoReleaseHwnd hwnd, uint msg, Wparam wParam, Lparam lParam);
-    internal delegate LRESULT? WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+    public delegate NativeTypes.LRESULT? UserDelegate(NoReleaseHwnd hwnd, uint msg, NativeTypes.WPARAM wParam, NativeTypes.LPARAM lParam);
+    internal delegate Windows.Win32.Foundation.LRESULT? WndProcDelegate(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam);
     internal delegate nint TrueWndProcDelegate(nint hwnd, uint msg, nuint wParam, nint lParam);
 
     internal static WndProcDelegate ToInternalDelegate(UserDelegate del)
     {
-        return (HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam) =>
+        return (HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam) =>
         {
-            var result = del(new(hwnd), msg, new(wParam), new(lParam));
-            return result?.AsLRESULT() ?? new LRESULT(0);
+            var result = del(new(hwnd), msg, new(wParam.Value), new(lParam.Value));
+            return result?.ToWin32() ?? new Windows.Win32.Foundation.LRESULT(0);
         };
     }
 
@@ -44,7 +44,7 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
     // TODO: destructor. Needs to handle other folks subclassing our window.
     internal unsafe WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegate wndProc)
     {
-        var originalWndProc = PInvokeCore.GetWindowLong(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
+        var originalWndProc = PInvokeCore.GetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
         // Console.WriteLine($"Original WndProc: 0x{originalWndProc:X}");
 
         _delegate = (hwnd, msg, wParam, lParam) =>
@@ -61,7 +61,7 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
 
         // Console.WriteLine($"New WndProc: 0x{Marshal.GetFunctionPointerForDelegate(_delegate).ToInt64():X}");
 
-        var otherWndProc = PInvokeCore.SetWindowLong(hwnd.AsHWND(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
+        var otherWndProc = PInvokeCore.SetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
         Debug.Assert(otherWndProc == originalWndProc);
     }
 

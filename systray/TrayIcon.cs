@@ -106,7 +106,7 @@ public class TrayIcon
     internal static WindowSubclassHandlerFactoryDelegate WindowSubclassHandlerFactoryFn = (hwnd, wndProc) => new WindowSubclassHandler(hwnd, wndProc);
 
     // DefWindowProc delegate exposed for testing.
-    internal delegate LRESULT DefWindowProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+    internal delegate Windows.Win32.Foundation.LRESULT DefWindowProcDelegate(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam);
     internal static DefWindowProcDelegate DefWindowProcFn = PInvokeSystray.DefWindowProc;
 
     // Hold a reference to the WindowSubclassHandler so it doesn't get GC'd; it
@@ -171,7 +171,7 @@ public class TrayIcon
             new TrayIconMessageBuilder(guid: Guid).Build()));
     }
 
-    private LRESULT? HandleMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
+    private Windows.Win32.Foundation.LRESULT? HandleMessage(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)
     {
         switch (msg)
         {
@@ -210,7 +210,7 @@ public class TrayIcon
     }
 
     // Parse & dispatch well-known messages.
-    private LRESULT? HandleCallbackMessage(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
+    private Windows.Win32.Foundation.LRESULT? HandleCallbackMessage(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)
     {
         // Console.WriteLine("Tray icon message received.");
         var ev = (uint)PInvokeHelpers.LOWORD(lParam.Value);
@@ -234,11 +234,11 @@ public class TrayIcon
                 // var pt = new Point(x, y);
                 // var client = PInvokeSystray.ScreenToClient(hwnd, ref pt);
                 // Console.WriteLine($"Client: {pt.X}, {pt.Y}");
-                return (ContextMenu?.Invoke(new(hwnd), new(x, y)) ?? false) ? new LRESULT(0) : null;
+                return (ContextMenu?.Invoke(new(hwnd), new(x, y)) ?? false) ? new Windows.Win32.Foundation.LRESULT(0) : null;
 
             case PInvokeSystray.WM_MOUSEMOVE:
                 Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
-                return (MouseMove?.Invoke(new(hwnd), new(x, y)) ?? false) ? new LRESULT(0) : null;
+                return (MouseMove?.Invoke(new(hwnd), new(x, y)) ?? false) ? new Windows.Win32.Foundation.LRESULT(0) : null;
 
             case PInvokeSystray.WM_LBUTTONDOWN:
                 Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
@@ -270,7 +270,7 @@ public class TrayIcon
 
             case PInvokeSystray.NIN_SELECT:
                 Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
-                return (Select?.Invoke(new(hwnd), new(x, y)) ?? false) ? new LRESULT(0) : null;
+                return (Select?.Invoke(new(hwnd), new(x, y)) ?? false) ? new Windows.Win32.Foundation.LRESULT(0) : null;
 
             case PInvokeSystray.NIN_BALLOONSHOW:
                 Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));

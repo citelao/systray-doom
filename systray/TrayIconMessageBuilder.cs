@@ -88,7 +88,7 @@ internal class TrayIconMessageBuilder
 
             // Required (for ADD). An HWND is required to register the icon with
             // the system. Window messages go there.
-            hWnd = HWND?.AsHWND() ?? default,
+            hWnd = HWND?.ToHwnd() ?? default,
 
             // Required. Indicates which of the other members contain valid data.
             // NIF_TIP and NIF_SHOWTIP are only required if you want to use szTip.
@@ -101,7 +101,7 @@ internal class TrayIconMessageBuilder
             // Required (for ADD). The icon to display.
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadicona
             // https://learn.microsoft.com/en-us/windows/win32/menurc/about-icons
-            hIcon = Icon.AsHICON(),
+            hIcon = Icon.ToHicon(),
 
             // Optional. You probably want a tooltip for your icon, though.
             Tip = Tooltip,
