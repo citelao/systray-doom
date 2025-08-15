@@ -14,6 +14,8 @@ git clone https://github.com/citelao/systray-doom
 
 For usage of the systray library, see [the Systray README](./Systray/README.md).
 
+> dotnet add package citelao.SystrayIcon
+
 ## Dev
 
 ```pwsh
@@ -37,12 +39,16 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 dotnet build -c release
 # => Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg
 
+ls Systray\bin\Release\*.nupkg
+
 # Get an API key
+# (for initial push, use `*` glob pattern)
+# https://www.nuget.org/account/apikeys
 # https://int.nugettest.org/account/apikeys
 $apiKey = # paste from the website
 
 # Push to Nuget
-dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
 # Dummy Nuget:
 # dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg --api-key $apiKey --source https://int.nugettest.org
 ```

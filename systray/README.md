@@ -13,8 +13,10 @@ It's designed to be as simple as possible while still being correct.
 ## Getting started
 
 ```pwsh
-> dotnet add package citelao.Systray
+> dotnet add package citelao.SystrayIcon
 ```
+
+See more [on Nuget for citelao.SystrayIcon](https://www.nuget.org/packages/citelao.SystrayIcon/)
 
 ## Example
 
