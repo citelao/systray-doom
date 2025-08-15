@@ -10,9 +10,8 @@ namespace Systray;
 /// scaled if your app is not DPI-aware & will *always* correspond to a physical
 /// point on-screen.
 /// </summary>
-// TODO: use source generators?
 [DebuggerDisplay("({X}, {Y})")]
-public readonly struct PhysicalPoint
+public readonly struct PhysicalPoint : IEquatable<PhysicalPoint>
 {
     public readonly int X;
     public readonly int Y;
@@ -28,11 +27,22 @@ public readonly struct PhysicalPoint
         return $"({X}, {Y})";
     }
 
+    /// <summary>
+    /// "Converts" this to a naive Point. Does not adjust for DPI in any way,
+    /// simply gives you a more common type with the numbers exactly as they
+    /// are.
+    /// </summary>
     // TODO: support scaling point. PhysicalToLogicalPointForPerMonitorDPI
     // should help, except the hidden HWND fails as the basis for the point, so
     // it's not helpful.
-    public Point ToPoint()
+    public Point ToPointNaive()
     {
         return new(X, Y);
     }
+
+    public bool Equals(PhysicalPoint other) => X == other.X && Y == other.Y;
+
+    public override bool Equals(object? obj) => obj is PhysicalPoint other && Equals(other);
+
+    public override int GetHashCode() => HashCode.Combine(X, Y);
 }
