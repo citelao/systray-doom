@@ -53,17 +53,17 @@ dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg --api-ke
 
 * [x] Split off systray code into a library
 * [x] Support AnyCPU target
-* [ ] Support `<DisableRuntimeMarshalling>True</DisableRuntimeMarshalling>`
-* [ ] ^ Fix `WindowSubclassHandler` to support non-marshalled delegates.
+* [x] Support `<DisableRuntimeMarshalling>True</DisableRuntimeMarshalling>`
+* [x] ^ Fix `WindowSubclassHandler` to support non-marshalled delegates.
 * [x] License (ensure we cite WinForms)
 * [x] Add README to package
 * [ ] Publish to NuGet
-* [ ] Add unit tests
-* [ ] Cleaner public types
+* [x] Add unit tests
+* [x] Cleaner public types
 
 ### Nice-to-have
 
-* [ ] Reorganize internal types (`NoReleaseHwnd`, `NoReleaseSafeHandle`, etc.)
+* [x] Reorganize internal types (`NoReleaseHwnd`, `NoReleaseSafeHandle`, etc.)
 * [ ] Upgrade to a newer commit of Doomgeneric (specifically, one after the [sound commit](https://github.com/ozkl/doomgeneric/commit/d0946b46cf617467f014a25e264fd952698a13f9))
 * [x] Automatically build the Rust bindings before building & launching the C#.
 * [x] Deploy the Rust DLL alongside the C# so that you can run `dotnet run` anywhere.
