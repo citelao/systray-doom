@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Drawing;
-using Systray.NativeTypes;
-using Windows.Win32;
 
 namespace Systray;
 
