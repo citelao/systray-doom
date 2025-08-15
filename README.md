@@ -63,7 +63,7 @@ dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.1.nupkg --api-
 * [x] ^ Fix `WindowSubclassHandler` to support non-marshalled delegates.
 * [x] License (ensure we cite WinForms)
 * [x] Add README to package
-* [ ] Publish to NuGet
+* [x] Publish to NuGet
 * [x] Add unit tests
 * [x] Cleaner public types
 
