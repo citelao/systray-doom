@@ -78,7 +78,7 @@ internal unsafe struct NOTIFYICONDATAW
     }
 };
 
-internal static partial class NotifyIcon
+internal static partial class PInvokeCore
 {
     [LibraryImport("SHELL32.dll", EntryPoint = "Shell_NotifyIconW")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

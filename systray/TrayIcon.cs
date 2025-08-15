@@ -99,7 +99,7 @@ public class TrayIcon
 
     // Delegate exposed for testing.
     internal delegate BOOL Shell_NotifyIconDelegate(NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData);
-    internal static Shell_NotifyIconDelegate Shell_NotifyIconFn = NotifyIcon.Shell_NotifyIcon;
+    internal static Shell_NotifyIconDelegate Shell_NotifyIconFn = PInvokeCore.Shell_NotifyIcon;
 
     // Factory delegate exposed for testing.
     internal delegate IWindowSubclassHandler WindowSubclassHandlerFactoryDelegate(NoReleaseHwnd hwnd, WindowSubclassHandler.WndProcDelegate wndProc);

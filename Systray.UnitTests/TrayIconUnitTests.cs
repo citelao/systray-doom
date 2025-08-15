@@ -11,7 +11,7 @@ public class TrayIconUnitTests : IDisposable
 
     public void Dispose()
     {
-        TrayIcon.Shell_NotifyIconFn = NotifyIcon.Shell_NotifyIcon;
+        TrayIcon.Shell_NotifyIconFn = PInvokeCore.Shell_NotifyIcon;
         TrayIcon.WindowSubclassHandlerFactoryFn = (hwnd, wndProc) => new WindowSubclassHandler(hwnd, wndProc);
         TrayIcon.DefWindowProcFn = PInvokeSystray.DefWindowProc;
     }
