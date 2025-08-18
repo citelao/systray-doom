@@ -37,8 +37,15 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 # https://int.nugettest.org/account/apikeys
 $apiKey = # paste from the website
 
+# Publish to main
+git checkout main
+git merge dev
+
 # Bump the version
 # In systray.csproj, bump `<Version>`.
+
+# Update the CHANGELOG
+# ...
 
 # Create the nupkg
 # https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
