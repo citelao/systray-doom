@@ -74,7 +74,7 @@ dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.1.nupkg --api-
 * [x] Automatically build the Rust bindings before building & launching the C#.
 * [x] Deploy the Rust DLL alongside the C# so that you can run `dotnet run` anywhere.
 * [ ] Better name in Taskbar personalization menu
-* [ ] Better logging
+* [x] Better logging
 
 ### TODO Features
 

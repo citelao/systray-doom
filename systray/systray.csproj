@@ -19,7 +19,7 @@
    -->
   <PropertyGroup>
     <PackageId>citelao.SystrayIcon</PackageId>
-    <Version>0.1.0.1</Version>
+    <Version>0.1.1.0</Version>
     <Authors>Ben Stolovitz (citelao)</Authors>
 
     <Description>An unopinionated cross-architecture library for creating systray icons (Shell_NotifyIcon). No WinForms or WPF.</Description>
