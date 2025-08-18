@@ -7,6 +7,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Microsoft.Extensions.Logging;
 
 using static Crayon.Output;
 
@@ -15,6 +16,11 @@ using static Crayon.Output;
 /// </summary>
 public class TrayIcon
 {
+    /// <summary>
+    /// Optional logger for diagnostic output.
+    /// </summary>
+    private readonly ILogger? _logger;
+
     /// <summary>
     /// Tooltip to display when hovering the icon, also used as its accessible
     /// name. Will be truncated to 128 characters (including the terminating
@@ -116,8 +122,9 @@ public class TrayIcon
     // Fired if Explorer crashes & restarts, or if the primary display DPI changes.
     internal static readonly uint s_taskbarCreatedWindowMessage = PInvokeSystray.RegisterWindowMessage("TaskbarCreated");
 
-    public TrayIcon(Guid guid, NoReleaseHwnd ownerHwnd, bool shouldHandleMessages = true, uint? callbackMessage = null)
+    public TrayIcon(Guid guid, NoReleaseHwnd ownerHwnd, bool shouldHandleMessages = true, uint? callbackMessage = null, ILogger? logger = null)
     {
+        _logger = logger;
         Guid = guid;
         OwnerHwnd = ownerHwnd;
 
@@ -195,7 +202,7 @@ public class TrayIcon
                 // display DPI changes.
                 //
                 // https://learn.microsoft.com/en-us/windows/win32/shell/taskbar#taskbar-creation-notification
-                Console.WriteLine(Dim("Taskbar created message received."));
+                _logger?.LogDebug("Taskbar created message received.");
 
                 // Re-create the icon.
                 var notificationIconData = new TrayIconMessageBuilder(guid: Guid).Build();
@@ -237,67 +244,67 @@ public class TrayIcon
                 return (ContextMenu?.Invoke(new(hwnd), new(x, y)) ?? false) ? new Windows.Win32.Foundation.LRESULT(0) : null;
 
             case PInvokeSystray.WM_MOUSEMOVE:
-                Console.WriteLine(Dim($"Tray icon mouse move for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon mouse move for {IconId} ({X}, {Y}).", iconId, x, y);
                 return (MouseMove?.Invoke(new(hwnd), new(x, y)) ?? false) ? new Windows.Win32.Foundation.LRESULT(0) : null;
 
             case PInvokeSystray.WM_LBUTTONDOWN:
-                Console.WriteLine(Dim($"Tray icon left button down for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon left button down for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.WM_LBUTTONUP:
-                Console.WriteLine(Dim($"Tray icon left button up for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon left button up for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.WM_LBUTTONDBLCLK:
-                Console.WriteLine(Dim($"Tray icon left button double click for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon left button double click for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.WM_RBUTTONDOWN:
-                Console.WriteLine(Dim($"Tray icon right button down for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon right button down for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.WM_RBUTTONUP:
-                Console.WriteLine(Dim($"Tray icon right button up for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon right button up for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.WM_MBUTTONDOWN:
-                Console.WriteLine(Dim($"Tray icon middle button down for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon middle button down for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.WM_MBUTTONUP:
-                Console.WriteLine(Dim($"Tray icon middle button up for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon middle button up for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.NIN_SELECT:
-                Console.WriteLine(Dim($"Tray icon select for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon select for {IconId} ({X}, {Y}).", iconId, x, y);
                 return (Select?.Invoke(new(hwnd), new(x, y)) ?? false) ? new Windows.Win32.Foundation.LRESULT(0) : null;
 
             case PInvokeSystray.NIN_BALLOONSHOW:
-                Console.WriteLine(Dim($"Tray icon balloon show for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon balloon show for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.NIN_BALLOONHIDE:
-                Console.WriteLine(Dim($"Tray icon balloon hide for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon balloon hide for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.NIN_BALLOONTIMEOUT:
-                Console.WriteLine(Dim($"Tray icon balloon timeout for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon balloon timeout for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.NIN_BALLOONUSERCLICK:
-                Console.WriteLine(Dim($"Tray icon balloon user click for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon balloon user click for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.NIN_POPUPOPEN:
-                Console.WriteLine(Dim($"Tray icon popup open for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon popup open for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             case PInvokeSystray.NIN_POPUPCLOSE:
-                Console.WriteLine(Dim($"Tray icon popup close for {iconId} ({x}, {y})."));
+                _logger?.LogDebug("Tray icon popup close for {IconId} ({X}, {Y}).", iconId, x, y);
                 break;
 
             default:
-                Console.WriteLine(Dim($"Tray icon message: {ev}"));
+                _logger?.LogDebug("Tray icon message: {Event}", ev);
                 break;
         }
 

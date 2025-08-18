@@ -20,14 +20,21 @@ using Windows.Storage.Streams;
 using Systray;
 using systray_doom;
 using Windows.Graphics.DirectX;
+using Microsoft.Extensions.Logging;
 
 // Set in csproj, FYI.
 // [assembly:AssemblyTitle("Systray Doom")]
 
-Console.WriteLine("Starting doom...");
+// Create a console logger
+using var loggerFactory = LoggerFactory.Create(builder =>
+    builder.AddConsole()
+           .SetMinimumLevel(LogLevel.Debug));
+var logger = loggerFactory.CreateLogger("SystrayDoom");
+
+logger.LogInformation("Starting doom...");
 
 var i = PInvokeDoom.rust_function();
-Console.WriteLine(Dim($"Testing Rust connection: {i == 42} ({i})"));
+logger.LogDebug("Testing Rust connection: {IsCorrect} ({Value})", i == 42, i);
 
 // Heavily inspired by https://github.com/microsoft/CsWin32/blob/99ddd314ea359d3a97afa82c735b6a25eb25ea32/test/WinRTInteropTest/Program.cs
 
@@ -61,7 +68,7 @@ bool TryDisplayContextMenu(Systray.NativeTypes.NoReleaseHwnd hwnd, PhysicalPoint
 
 bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
 {
-    Console.WriteLine($"Context menu: {pt}");
+    logger.LogDebug("Context menu: {Point}", pt);
 
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
     PInvoke.SetForegroundWindow(hwnd);
@@ -115,7 +122,7 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
             // Either nothing selected or an error occurred.
             // throw new Exception("TrackPopupMenuEx failed.");
         }
-        Console.WriteLine($"TrackPopupMenuEx complete; {response}");
+        logger.LogDebug("TrackPopupMenuEx complete; {Response}", response);
 
         if (response == 3)
         {
@@ -140,7 +147,7 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
         if (!result)
         {
             // throw new Exception("Failed to destroy menu.");
-            Console.Error.WriteLine("Failed to destroy menu.");
+            logger.LogError("Failed to destroy menu.");
         }
     }
 
@@ -186,7 +193,7 @@ var drawingSurface = graphicsDevice.CreateDrawingSurface(
 );
 graphicsDevice.RenderingDeviceReplaced += (s, e) =>
 {
-    Console.WriteLine("Rendering device replaced.");
+    logger.LogDebug("Rendering device replaced.");
 };
 
 var drawingInterop = drawingSurface.As<ICompositionDrawingSurfaceInterop>() ?? throw new InvalidOperationException("ICompositionDrawingSurfaceInterop not supported.");
@@ -216,7 +223,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             break;
 
         case PInvoke.WM_PAINT:
-            Console.WriteLine("Painting...");
+            logger.LogDebug("Painting...");
             // var hdc = PInvoke.BeginPaint(hwnd, out var ps);
 
             // // https://stackoverflow.com/a/1760571/788168
@@ -248,7 +255,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 var height = PInvokeHelpers.HIWORD(lParam);
                 UpdateDrawingSurfaceSize(drawingInterop, (int)width, (int)height);
                 var newSize = new Windows.Graphics.SizeInt32 { Width = (int)width, Height = (int)height };
-                Console.WriteLine($"Resizing to {newSize.Width}x{newSize.Height}");
+                logger.LogDebug("Resizing to {Width}x{Height}", newSize.Width, newSize.Height);
             }
             PInvokeHelpers.THROW_IF_FALSE(PInvoke.UpdateWindow(hwnd));
             break;
@@ -260,7 +267,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
             break;
 
         default:
-            Console.WriteLine(Dim($"WindowProc: {msg} {wParam} {lParam}"));
+            logger.LogDebug("WindowProc: {Message} {WParam} {LParam}", msg, wParam, lParam);
             break;
     }
 
@@ -369,7 +376,7 @@ static Windows.Win32.Graphics.Direct2D.ID2D1Bitmap1 CreateBitmapFromFrame(Window
     }
 }
 
-trayIcon = new TrayIcon(Constants.SystrayGuid, new(hwnd), callbackMessage: trayIconMessage)
+trayIcon = new TrayIcon(Constants.SystrayGuid, new(hwnd), callbackMessage: trayIconMessage, logger: logger)
 {
     Tooltip = "Hello, Windows!",
     ContextMenu = (hwnd, pt) =>
@@ -555,8 +562,8 @@ d2dElement.Brush = surfaceBrush;
 d2dElement.RelativeSizeAdjustment = Vector2.One; // Make the element fill the window
 root.Children.InsertAtTop(d2dElement);
 
-Console.WriteLine("Starting message loop...");
-Console.WriteLine("Press Ctrl-C to exit.");
+logger.LogInformation("Starting message loop...");
+logger.LogInformation("Press Ctrl-C to exit.");
 
 while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
 {
@@ -564,7 +571,7 @@ while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
     PInvoke.DispatchMessage(msg);
 }
 
-Console.WriteLine("Exiting...");
+logger.LogInformation("Exiting...");
 
 // Don't await at all! Exit the app.
 // Old: Await synchronously to avoid a CS9123 because of our reference to &data.
