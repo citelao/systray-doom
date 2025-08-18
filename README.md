@@ -31,6 +31,12 @@ dotnet run --project .\systray_doom\systray_doom.csproj
 ### Publishing versions
 
 ```pwsh
+# Get an API key
+# (for initial push, use `*` glob pattern)
+# https://www.nuget.org/account/apikeys
+# https://int.nugettest.org/account/apikeys
+$apiKey = # paste from the website
+
 # Bump the version
 # In systray.csproj, bump `<Version>`.
 
@@ -40,12 +46,6 @@ dotnet build -c release
 # => Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg
 
 ls Systray\bin\Release\*.nupkg
-
-# Get an API key
-# (for initial push, use `*` glob pattern)
-# https://www.nuget.org/account/apikeys
-# https://int.nugettest.org/account/apikeys
-$apiKey = # paste from the website
 
 # Push to Nuget
 dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
