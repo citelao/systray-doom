@@ -21,14 +21,19 @@ using Systray;
 using systray_doom;
 using Windows.Graphics.DirectX;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 // Set in csproj, FYI.
 // [assembly:AssemblyTitle("Systray Doom")]
 
-// Create a console logger
+// Create a console logger with custom Crayon formatter
 using var loggerFactory = LoggerFactory.Create(builder =>
-    builder.AddConsole()
-           .SetMinimumLevel(LogLevel.Debug));
+    builder.AddConsole(options =>
+    {
+        options.FormatterName = nameof(CrayonConsoleFormatter);
+    })
+    .AddConsoleFormatter<CrayonConsoleFormatter, ConsoleFormatterOptions>()
+    .SetMinimumLevel(LogLevel.Debug));
 var logger = loggerFactory.CreateLogger("SystrayDoom");
 
 logger.LogInformation("Starting doom...");
