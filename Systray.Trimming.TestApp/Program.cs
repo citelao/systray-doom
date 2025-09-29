@@ -1,0 +1,1 @@
+Console.WriteLine("Hello, this validates AOT compatibility!");
