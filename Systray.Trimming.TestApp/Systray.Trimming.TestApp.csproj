@@ -10,7 +10,6 @@
     <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\Systray\Systray.csproj" />
     <TrimmerRootAssembly Include="Systray" />
