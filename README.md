@@ -28,17 +28,42 @@ cd ..
 dotnet run --project .\systray_doom\systray_doom.csproj
 ```
 
-### Publishing versions
+### Validating AOT compatibility
+
+The Systray library is marked AOT-compatible, which *will* generate warnings for any issues in the library directly. However, that doesn't check its dependencies. To validate end-to-end:
 
 ```pwsh
+# Publish all the things! This verifies AOT-compatibility
+# https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/prepare-libraries-for-trimming
+dotnet publish -c Release
+```
+
+### Publishing versions
+
+Prerequisites (see above):
+
+1. Ensure it builds!
+2. Validate AOT compatibility
+
+Then:
+
+```pwsh
+
 # Get an API key
 # (for initial push, use `*` glob pattern)
 # https://www.nuget.org/account/apikeys
 # https://int.nugettest.org/account/apikeys
 $apiKey = # paste from the website
 
+# Publish to main
+git checkout main
+git merge dev
+
 # Bump the version
 # In systray.csproj, bump `<Version>`.
+
+# Update the CHANGELOG
+# ...
 
 # Create the nupkg
 # https://learn.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
