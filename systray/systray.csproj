@@ -22,6 +22,8 @@
     <Version>0.1.1.0</Version>
     <Authors>Ben Stolovitz (citelao)</Authors>
 
+    <IsAotCompatible>true</IsAotCompatible>
+
     <Description>An unopinionated cross-architecture library for creating systray icons (Shell_NotifyIcon). No WinForms or WPF.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
