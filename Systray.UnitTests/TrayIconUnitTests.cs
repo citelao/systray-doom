@@ -93,6 +93,7 @@ public class TrayIconUnitTests : IDisposable
             return mockHandler;
         };
 
+        // Oh no! Adding the icon will fail.
         var messages = new List<(NOTIFY_ICON_MESSAGE Message, NOTIFYICONDATAW Data)>();
         TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
         {
