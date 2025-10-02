@@ -111,10 +111,9 @@ public class TrayIconUnitTests : IDisposable
         Assert.Single(messages);
         Assert.Equal(NOTIFY_ICON_MESSAGE.NIM_ADD, messages[0].Message);
 
-        // The window subclass should still have been created, but should be disposed.
-        Assert.True(wasSubclassCalled);
-        Assert.NotNull(mockHandler.WndProcDelegate);
-        Assert.True(mockHandler.IsDisposed);
+        // The window subclass should not have been created yet.
+        Assert.False(wasSubclassCalled);
+        Assert.Null(mockHandler.WndProcDelegate);
     }
 
     [Fact]

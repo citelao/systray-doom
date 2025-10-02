@@ -128,29 +128,25 @@ public class TrayIcon
         Guid = guid;
         OwnerHwnd = ownerHwnd;
 
-        try
+        if (shouldHandleMessages)
         {
-            if (shouldHandleMessages)
-            {
-                _windowSubclassHandler = WindowSubclassHandlerFactoryFn(ownerHwnd, HandleMessage);
-
-                // RegisterWindowMessage is global, so it's probably not the *best*
-                // idea to take one of these slots, but opinions seem mixed.
-                //
-                // Against: https://stackoverflow.com/questions/4406909/using-wm-user-wm-app-or-registerwindowmessage
-                // For: http://www.flounder.com/messages.htm
-                // See also: https://stackoverflow.com/questions/30843497/wm-user-vs-wm-app
-                callbackMessage ??= PInvokeSystray.RegisterWindowMessage($"TrayIconMessage-{Guid}");
-            }
-            CallbackMessage = callbackMessage;
-
-            Create();
+            // RegisterWindowMessage is global, so it's probably not the *best*
+            // idea to take one of these slots, but opinions seem mixed.
+            //
+            // Against: https://stackoverflow.com/questions/4406909/using-wm-user-wm-app-or-registerwindowmessage
+            // For: http://www.flounder.com/messages.htm
+            // See also: https://stackoverflow.com/questions/30843497/wm-user-vs-wm-app
+            callbackMessage ??= PInvokeSystray.RegisterWindowMessage($"TrayIconMessage-{Guid}");
         }
-        catch
+        CallbackMessage = callbackMessage;
+
+        Create();
+
+        if (shouldHandleMessages)
         {
-            // If we failed to create the icon, dispose the WindowSubclass
-            _windowSubclassHandler?.Dispose();
-            throw;
+            // Create can fail (e.g. if the GUID is already in use). So don't
+            // subclass the window until Create succeeds.
+            _windowSubclassHandler = WindowSubclassHandlerFactoryFn(ownerHwnd, HandleMessage);
         }
     }
 
