@@ -26,11 +26,14 @@ internal class WindowMessageHandler
                     var data = (Data*)PInvoke.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
                     if (data != null)
                     {
-                        var that = Marshal.GetDelegateForFunctionPointer<WndProcDelegate>(data->WndProcDelegate);
-                        var result = that(hwnd, msg, wParam, lParam);
-                        if (result != null)
+                        var id = data->ID;
+                        if (s_handlers.TryGetValue(id, out var weakRef) && weakRef.TryGetTarget(out WindowMessageHandler? that))
                         {
-                            return result.Value;
+                            var result = that?._wndProc(hwnd, msg, wParam, lParam);
+                            if (result != null)
+                            {
+                                return result.Value;
+                            }
                         }
                     }
                 }
@@ -43,21 +46,22 @@ internal class WindowMessageHandler
 
     public struct Data
     {
-        public nint WndProcDelegate;
+        public int ID;
     }
     private Data _data;
-
     private readonly WndProcDelegate _wndProc;
 
-    public WindowMessageHandler(WndProcDelegate del)
+    private static readonly Dictionary<int, WeakReference<WindowMessageHandler>> s_handlers = [];
+    private static int s_nextId = 1;
+
+    public WindowMessageHandler(WndProcDelegate deleg)
     {
-        // https://github.com/ControlzEx/ControlzEx/blob/cbb56cab39ffc78d9599208826f47eeab70455f7/src/ControlzEx/Controls/GlowWindow.cs#L94
-        _wndProc = del;
-        var delPtr = Marshal.GetFunctionPointerForDelegate(del);
         _data = new Data
         {
-            WndProcDelegate = delPtr,
+            ID = s_nextId++,
         };
+        _wndProc = deleg;
+        s_handlers[_data.ID] = new WeakReference<WindowMessageHandler>(this, trackResurrection: false);
     }
 
     // Pass this to the WNDCLASS.lpParam field in CreateWindowEx.
