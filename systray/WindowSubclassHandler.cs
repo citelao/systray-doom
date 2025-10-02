@@ -22,7 +22,6 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
     // directly.
     public delegate NativeTypes.LRESULT? UserDelegate(NoReleaseHwnd hwnd, uint msg, NativeTypes.WPARAM wParam, NativeTypes.LPARAM lParam);
     internal delegate Windows.Win32.Foundation.LRESULT? WndProcDelegate(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam);
-    internal delegate nint TrueWndProcDelegate(nint hwnd, uint msg, nuint wParam, nint lParam);
 
     internal static WndProcDelegate ToInternalDelegate(UserDelegate del)
     {
@@ -33,7 +32,12 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
         };
     }
 
-    private readonly TrueWndProcDelegate _delegate;
+    private unsafe struct HandlerInfo
+    {
+        public WndProcDelegate? Delegate;
+        public delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint> OriginalWndProc;
+    }
+    private readonly static Dictionary<HWND, HandlerInfo> s_handlers = [];
 
     public WindowSubclassHandler(NoReleaseHwnd hwnd, UserDelegate wndProc)
         : this(hwnd, ToInternalDelegate(wndProc))
@@ -44,25 +48,47 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
     // TODO: destructor. Needs to handle other folks subclassing our window.
     internal unsafe WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegate wndProc)
     {
-        var originalWndProc = PInvokeCore.GetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
-        // Console.WriteLine($"Original WndProc: 0x{originalWndProc:X}");
-
-        _delegate = (hwnd, msg, wParam, lParam) =>
+        if (s_handlers.ContainsKey(hwnd.ToHwnd()))
         {
-            // Console.WriteLine($"In subclassed WndProc: msg=0x{msg:X}, wParam=0x{wParam:X}, lParam=0x{lParam:X}");
-            var result = wndProc(new(hwnd), msg, new(wParam), new(lParam));
-            if (result != null)
-            {
-                return new(result.Value);
-            }
-            var originalResult = CallWindowProc((delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint>)originalWndProc, hwnd, msg, wParam, lParam);
-            return new(originalResult);
+            // We could handle this by storing a list of delegates, but defer
+            // that for now.
+            throw new InvalidOperationException("This window is already subclassed via WindowSubclassHandler");
+        }
+
+        var originalWndProc = PInvokeCore.GetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
+        s_handlers[hwnd.ToHwnd()] = new HandlerInfo()
+        {
+            Delegate = wndProc,
+            OriginalWndProc = (delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint>)originalWndProc,
         };
 
-        // Console.WriteLine($"New WndProc: 0x{Marshal.GetFunctionPointerForDelegate(_delegate).ToInt64():X}");
-
-        var otherWndProc = PInvokeCore.SetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(_delegate));
+        delegate* unmanaged[Cdecl]<HWND, uint, Windows.Win32.Foundation.WPARAM, Windows.Win32.Foundation.LPARAM, nint> wndProcPointer = &SubclassWndProc;
+        var otherWndProc = PInvokeCore.SetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, (nint)wndProcPointer);
         Debug.Assert(otherWndProc == originalWndProc);
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+    private static unsafe nint SubclassWndProc(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)
+    {
+        if(s_handlers.TryGetValue(hwnd, out var handler))
+        {
+            // Attempt to call the user's delegate.
+            var result = handler.Delegate?.Invoke(hwnd, msg, wParam, lParam);
+            if (result != null)
+            {
+                return result.Value;
+            }
+
+            // If no delegate or the delegate chose not to handle the message,
+            // fall back to the original WndProc.
+            var originalResult = CallWindowProc(handler.OriginalWndProc, hwnd, msg, wParam, lParam);
+            return originalResult;
+        }
+        else
+        {
+            // We never remove items from s_handlers, so this should never happen.
+            throw new InvalidOperationException("No handler registered for this window");
+        }
     }
 
     // We have issues casting the WNDPROC function pointer into a WNDPROC
