@@ -144,7 +144,8 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
 
         // TODO: return focus to systray after dismissing the menu. This line
         // doesn't work:
-        trayIcon.Focus();
+        //
+        // trayIcon.Focus();
     }
     finally
     {
@@ -252,7 +253,7 @@ var windowProcHelper = new WindowMessageHandler((hwnd, msg, wParam, lParam) =>
                 PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
                 // TODO: doesn't work.
-                trayIcon.Focus();
+                // trayIcon.Focus();
             }
             else
             {

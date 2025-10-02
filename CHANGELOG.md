@@ -1,6 +1,9 @@
 # Changelog
 
-## Current
+## CURRENT
+
+## v0.1.3
+* BUG: Fixed an issue where construction failures in `TrayIcon` crashed the host HWND.
 
 ## v0.1.2
 * FEATURE: Mark library as AOT-compatible & added tools to validate that assumption.

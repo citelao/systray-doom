@@ -130,8 +130,6 @@ public class TrayIcon
 
         if (shouldHandleMessages)
         {
-            _windowSubclassHandler = WindowSubclassHandlerFactoryFn(ownerHwnd, HandleMessage);
-
             // RegisterWindowMessage is global, so it's probably not the *best*
             // idea to take one of these slots, but opinions seem mixed.
             //
@@ -143,6 +141,13 @@ public class TrayIcon
         CallbackMessage = callbackMessage;
 
         Create();
+
+        if (shouldHandleMessages)
+        {
+            // Create can fail (e.g. if the GUID is already in use). So don't
+            // subclass the window until Create succeeds.
+            _windowSubclassHandler = WindowSubclassHandlerFactoryFn(ownerHwnd, HandleMessage);
+        }
     }
 
     /// <summary>
