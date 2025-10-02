@@ -42,6 +42,11 @@ internal class WindowMessageHandler
         }
     }
 
+    /// <summary>
+    /// A delegate to handle window messages.
+    ///
+    /// If you return null, the default window procedure will be called.
+    /// </summary>
     internal delegate LRESULT? WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
 
     public struct Data
@@ -54,6 +59,22 @@ internal class WindowMessageHandler
     private static readonly Dictionary<int, WeakReference<WindowMessageHandler>> s_handlers = [];
     private static int s_nextId = 1;
 
+    /// <summary>
+    /// WindowMessageHandler makes it simpler to write non-static WndProc
+    /// functions.
+    ///
+    /// 1. When you create your `WNDCLASSEXW`, set `lpfnWndProc` to
+    /// `WindowMessageHandler.StaticWndProc`.
+    ///
+    /// 2. When you call `CreateWindowEx`, set `lpParam` to an instance of
+    /// `WindowMessageHandler`.
+    ///
+    /// Your window messages will be routed to your delegate!
+    ///
+    /// IMPORTANT: this instance must last as long as the HWND. If it does not,
+    /// the window will not crash, but it will no longer call your delegate.
+    /// </summary>
+    /// <param name="deleg">A delegate to handle window messages</param>
     public WindowMessageHandler(WndProcDelegate deleg)
     {
         _data = new Data
