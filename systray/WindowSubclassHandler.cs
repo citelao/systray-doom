@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Systray.NativeTypes;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -32,9 +31,11 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
         };
     }
 
+    // Store all known handlers, mapped by HWND. We use a WeakReference: if your
+    // Handler gets GC'd, we stop calling your delegate.
     private unsafe struct HandlerInfo
     {
-        public WindowSubclassHandler Handler;
+        public WeakReference<WindowSubclassHandler> Handler;
         public delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint> OriginalWndProc;
     }
     private readonly static Dictionary<HWND, HandlerInfo> s_handlers = [];
@@ -47,7 +48,6 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
         // No addl work.
     }
 
-    // TODO: destructor. Needs to handle other folks subclassing our window.
     internal unsafe WindowSubclassHandler(NoReleaseHwnd hwnd, WndProcDelegate wndProc)
     {
         if (s_handlers.ContainsKey(hwnd.ToHwnd()))
@@ -62,7 +62,7 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
         var originalWndProc = PInvokeCore.GetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
         s_handlers[hwnd.ToHwnd()] = new HandlerInfo()
         {
-            Handler = this,
+            Handler = new(this, trackResurrection: false),
             OriginalWndProc = (delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint>)originalWndProc,
         };
 
@@ -77,7 +77,8 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
         if(s_handlers.TryGetValue(hwnd, out var handlerInfo))
         {
             // Attempt to call the user's delegate.
-            var result = handlerInfo.Handler?.Delegate.Invoke(hwnd, msg, wParam, lParam);
+            var handler = handlerInfo.Handler.TryGetTarget(out var target) ? target : null;
+            var result = handler?.Delegate.Invoke(hwnd, msg, wParam, lParam);
             if (result != null)
             {
                 return result.Value;
