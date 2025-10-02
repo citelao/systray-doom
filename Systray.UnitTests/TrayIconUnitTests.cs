@@ -1,4 +1,5 @@
-﻿using Systray.NativeTypes;
+﻿using System.ComponentModel;
+using Systray.NativeTypes;
 using Windows.Win32;
 using Windows.Win32.UI.Shell;
 
@@ -78,6 +79,42 @@ public class TrayIconUnitTests : IDisposable
         Assert.Equal(NOTIFY_ICON_DATA_FLAGS.NIF_GUID | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP | NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP, messages[1].Data.uFlags);
         Assert.Equal(s_guid, messages[1].Data.guidItem);
         Assert.Equal(PInvokeSystray.NOTIFYICON_VERSION_4, messages[1].Data.Anonymous.uVersion);
+    }
+
+    [Fact]
+    public void TestHandlesCreationFailure()
+    {
+        var mockHandler = new MockWindowSubclassHandler();
+        bool wasSubclassCalled = false;
+        TrayIcon.WindowSubclassHandlerFactoryFn = (hwnd, wndProc) =>
+        {
+            wasSubclassCalled = true;
+            mockHandler.WndProcDelegate = wndProc;
+            return mockHandler;
+        };
+
+        var messages = new List<(NOTIFY_ICON_MESSAGE Message, NOTIFYICONDATAW Data)>();
+        TrayIcon.Shell_NotifyIconFn = (NOTIFY_ICON_MESSAGE dwMessage, in NOTIFYICONDATAW lpData) =>
+        {
+            messages.Add((dwMessage, lpData));
+            if (dwMessage == NOTIFY_ICON_MESSAGE.NIM_ADD)
+            {
+                return false;
+            }
+            return true;
+        };
+
+        var ex = Assert.Throws<Win32Exception>(() => new TrayIcon(
+            guid: s_guid,
+            ownerHwnd: s_fakeHwnd));
+        Assert.Equal("Failed to add icon to the notification area.", ex.Message);
+        Assert.Single(messages);
+        Assert.Equal(NOTIFY_ICON_MESSAGE.NIM_ADD, messages[0].Message);
+
+        // The window subclass should still have been created, but should be disposed.
+        Assert.True(wasSubclassCalled);
+        Assert.NotNull(mockHandler.WndProcDelegate);
+        Assert.True(mockHandler.IsDisposed);
     }
 
     [Fact]
@@ -641,12 +678,18 @@ public class TrayIconUnitTests : IDisposable
     /// <summary>
     /// Mock implementation of IWindowSubclassHandler for testing.
     /// </summary>
-    private class MockWindowSubclassHandler : IWindowSubclassHandler
+    private sealed class MockWindowSubclassHandler : IWindowSubclassHandler
     {
         public WindowSubclassHandler.WndProcDelegate? WndProcDelegate { get; set; }
+        public bool IsDisposed = false;
 
         public MockWindowSubclassHandler()
         {
+        }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
         }
 
         /// <summary>
