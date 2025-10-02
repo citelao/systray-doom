@@ -23,21 +23,23 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
     public delegate NativeTypes.LRESULT? UserDelegate(NoReleaseHwnd hwnd, uint msg, NativeTypes.WPARAM wParam, NativeTypes.LPARAM lParam);
     internal delegate Windows.Win32.Foundation.LRESULT? WndProcDelegate(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam);
 
-    internal static WndProcDelegate ToInternalDelegate(UserDelegate del)
+    internal static WndProcDelegate ToInternalDelegate(UserDelegate deleg)
     {
         return (HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam) =>
         {
-            var result = del(new(hwnd), msg, new(wParam.Value), new(lParam.Value));
+            var result = deleg(new(hwnd), msg, new(wParam.Value), new(lParam.Value));
             return result?.ToWin32() ?? new Windows.Win32.Foundation.LRESULT(0);
         };
     }
 
     private unsafe struct HandlerInfo
     {
-        public WndProcDelegate? Delegate;
+        public WindowSubclassHandler Handler;
         public delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint> OriginalWndProc;
     }
     private readonly static Dictionary<HWND, HandlerInfo> s_handlers = [];
+
+    private readonly WndProcDelegate Delegate;
 
     public WindowSubclassHandler(NoReleaseHwnd hwnd, UserDelegate wndProc)
         : this(hwnd, ToInternalDelegate(wndProc))
@@ -55,10 +57,12 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
             throw new InvalidOperationException("This window is already subclassed via WindowSubclassHandler");
         }
 
+        Delegate = wndProc;
+
         var originalWndProc = PInvokeCore.GetWindowLong(hwnd.ToHwnd(), WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC);
         s_handlers[hwnd.ToHwnd()] = new HandlerInfo()
         {
-            Delegate = wndProc,
+            Handler = this,
             OriginalWndProc = (delegate* unmanaged[Cdecl]<nint, uint, nuint, nint, nint>)originalWndProc,
         };
 
@@ -70,10 +74,10 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
     private static unsafe nint SubclassWndProc(HWND hwnd, uint msg, Windows.Win32.Foundation.WPARAM wParam, Windows.Win32.Foundation.LPARAM lParam)
     {
-        if(s_handlers.TryGetValue(hwnd, out var handler))
+        if(s_handlers.TryGetValue(hwnd, out var handlerInfo))
         {
             // Attempt to call the user's delegate.
-            var result = handler.Delegate?.Invoke(hwnd, msg, wParam, lParam);
+            var result = handlerInfo.Handler?.Delegate.Invoke(hwnd, msg, wParam, lParam);
             if (result != null)
             {
                 return result.Value;
@@ -81,7 +85,7 @@ public partial class WindowSubclassHandler : IWindowSubclassHandler
 
             // If no delegate or the delegate chose not to handle the message,
             // fall back to the original WndProc.
-            var originalResult = CallWindowProc(handler.OriginalWndProc, hwnd, msg, wParam, lParam);
+            var originalResult = CallWindowProc(handlerInfo.OriginalWndProc, hwnd, msg, wParam, lParam);
             return originalResult;
         }
         else
