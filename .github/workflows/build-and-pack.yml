@@ -1,0 +1,38 @@
+name: Build and Pack SystrayIcon
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+
+jobs:
+  build:
+    name: Build and Pack
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore
+        run: dotnet restore systray-doom.sln
+      - name: Build
+        run: dotnet build systray-doom.sln --configuration Release --no-restore
+      - name: Test
+        run: dotnet test systray-doom.sln --configuration Release --no-build
+      - name: Pack SystrayIcon
+        run: dotnet pack systray/systray.csproj --configuration Release --no-build --output artifacts/nuget
+      - name: Upload NuGet package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SystrayIcon-nuget
+          path: |
+            artifacts/nuget/*.nupkg
+            artifacts/nuget/*.snupkg
+          if-no-files-found: error
