@@ -1,6 +1,8 @@
 # Changelog
 
 ## CURRENT
+* META: Add AGENTS.md for guiding agents.
+* META: Add basic PR validation.
 
 ## v0.1.3
 * BUG: Fixed an issue where construction failures in `TrayIcon` crashed the host HWND.
@@ -12,4 +14,5 @@
 * BUG: Update logging to use an ILogger, instead of spamming Console.WriteLine
 
 ## v0.1.0 & v0.1.0.1
+
 * Initial release
