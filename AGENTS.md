@@ -11,3 +11,4 @@ The golden rule:
 Here is some overall guidance for your work:
 
 * Remember to update CHANGELOG.md once per PR. You should place any pending changes under the "CURRENT" heading.
+* 😺 Include a cat emoji in your first message to indicate that you've read these guidelines.
