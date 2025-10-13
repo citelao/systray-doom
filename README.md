@@ -83,8 +83,8 @@ dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.1.nupkg --api-
 
 * Nerdbank.GitVersioning provides the package and assembly versions from `version.json`. The `version` property controls the first three digits (major/minor/patch). The build height becomes the fourth component automatically so you do not need to edit it manually.
 * Non-`main` branches (e.g. `dev`) publish prerelease builds that include a `-dev` suffix before the commit hash for clarity.
-* Continuous integration builds automatically unshallow the git checkout (see `Directory.Build.targets`) so Nerdbank.GitVersioning can calculate the version height even when hosted agents fetch with a short history.
 * Nerdbank.GitVersioning can automate release version bumps via the [`nbgv prepare-release`](https://dotnet.github.io/Nerdbank.GitVersioning/docs/nbgv-cli.html#prepare-release) command. TODO: evaluate wiring that into our release flow so merges to `main` automatically advance the base version.
+* GitHub Copilot and other agents that work from shallow clones should set `NBGV_GitEngine=Disabled` in their environment so Nerdbank.GitVersioning skips walking commit history. This avoids build failures at the cost of omitting commit metadata from generated version information. See the [shallow-cloning agents guide](https://dotnet.github.io/Nerdbank.GitVersioning/docs/shallow-cloning-agents.html) for details.
 
 ## TODO
 
