@@ -59,8 +59,9 @@ $apiKey = # paste from the website
 git checkout main
 git merge dev
 
-# Bump the version
-# In systray.csproj, bump `<Version>`.
+# Confirm the base version
+# Update version.json's `"version"` field if you need to change the major/minor/patch.
+# Nerdbank.GitVersioning automatically calculates the 4th component based on git height.
 
 # Update the CHANGELOG
 # ...
@@ -77,6 +78,12 @@ dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.1.nupkg --api-
 # Dummy Nuget:
 # dotnet nuget push .\Systray\bin\Release\citelao.SystrayIcon.0.1.0.nupkg --api-key $apiKey --source https://int.nugettest.org
 ```
+
+### Versioning notes
+
+* Nerdbank.GitVersioning provides the package and assembly versions from `version.json`. The `version` property controls the first three digits (major/minor/patch). The build height becomes the fourth component automatically so you do not need to edit it manually.
+* Non-`main` branches (e.g. `dev`) publish prerelease builds that include a `-dev` suffix before the commit hash for clarity.
+* Nerdbank.GitVersioning can automate release version bumps via the [`nbgv prepare-release`](https://dotnet.github.io/Nerdbank.GitVersioning/docs/nbgv-cli.html#prepare-release) command. TODO: evaluate wiring that into our release flow so merges to `main` automatically advance the base version.
 
 ## TODO
 
