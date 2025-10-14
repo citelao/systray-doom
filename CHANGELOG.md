@@ -3,6 +3,7 @@
 ## CURRENT
 * META: Add AGENTS.md for guiding agents.
 * META: Add basic PR validation.
+* META: Add NerdBank.GitVersioning for automatic version management.
 
 ## v0.1.3
 * BUG: Fixed an issue where construction failures in `TrayIcon` crashed the host HWND.
