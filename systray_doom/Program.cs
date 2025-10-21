@@ -80,82 +80,72 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
 
     // If you ... happen to call `CreateMenu` instead here, you'll get a menu
     // that has basically no width.
-    var menu = PInvoke.CreatePopupMenu();
-    try
+    // var menu = PInvoke.CreatePopupMenu();
+    using var menu = Systray.Menus.MenuHelpers.CreatePopupMenu();
+
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
+
+    // TODO: docs say to use this, but there are no examples.
+    // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
+    //     new POINT(x, y),
+    //     new RECT(0, 0, 0, 0),
+    //     TPM.TPM_VERTICAL | TPM.TPM_RIGHTALIGN | TPM.TPM_RIGHTBUTTON,
+    //     out var position
+    // ));
+
+    // Get alignment flags & also ensure that:
+    // 1. The menu returns the command ID of the item selected.
+    // 2. The menu does not send notifications of the selected item to
+    //    parent HWND.
+    var flags = MenuHelpers.GetPopupAlignmentFlags();
+    var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
+    flags |= returnValueFlags;
+
+    // TODO: what DPI/coordinate space are X & Y? (they are "screen
+    // coordinates", but I think they correspond to the app's DPI, whereas I
+    // think the x & y we get from the WMs are in the system DPI. Before I
+    // turned on DPI awareness, this menu drew in the bottom-right corner of
+    // the screen).
+    // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex
+    // https://learn.microsoft.com/en-us/windows/win32/learnwin32/dpi-and-device-independent-pixels
+    //
+    // TODO: TPM_LAYOUTRTL on RTL systems?
+
+    var response = PInvoke.TrackPopupMenuEx(
+        menu,
+        (uint)(flags),
+        pt.X,
+        pt.Y,
+        hwnd,
+        null);
+    if (response == 0)
     {
-        MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
-        MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
-        MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-        MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
-        MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
-
-        // TODO: docs say to use this, but there are no examples.
-        // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
-        //     new POINT(x, y),
-        //     new RECT(0, 0, 0, 0),
-        //     TPM.TPM_VERTICAL | TPM.TPM_RIGHTALIGN | TPM.TPM_RIGHTBUTTON,
-        //     out var position
-        // ));
-
-        // Get alignment flags & also ensure that:
-        // 1. The menu returns the command ID of the item selected.
-        // 2. The menu does not send notifications of the selected item to
-        //    parent HWND.
-        var flags = MenuHelpers.GetPopupAlignmentFlags();
-        var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
-        flags |= returnValueFlags;
-
-        // TODO: what DPI/coordinate space are X & Y? (they are "screen
-        // coordinates", but I think they correspond to the app's DPI, whereas I
-        // think the x & y we get from the WMs are in the system DPI. Before I
-        // turned on DPI awareness, this menu drew in the bottom-right corner of
-        // the screen).
-        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex
-        // https://learn.microsoft.com/en-us/windows/win32/learnwin32/dpi-and-device-independent-pixels
-        //
-        // TODO: TPM_LAYOUTRTL on RTL systems?
-
-        var response = PInvoke.TrackPopupMenuEx(
-            new NoReleaseSafeHandle((int)menu.Value),
-            (uint)(flags),
-            pt.X,
-            pt.Y,
-            hwnd,
-            null);
-        if (response == 0)
-        {
-            // Either nothing selected or an error occurred.
-            // throw new Exception("TrackPopupMenuEx failed.");
-        }
-        logger.LogDebug("TrackPopupMenuEx complete; {Response}", response);
-
-        if (response == 3)
-        {
-            // Open window
-            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
-            PInvoke.SetForegroundWindow(hwnd);
-        }
-        else if (response == 4)
-        {
-            // Exit
-            doom.Stop();
-            PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
-        }
-
-        // TODO: return focus to systray after dismissing the menu. This line
-        // doesn't work:
-        //
-        // trayIcon.Focus();
+        // Either nothing selected or an error occurred.
+        // throw new Exception("TrackPopupMenuEx failed.");
     }
-    finally
+    logger.LogDebug("TrackPopupMenuEx complete; {Response}", response);
+
+    if (response == 3)
     {
-        var result = PInvoke.DestroyMenu(menu);
-        if (!result)
-        {
-            // throw new Exception("Failed to destroy menu.");
-            logger.LogError("Failed to destroy menu.");
-        }
+        // Open window
+        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWNORMAL);
+        PInvoke.SetForegroundWindow(hwnd);
     }
+    else if (response == 4)
+    {
+        // Exit
+        doom.Stop();
+        PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
+    }
+
+    // TODO: return focus to systray after dismissing the menu. This line
+    // doesn't work:
+    //
+    // trayIcon.Focus();
 
     return false;
 }
