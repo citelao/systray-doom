@@ -45,6 +45,55 @@ var trayIcon = new TrayIcon(
 
 For a full example, see https://github.com/citelao/systray-doom/.
 
+### Example with context menu
+
+Provided that you have the following PInvokes in your code:
+
+1. `TRACK_POPUP_MENU_FLAGS`
+2. `TrackPopupMenuEx`
+3. `PostMessage`
+4. `WM_CLOSE`
+
+```csharp
+using Systray.Menus;
+
+var trayIcon = new TrayIcon(/* ... */)
+{
+    ContextMenu = (hwnd, pt) =>
+    {
+        using var menu = MenuHelpers.CreatePopupMenu();
+
+        var exitId = 1;
+        MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "My app", Enabled = false }.Build());
+        MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
+        MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
+
+        // Note: add TPM_LAYOUTRTL for RTL layouts.
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#:~:text=existing%20menu%20item.-,%5Bin%5D%20uFlags,-Type%3A%20UINT
+        var flags = (TRACK_POPUP_MENU_FLAGS)MenuHelpers.GetPopupAlignmentFlags();
+        var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
+        flags |= returnValueFlags;
+
+        var response = PInvoke.TrackPopupMenuEx(
+            menu,
+            (uint)flags,
+            pt.X,
+            pt.Y,
+            hwnd,
+            null);
+        if (response == 0)
+        {
+            // Either nothing selected or an error occurred.
+        }
+        else if (response == exitId)
+        {
+            // Exit!
+            PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
+        }
+    }
+};
+```
+
 ## Feedback
 
 The project repo is here: https://github.com/citelao/systray-doom/.
