@@ -34,4 +34,35 @@ public class MenuHelpers
     {
         PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(menu, index, true, item.Info));
     }
+
+    /// <summary>
+    /// Get basic flags for aligning popup menus, taking into account right-to-left languages. Also ensures right-clicks activate menu items.
+    /// </summary>
+    /// <returns>A set of flags suitable for TrackPopupMenu; you can augment them</returns>
+    internal static TRACK_POPUP_MENU_FLAGS GetPopupAlignmentFlagsInternal()
+    {
+        // Users typically expect popup menus to support right-click.
+        var flags = TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON;
+
+        // Align the popup menu correctly for RTLs languages.
+        //
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#remarks
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa#:~:text=SPI_GETMENUDROPALIGNMENT
+        // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
+        if (PInvokeSystray.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_MENUDROPALIGNMENT) != 0)
+        {
+            flags |= TRACK_POPUP_MENU_FLAGS.TPM_RIGHTALIGN;
+        }
+        else
+        {
+            flags |= TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN;
+        }
+        return flags;
+    }
+
+    /// <inheritdoc/>
+    public static uint GetPopupAlignmentFlags()
+    {
+        return (uint)GetPopupAlignmentFlagsInternal();
+    }
 }

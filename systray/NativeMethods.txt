@@ -36,3 +36,5 @@ NOTIFY_ICON_STATE
 CreatePopupMenu
 DestroyMenu
 InsertMenuItem
+GetSystemMetrics
+TRACK_POPUP_MENU_FLAGS
