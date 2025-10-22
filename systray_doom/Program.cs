@@ -101,6 +101,8 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
     // 1. The menu returns the command ID of the item selected.
     // 2. The menu does not send notifications of the selected item to
     //    parent HWND.
+    //
+    // TODO: TPM_LAYOUTRTL on RTL systems?
     var flags = (TRACK_POPUP_MENU_FLAGS)Systray.Menus.MenuHelpers.GetPopupAlignmentFlags();
     var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
     flags |= returnValueFlags;
@@ -112,9 +114,6 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
     // the screen).
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex
     // https://learn.microsoft.com/en-us/windows/win32/learnwin32/dpi-and-device-independent-pixels
-    //
-    // TODO: TPM_LAYOUTRTL on RTL systems?
-
     var response = PInvoke.TrackPopupMenuEx(
         menu,
         (uint)(flags),

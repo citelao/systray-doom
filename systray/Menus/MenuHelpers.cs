@@ -36,7 +36,7 @@ public class MenuHelpers
     }
 
     /// <summary>
-    /// Get basic flags for aligning popup menus, taking into account right-to-left languages. Also ensures right-clicks activate menu items.
+    /// Get basic flags for aligning popup menus, taking into system metrics for positioning. Also ensures right-clicks activate menu items.
     /// </summary>
     /// <returns>A set of flags suitable for TrackPopupMenu; you can augment them</returns>
     internal static TRACK_POPUP_MENU_FLAGS GetPopupAlignmentFlagsInternal()
@@ -44,7 +44,7 @@ public class MenuHelpers
         // Users typically expect popup menus to support right-click.
         var flags = TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON;
 
-        // Align the popup menu correctly for RTLs languages.
+        // Align the popup menu correctly with the source coordinates
         //
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#remarks
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa#:~:text=SPI_GETMENUDROPALIGNMENT
