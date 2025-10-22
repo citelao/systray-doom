@@ -31,6 +31,10 @@ public class MenuItemInfoBuilder
     public ItemType? Type { get; set; }
     public string? Text { get; set; }
 
+    /// <summary>
+    /// Helper method to create a separator item
+    /// </summary>
+    /// <returns>N.B. this returns a MenuItemInfo directly, since separators don't support customization</returns>
     public static MenuItemInfo CreateSeparator()
     {
         return new MenuItemInfoBuilder
@@ -39,6 +43,12 @@ public class MenuItemInfoBuilder
         }.Build();
     }
 
+    /// <summary>
+    /// Helper method to create a simple string item
+    /// </summary>
+    /// <param name="text">The text to display for the menu item; use `&` to indicate the access key</param>
+    /// <param name="id">The command ID that will be sent when the menu item is selected</param>
+    /// <returns>A MenuItemInfoBuilder pre-populated with the given text and ID; it's safe to call Build()</returns>
     public static MenuItemInfoBuilder CreateString(string text, uint? id = null)
     {
         return new MenuItemInfoBuilder
