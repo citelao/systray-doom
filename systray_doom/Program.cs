@@ -18,6 +18,7 @@ using System.Numerics;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Systray;
+using Systray.Menus;
 using systray_doom;
 using Windows.Graphics.DirectX;
 using Microsoft.Extensions.Logging;
@@ -81,13 +82,13 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
     // If you ... happen to call `CreateMenu` instead here, you'll get a menu
     // that has basically no width.
     // var menu = PInvoke.CreatePopupMenu();
-    using var menu = Systray.Menus.MenuHelpers.CreatePopupMenu();
+    using var menu = MenuHelpers.CreatePopupMenu();
 
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 0, new Systray.Menus.MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 1, new Systray.Menus.MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 2, Systray.Menus.MenuItemInfoBuilder.CreateSeparator());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 3, new Systray.Menus.MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 4, new Systray.Menus.MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
+    MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
+    MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
+    MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
+    MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
+    MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
 
     // TODO: docs say to use this, but there are no examples.
     // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
@@ -103,7 +104,7 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
     //    parent HWND.
     //
     // TODO: TPM_LAYOUTRTL on RTL systems?
-    var flags = (TRACK_POPUP_MENU_FLAGS)Systray.Menus.MenuHelpers.GetPopupAlignmentFlags();
+    var flags = (TRACK_POPUP_MENU_FLAGS)MenuHelpers.GetPopupAlignmentFlags();
     var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
     flags |= returnValueFlags;
 
