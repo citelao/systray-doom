@@ -23,6 +23,12 @@ public class NoReleaseSafeHandle : SafeHandle
         this.SetHandle(new IntPtr(value));
     }
 
+    public NoReleaseSafeHandle(nint value)
+        : base(IntPtr.Zero, true)
+    {
+        this.SetHandle(new IntPtr(value));
+    }
+
     public override bool IsInvalid {
         get {
             return this.handle == IntPtr.Zero;

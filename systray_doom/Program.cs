@@ -83,11 +83,11 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
     // var menu = PInvoke.CreatePopupMenu();
     using var menu = Systray.Menus.MenuHelpers.CreatePopupMenu();
 
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
-    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 0, new Systray.Menus.MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 1, new Systray.Menus.MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 2, Systray.Menus.MenuItemInfoBuilder.CreateSeparator());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 3, new Systray.Menus.MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
+    Systray.Menus.MenuHelpers.InsertMenuItem(menu, 4, new Systray.Menus.MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
 
     // TODO: docs say to use this, but there are no examples.
     // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(

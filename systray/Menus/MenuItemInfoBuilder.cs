@@ -1,7 +1,20 @@
-namespace systray_doom;
+namespace Systray.Menus;
 
 using System.Runtime.InteropServices;
 using Windows.Win32.UI.WindowsAndMessaging;
+
+/// <summary>
+/// An opaque wrapper for MENUITEMINFOWs, to manage CsWin32's projections.
+/// </summary>
+public class MenuItemInfo
+{
+    internal readonly MENUITEMINFOW Info;
+
+    internal MenuItemInfo(MENUITEMINFOW info)
+    {
+        Info = info;
+    }
+}
 
 public class MenuItemInfoBuilder
 {
@@ -18,7 +31,7 @@ public class MenuItemInfoBuilder
     public ItemType? Type { get; set; }
     public string? Text { get; set; }
 
-    public static MENUITEMINFOW CreateSeparator()
+    public static MenuItemInfo CreateSeparator()
     {
         return new MenuItemInfoBuilder
         {
@@ -36,7 +49,7 @@ public class MenuItemInfoBuilder
         };
     }
 
-    public MENUITEMINFOW Build()
+    public MenuItemInfo Build()
     {
         var basic = CreateBasic();
         if (Text != null)
@@ -97,7 +110,7 @@ public class MenuItemInfoBuilder
             basic.fState |= MENU_ITEM_STATE.MFS_DEFAULT;
         }
 
-        return basic;
+        return new MenuItemInfo(basic);
     }
 
     private static MENUITEMINFOW CreateBasic()

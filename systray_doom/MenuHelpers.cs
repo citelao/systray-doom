@@ -9,19 +9,6 @@ using Systray;
 // This is not a trustworthy class. Internal only.
 internal class MenuHelpers
 {
-    public static void InsertMenuItem(HMENU menu, uint index, string text)
-    {
-        // TODO: callbacks/handlers might mean we should get rid of this helper
-        // altogether.
-        var item = MenuItemInfoBuilder.CreateString(text).Build();
-        InsertMenuItem(menu, index, item);
-    }
-
-    public static void InsertMenuItem(HMENU menu, uint index, MENUITEMINFOW item)
-    {
-        PInvokeHelpers.THROW_IF_FALSE(PInvoke.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), index, true, item));
-    }
-
     public static TRACK_POPUP_MENU_FLAGS GetPopupAlignmentFlags()
     {
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#remarks

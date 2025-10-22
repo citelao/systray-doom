@@ -18,13 +18,11 @@ public class MenuHelpers
 
     internal static void InsertMenuItem(HMENU menu, uint index, MENUITEMINFOW item)
     {
-        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(new NoReleaseSafeHandle((int)menu.Value), index, true, item));
+        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(new NoReleaseSafeHandle(menu.Value), index, true, item));
     }
 
-    // TODO: object
-    public static void InsertMenuItem(SafeHmenu menu, uint index, object item)
+    public static void InsertMenuItem(SafeHmenu menu, uint index, MenuItemInfo item)
     {
-        var itemInfo = (MENUITEMINFOW)item;
-        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(menu, index, true, itemInfo));
+        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(menu, index, true, item.Info));
     }
 }
