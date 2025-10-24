@@ -11,7 +11,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
-internal static partial class PInvokeCore
+public static partial class PInvokeCore
 {
     [LibraryImport("USER32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -34,12 +34,17 @@ internal static partial class PInvokeCore
     ///  </para>
     /// </remarks>
     /// <returns></returns>
-    public static nint GetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex)
+    internal static nint GetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex)
     {
         nint result = Environment.Is64BitProcess
             ? GetWindowLongPtrW(hWnd, (int)nIndex)
             : GetWindowLongW(hWnd, (int)nIndex);
         GC.KeepAlive(hWnd);
         return result;
+    }
+
+    public static nint GetWindowLongPtr(NoReleaseHwnd hWnd, int nIndex)
+    {
+        return GetWindowLong(hWnd.ToHwnd(), (WINDOW_LONG_PTR_INDEX)nIndex);
     }
 }

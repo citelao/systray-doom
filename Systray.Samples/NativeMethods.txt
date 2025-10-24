@@ -4,3 +4,6 @@ GetModuleHandle
 
 // Does not seem to be defined
 // HWND_MESSAGE
+
+WM_NCCREATE
+DefWindowProc

@@ -11,7 +11,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
-internal static partial class PInvokeCore
+public static partial class PInvokeCore
 {
     [LibraryImport("USER32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -23,12 +23,17 @@ internal static partial class PInvokeCore
     [SupportedOSPlatform("windows5.0")]
     private static partial nint SetWindowLongPtrW(IntPtr hWnd, int nIndex, nint dwNewLong);
 
-    public static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint newValue)
+    internal static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint newValue)
     {
         nint result = Environment.Is64BitProcess
             ? SetWindowLongPtrW(hWnd, (int)nIndex, newValue)
             : SetWindowLongW(hWnd, (int)nIndex, (int)newValue);
         GC.KeepAlive(hWnd);
         return result;
+    }
+
+    public static nint SetWindowLongPtr(NoReleaseHwnd hWnd, int nIndex, nint newValue)
+    {
+        return SetWindowLong(hWnd.ToHwnd(), (WINDOW_LONG_PTR_INDEX)nIndex, newValue);
     }
 }
