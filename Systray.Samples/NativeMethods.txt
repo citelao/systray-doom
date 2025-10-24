@@ -15,3 +15,7 @@ PostQuitMessage
 
 // For GWLP_USERDATA
 WINDOW_LONG_PTR_INDEX
+
+GetMessage
+TranslateMessage
+DispatchMessage

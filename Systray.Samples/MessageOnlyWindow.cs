@@ -101,8 +101,6 @@ internal class MessageOnlyWindow : IDisposable
         }
     }
 
-    // TODO: message loop
-
     public void Dispose()
     {
         // PInvoke.DestroyWindow(Hwnd);
