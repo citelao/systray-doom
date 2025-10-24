@@ -16,11 +16,24 @@ public class MenuItemInfo
     }
 }
 
+/// <summary>
+/// A builder for creating MenuItemInfo instances, useful with MenuHelpers.InsertMenuItem.
+/// </summary>
 public class MenuItemInfoBuilder
 {
+    /// <summary>
+    /// The command ID that will be sent when the menu item is selected.
+    /// </summary>
     public uint? Id { get; set; }
 
+    /// <summary>
+    /// Whether the menu item is enabled.
+    /// </summary>
     public bool? Enabled { get; set; }
+
+    /// <summary>
+    /// Whether the menu item is the default item.
+    /// </summary>
     public bool Default { get; set; } = false;
 
     public enum ItemType
@@ -29,6 +42,10 @@ public class MenuItemInfoBuilder
         Separator,
     }
     public ItemType? Type { get; set; }
+
+    /// <summary>
+    /// The text to display for the menu item; use `&` to indicate the access key
+    /// </summary>
     public string? Text { get; set; }
 
     /// <summary>
@@ -59,6 +76,10 @@ public class MenuItemInfoBuilder
         };
     }
 
+    /// <summary>
+    /// Builds the current MenuItemInfo! You can pass this to MenuHelpers.InsertMenuItem.
+    /// </summary>
+    /// <returns>An opaque MenuItemInfo instance that can be used with MenuHelpers.InsertMenuItem</returns>
     public MenuItemInfo Build()
     {
         var basic = CreateBasic();

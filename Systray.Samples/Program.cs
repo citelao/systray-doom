@@ -5,7 +5,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using Microsoft.Extensions.Logging;
 
-// Create a simple console logger:
+// Create a simple console logger
 using var loggerFactory = LoggerFactory.Create(builder =>
 {
     builder.AddSimpleConsole(options =>
