@@ -35,7 +35,7 @@ using var messageWindow = new MessageOnlyWindow("Systray.Sample.Window", (hwnd, 
 });
 
 var guid = Guid.Parse("0ec911bf-c185-400b-816e-a51689aebbfb");
-var icon = new TrayIcon(guid, new(messageWindow.Hwnd.Value));
+var icon = new TrayIcon(guid, new(messageWindow.Hwnd.Value), logger: loggerFactory.CreateLogger<TrayIcon>());
 
 // Wait for enter key
 logger.LogInformation("Press Enter to exit...");
