@@ -20,4 +20,12 @@
     <ProjectReference Include="..\Systray\systray.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!--
+      Add an *embedded* manifest for the app:
+      https://github.com/dotnet/sdk/issues/23627
+     -->
+    <ApplicationManifest>Sample.manifest</ApplicationManifest>
+  </PropertyGroup>
+
 </Project>

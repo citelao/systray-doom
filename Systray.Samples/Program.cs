@@ -64,6 +64,8 @@ icon.ContextMenu = (hwnd, pt) =>
 
     // Note: these are physical points; if your app is not DPI-aware, the
     // context menu will display in the wrong spot.
+    //
+    // See the <ApplicationManifest> entry in the csproj.
     var response = PInvoke.TrackPopupMenuEx(
         menu,
         (uint)flags,
