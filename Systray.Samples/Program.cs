@@ -81,7 +81,7 @@ static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILog
 
     uint exitId = 1;
     MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "My app", Enabled = false }.Build());
-    MenuHelpers.InsertMenuItem(menu, 2, new MenuItemInfoBuilder { Text = "&Options", SubMenu = new NoReleaseSafeHandle(submenu.DangerousGetHandle()) }.Build());
+    MenuHelpers.InsertMenuItem(menu, 2, new MenuItemInfoBuilder { Text = "&Options", SubMenu = submenu }.Build());
     MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfoBuilder.CreateSeparator());
     MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
 

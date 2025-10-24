@@ -1,6 +1,7 @@
 namespace Systray.Menus;
 
 using System.Runtime.InteropServices;
+using Systray.NativeTypes;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 /// <summary>
@@ -64,9 +65,9 @@ public class MenuItemInfoBuilder
     public string? Text { get; set; }
 
     /// <summary>
-    /// A submenu for this menu item, if any.
+    /// A submenu for this menu item, if any. Does not take ownership of the submenu.
     /// </summary>
-    public NoReleaseSafeHandle? SubMenu { get; set; }
+    public SafeHmenu? SubMenu { get; set; }
 
     /// <summary>
     /// Helper method to create a separator item
