@@ -36,13 +36,14 @@ public class MenuHelpers
     }
 
     /// <summary>
-    /// Get basic flags for aligning popup menus, taking into system metrics for positioning. Also ensures right-clicks activate menu items.
+    /// Get basic flags for aligning popup menus, taking into system metrics for positioning. Also ensures right-clicks activate menu items for context menus.
     /// </summary>
-    /// <returns>A set of flags suitable for TrackPopupMenu; you can augment them</returns>
-    internal static TRACK_POPUP_MENU_FLAGS GetPopupAlignmentFlagsInternal()
+    /// <param name="forRightClick">If true (default), includes TPM_RIGHTBUTTON to allow right-click activation.</param>
+    /// <returns>A set of flags suitable for TrackPopupMenu; you can augment them.</returns>
+    internal static TRACK_POPUP_MENU_FLAGS GetPopupAlignmentFlagsInternal(bool forRightClick = true)
     {
         // Users typically expect popup menus to support right-click.
-        var flags = TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON;
+        var flags = forRightClick ? TRACK_POPUP_MENU_FLAGS.TPM_RIGHTBUTTON : TRACK_POPUP_MENU_FLAGS.TPM_LEFTBUTTON;
 
         // Align the popup menu correctly with the source coordinates
         //
@@ -60,9 +61,9 @@ public class MenuHelpers
         return flags;
     }
 
-    /// <inheritdoc/>
-    public static uint GetPopupAlignmentFlags()
+    /// <inheritdoc cref="GetPopupAlignmentFlagsInternal"/>
+    public static uint GetPopupAlignmentFlags(bool forRightClick = true)
     {
-        return (uint)GetPopupAlignmentFlagsInternal();
+        return (uint)GetPopupAlignmentFlagsInternal(forRightClick);
     }
 }
