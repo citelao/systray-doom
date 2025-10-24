@@ -2,8 +2,20 @@
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Microsoft.Extensions.Logging;
 
-Console.WriteLine("Hello, World!");
+// Create a simple console logger:
+using var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddSimpleConsole(options =>
+    {
+        options.SingleLine = true;
+        options.TimestampFormat = "hh:mm:ss ";
+    });
+});
+var logger = loggerFactory.CreateLogger<Program>();
+
+logger.LogInformation("Starting...");
 
 using var messageWindow = new MessageOnlyWindow("Systray.Sample.Window", (hwnd, msg, wParam, lParam) =>
 {
@@ -22,6 +34,10 @@ using var messageWindow = new MessageOnlyWindow("Systray.Sample.Window", (hwnd, 
     }
 });
 
+var guid = Guid.Parse("0ec911bf-c185-400b-816e-a51689aebbfb");
+var icon = new TrayIcon(guid, new(messageWindow.Hwnd.Value));
+
 // Wait for enter key
-Console.WriteLine("Press Enter to exit...");
+logger.LogInformation("Press Enter to exit...");
 Console.ReadLine();
+
