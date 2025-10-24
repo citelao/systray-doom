@@ -63,7 +63,7 @@ var trayIcon = new TrayIcon(/* ... */)
     {
         using var menu = MenuHelpers.CreatePopupMenu();
 
-        var exitId = 1;
+        uint exitId = 1;
         MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "My app", Enabled = false }.Build());
         MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
         MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
@@ -79,7 +79,7 @@ var trayIcon = new TrayIcon(/* ... */)
             (uint)flags,
             pt.X,
             pt.Y,
-            hwnd,
+            new HWND(hwnd.Value),
             null);
         if (response == 0)
         {
@@ -88,7 +88,7 @@ var trayIcon = new TrayIcon(/* ... */)
         else if (response == exitId)
         {
             // Exit!
-            PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
+            PInvoke.PostMessage(new HWND(hwnd.Value), PInvoke.WM_CLOSE, 0, 0);
         }
     }
 };

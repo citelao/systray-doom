@@ -19,3 +19,8 @@ WINDOW_LONG_PTR_INDEX
 GetMessage
 TranslateMessage
 DispatchMessage
+PostMessage
+
+// Context menus!
+TRACK_POPUP_MENU_FLAGS
+TrackPopupMenuEx
