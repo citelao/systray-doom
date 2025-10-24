@@ -6,10 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/single-file/overview?tabs=cli -->
-    <!-- <PublishSingleFile>true</PublishSingleFile> -->
-    <SelfContained>true</SelfContained>
-
     <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trim-self-contained -->
     <PublishTrimmed>true</PublishTrimmed>
 
