@@ -69,12 +69,17 @@ static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILog
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
     PInvoke.SetForegroundWindow(hwnd);
 
+    using var submenu = MenuHelpers.CreatePopupMenu();
+    MenuHelpers.InsertMenuItem(submenu, 1, new MenuItemInfoBuilder { Text = "Welcome to the submenu!", Enabled = false }.Build());
+    MenuHelpers.InsertMenuItem(submenu, 2, MenuItemInfoBuilder.CreateSeparator());
+
     using var menu = MenuHelpers.CreatePopupMenu();
 
     uint exitId = 1;
     MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "My app", Enabled = false }.Build());
-    MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-    MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
+    MenuHelpers.InsertMenuItem(menu, 2, new MenuItemInfoBuilder { Text = "&Options", SubMenu = new NoReleaseSafeHandle(submenu.DangerousGetHandle()) }.Build());
+    MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfoBuilder.CreateSeparator());
+    MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
 
     // Note: add TPM_LAYOUTRTL for RTL layouts.
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#:~:text=existing%20menu%20item.-,%5Bin%5D%20uFlags,-Type%3A%20UINT

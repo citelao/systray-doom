@@ -49,6 +49,11 @@ public class MenuItemInfoBuilder
     public string? Text { get; set; }
 
     /// <summary>
+    /// A submenu for this menu item, if any.
+    /// </summary>
+    public NoReleaseSafeHandle? SubMenu { get; set; }
+
+    /// <summary>
     /// Helper method to create a separator item
     /// </summary>
     /// <returns>N.B. this returns a MenuItemInfo directly, since separators don't support customization</returns>
@@ -139,6 +144,12 @@ public class MenuItemInfoBuilder
         {
             basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
             basic.fState |= MENU_ITEM_STATE.MFS_DEFAULT;
+        }
+
+        if (SubMenu != null)
+        {
+            basic.fMask |= MENU_ITEM_MASK.MIIM_SUBMENU;
+            basic.hSubMenu = new HMENU(SubMenu.DangerousGetHandle());
         }
 
         return new MenuItemInfo(basic);
