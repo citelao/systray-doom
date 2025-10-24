@@ -43,11 +43,31 @@ var guid = Guid.Parse("0ec911bf-c185-400b-816e-a51689aebbfb");
 var icon = new TrayIcon(guid, new(messageWindow.Hwnd.Value), logger: loggerFactory.CreateLogger<TrayIcon>());
 icon.ContextMenu = (hwnd, pt) =>
 {
+    ShowContextMenu(new HWND(hwnd.Value), pt, isRightClick: true, logger);
+    return true;
+};
+icon.Select = (hwnd, pt) =>
+{
+    ShowContextMenu(new HWND(hwnd.Value), pt, isRightClick: false, logger);
+    return true;
+};
+
+// Run the message loop so the tray icon functions :)
+logger.LogInformation("Starting message loop...");
+logger.LogInformation("Press Ctrl+C to exit.");
+while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
+{
+    PInvoke.TranslateMessage(msg);
+    PInvoke.DispatchMessage(msg);
+}
+
+static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILogger logger)
+{
     logger.LogInformation("Showing context menu at {X},{Y}", pt.X, pt.Y);
 
     // Focus the window, so keyboard activation & dismissal works.
     // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
-    PInvoke.SetForegroundWindow(new HWND(hwnd.Value));
+    PInvoke.SetForegroundWindow(hwnd);
 
     using var menu = MenuHelpers.CreatePopupMenu();
 
@@ -58,7 +78,7 @@ icon.ContextMenu = (hwnd, pt) =>
 
     // Note: add TPM_LAYOUTRTL for RTL layouts.
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#:~:text=existing%20menu%20item.-,%5Bin%5D%20uFlags,-Type%3A%20UINT
-    var flags = (TRACK_POPUP_MENU_FLAGS)MenuHelpers.GetPopupAlignmentFlags();
+    var flags = (TRACK_POPUP_MENU_FLAGS)MenuHelpers.GetPopupAlignmentFlags(isRightClick);
     var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
     flags |= returnValueFlags;
 
@@ -71,7 +91,7 @@ icon.ContextMenu = (hwnd, pt) =>
         (uint)flags,
         pt.X,
         pt.Y,
-        new HWND(hwnd.Value),
+        hwnd,
         null);
     if (response == 0)
     {
@@ -80,17 +100,6 @@ icon.ContextMenu = (hwnd, pt) =>
     else if (response == exitId)
     {
         // Exit!
-        PInvoke.PostMessage(new HWND(hwnd.Value), PInvoke.WM_CLOSE, 0, 0);
+        PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
     }
-
-    return true;
-};
-
-// Run the message loop so the tray icon functions :)
-logger.LogInformation("Starting message loop...");
-logger.LogInformation("Press Ctrl+C to exit.");
-while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
-{
-    PInvoke.TranslateMessage(msg);
-    PInvoke.DispatchMessage(msg);
 }
