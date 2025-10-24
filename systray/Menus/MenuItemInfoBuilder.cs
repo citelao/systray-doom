@@ -36,6 +36,21 @@ public class MenuItemInfoBuilder
     /// </summary>
     public bool Default { get; set; } = false;
 
+    /// <summary>
+    /// Whether the menu item is checked.
+    /// </summary>
+    public bool Checked { get; set; } = false;
+
+    /// <summary>
+    /// Whether checked items should look like radio buttons.
+    /// </summary>
+    public bool IsRadio { get; set; } = false;
+
+    /// <summary>
+    /// Whether the menu item is highlighted.
+    /// </summary>
+    public bool Hilite { get; set; } = false;
+
     public enum ItemType
     {
         String,
@@ -144,6 +159,22 @@ public class MenuItemInfoBuilder
         {
             basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
             basic.fState |= MENU_ITEM_STATE.MFS_DEFAULT;
+        }
+
+        if (Checked)
+        {
+            basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
+            basic.fState |= MENU_ITEM_STATE.MFS_CHECKED;
+            if (IsRadio)
+            {
+                basic.fType |= MENU_ITEM_TYPE.MFT_RADIOCHECK;
+            }
+        }
+
+        if (Hilite)
+        {
+            basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
+            basic.fState |= MENU_ITEM_STATE.MFS_HILITE;
         }
 
         if (SubMenu != null)

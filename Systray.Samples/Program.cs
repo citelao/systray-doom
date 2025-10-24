@@ -72,6 +72,10 @@ static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILog
     using var submenu = MenuHelpers.CreatePopupMenu();
     MenuHelpers.InsertMenuItem(submenu, 1, new MenuItemInfoBuilder { Text = "Welcome to the submenu!", Enabled = false }.Build());
     MenuHelpers.InsertMenuItem(submenu, 2, MenuItemInfoBuilder.CreateSeparator());
+    MenuHelpers.InsertMenuItem(submenu, 3, new MenuItemInfoBuilder { Text = "&Radio button", Id = 101, Checked = true, IsRadio = true }.Build());
+    MenuHelpers.InsertMenuItem(submenu, 4, new MenuItemInfoBuilder { Text = "&Checked option", Id = 102, Checked = true }.Build());
+    MenuHelpers.InsertMenuItem(submenu, 5, new MenuItemInfoBuilder { Text = "&Highlighed option", Id = 103, Hilite = true }.Build());
+    MenuHelpers.InsertMenuItem(submenu, 6, new MenuItemInfoBuilder { Text = "&Default option", Id = 104, Default = true }.Build());
 
     using var menu = MenuHelpers.CreatePopupMenu();
 
@@ -106,5 +110,9 @@ static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILog
     {
         // Exit!
         PInvoke.PostMessage(hwnd, PInvoke.WM_CLOSE, 0, 0);
+    }
+    else
+    {
+        logger.LogInformation("Menu item {Id} selected", response);
     }
 }
