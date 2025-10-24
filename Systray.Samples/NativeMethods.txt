@@ -6,4 +6,12 @@ GetModuleHandle
 // HWND_MESSAGE
 
 WM_NCCREATE
+WM_*
+
+CREATESTRUCTW
 DefWindowProc
+DestroyWindow
+PostQuitMessage
+
+// For GWLP_USERDATA
+WINDOW_LONG_PTR_INDEX
