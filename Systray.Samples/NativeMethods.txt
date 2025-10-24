@@ -1,0 +1,6 @@
+RegisterClassEx
+CreateWindowEx
+GetModuleHandle
+
+// Does not seem to be defined
+// HWND_MESSAGE

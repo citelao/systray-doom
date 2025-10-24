@@ -298,7 +298,8 @@ unsafe
 
         // We ignore the returned class atom & use the class name directly.
         // https://devblogs.microsoft.com/oldnewthing/20080501-00/?p=22503
-        PInvoke.RegisterClassEx(wndClass);
+        var atom = PInvoke.RegisterClassEx(wndClass);
+        PInvokeHelpers.THROW_LAST_ERROR_IF(atom == 0, "Failed to register window class");
     }
 }
 
