@@ -44,6 +44,10 @@ icon.ContextMenu = (hwnd, pt) =>
 {
     logger.LogInformation("Showing context menu at {X},{Y}", pt.X, pt.Y);
 
+    // Focus the window, so keyboard activation & dismissal works.
+    // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
+    PInvoke.SetForegroundWindow(new HWND(hwnd.Value));
+
     using var menu = MenuHelpers.CreatePopupMenu();
 
     uint exitId = 1;

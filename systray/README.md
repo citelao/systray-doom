@@ -51,8 +51,9 @@ Provided that you have the following PInvokes in your code:
 
 1. `TRACK_POPUP_MENU_FLAGS`
 2. `TrackPopupMenuEx`
-3. `PostMessage`
-4. `WM_CLOSE`
+3. `SetForegroundWindow`
+4. `PostMessage`
+5. `WM_CLOSE`
 
 ```csharp
 using Systray.Menus;
@@ -61,6 +62,10 @@ var trayIcon = new TrayIcon(/* ... */)
 {
     ContextMenu = (hwnd, pt) =>
     {
+        // Focus the window, so keyboard activation & dismissal works.
+        // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
+        PInvoke.SetForegroundWindow(new HWND(hwnd.Value));
+
         using var menu = MenuHelpers.CreatePopupMenu();
 
         uint exitId = 1;
