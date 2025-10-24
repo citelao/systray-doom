@@ -49,19 +49,22 @@ internal class MessageOnlyWindow : IDisposable
         // https://stackoverflow.com/questions/4081334/using-createwindowex-to-make-a-message-only-window
         // https://pinvoke.net/default.aspx/Constants/HWND_MESSAGE.html
         var HWND_MESSAGE = new HWND(unchecked((nint)(-3)));
-        Hwnd = PInvoke.CreateWindowEx(
-            0,
-            lpClassName: name,
-            lpWindowName: name,
-            0,
-            0,
-            0,
-            0,
-            0,
-            HWND_MESSAGE,
-            default,
-            default,
-            null);
+        fixed (void* pData = &_data)
+        {
+            Hwnd = PInvoke.CreateWindowEx(
+                0,
+                lpClassName: name,
+                lpWindowName: name,
+                0,
+                0,
+                0,
+                0,
+                0,
+                HWND_MESSAGE,
+                default,
+                default,
+                lpParam: pData);
+        }
         PInvokeHelpers.THROW_LAST_ERROR_IF(Hwnd == HWND.Null, "Failed to create window");
     }
 
