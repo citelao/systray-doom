@@ -17,9 +17,9 @@ using var loggerFactory = LoggerFactory.Create(builder =>
     .SetMinimumLevel(LogLevel.Information);
 });
 var logger = loggerFactory.CreateLogger<Program>();
-
 logger.LogInformation("Starting...");
 
+// Create a parent message-only window to handle events.
 using var messageWindow = new MessageOnlyWindow("Systray.Sample.Window", (hwnd, msg, wParam, lParam) =>
 {
     logger.LogInformation("Window Message: {Msg} (wParam=0x{WParam:X}, lParam=0x{LParam:X})", msg, wParam.Value, lParam.Value);
@@ -38,6 +38,7 @@ using var messageWindow = new MessageOnlyWindow("Systray.Sample.Window", (hwnd, 
     }
 });
 
+// Create the tray icon!
 var guid = Guid.Parse("0ec911bf-c185-400b-816e-a51689aebbfb");
 var icon = new TrayIcon(guid, new(messageWindow.Hwnd.Value), logger: loggerFactory.CreateLogger<TrayIcon>());
 icon.ContextMenu = (hwnd, pt) =>
@@ -83,6 +84,7 @@ icon.ContextMenu = (hwnd, pt) =>
     return true;
 };
 
+// Run the message loop so the tray icon functions :)
 logger.LogInformation("Starting message loop...");
 logger.LogInformation("Press Ctrl+C to exit.");
 while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
