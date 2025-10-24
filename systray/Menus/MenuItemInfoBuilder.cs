@@ -42,10 +42,11 @@ public class MenuItemInfoBuilder
     /// </summary>
     public bool Checked { get; set; } = false;
 
-    /// <summary>
-    /// Whether checked items should look like radio buttons.
-    /// </summary>
-    public bool IsRadio { get; set; } = false;
+    // TODO: is not working; add later.
+    // /// <summary>
+    // /// Whether checked items should look like radio buttons.
+    // /// </summary>
+    // public bool IsRadio { get; set; } = false;
 
     /// <summary>
     /// Whether the menu item is highlighted.
@@ -166,10 +167,10 @@ public class MenuItemInfoBuilder
         {
             basic.fMask |= MENU_ITEM_MASK.MIIM_STATE;
             basic.fState |= MENU_ITEM_STATE.MFS_CHECKED;
-            if (IsRadio)
-            {
-                basic.fType |= MENU_ITEM_TYPE.MFT_RADIOCHECK;
-            }
+            // if (IsRadio)
+            // {
+            //     basic.fType |= MENU_ITEM_TYPE.MFT_RADIOCHECK;
+            // }
         }
 
         if (Hilite)
