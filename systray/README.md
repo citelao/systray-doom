@@ -79,6 +79,8 @@ var trayIcon = new TrayIcon(/* ... */)
         var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
         flags |= returnValueFlags;
 
+        // Note: these are physical points; if your app is not DPI-aware, the
+        // context menu will display in the wrong spot.
         var response = PInvoke.TrackPopupMenuEx(
             menu,
             (uint)flags,

@@ -61,6 +61,8 @@ icon.ContextMenu = (hwnd, pt) =>
     var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
     flags |= returnValueFlags;
 
+    // Note: these are physical points; if your app is not DPI-aware, the
+    // context menu will display in the wrong spot.
     var response = PInvoke.TrackPopupMenuEx(
         menu,
         (uint)flags,
@@ -81,11 +83,8 @@ icon.ContextMenu = (hwnd, pt) =>
     return true;
 };
 
-// Wait for enter key
-// logger.LogInformation("Press Enter to exit...");
-// Console.ReadLine();
-
 logger.LogInformation("Starting message loop...");
+logger.LogInformation("Press Ctrl+C to exit.");
 while (PInvoke.GetMessage(out var msg, HWND.Null, 0, 0))
 {
     PInvoke.TranslateMessage(msg);
