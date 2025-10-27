@@ -1,6 +1,6 @@
 # Changelog
 
-## CURRENT
+## v0.2.4
 * META: Add AGENTS.md for guiding agents.
 * META: Add basic PR validation.
 * META: Add NerdBank.GitVersioning for automatic version management.
