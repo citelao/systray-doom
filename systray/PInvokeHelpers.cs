@@ -50,4 +50,12 @@ public static class PInvokeHelpers
     {
         THROW_IF_FAILED(new HRESULT(result), message);
     }
+
+    public static void THROW_LAST_ERROR_IF(bool condition, string? message = null)
+    {
+        if (condition)
+        {
+            throw new Win32Exception(message);
+        }
+    }
 }
