@@ -182,7 +182,7 @@ public class MenuItemInfoBuilder
         if (SubMenu != null)
         {
             basic.fMask |= MENU_ITEM_MASK.MIIM_SUBMENU;
-            basic.hSubMenu = new HMENU(SubMenu.DangerousGetHandle());
+            basic.hSubMenu = SubMenu.DangerousToHMENU();
         }
 
         return new MenuItemInfo(basic);
