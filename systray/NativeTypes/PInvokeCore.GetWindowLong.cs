@@ -43,6 +43,7 @@ public static partial class PInvokeCore
         return result;
     }
 
+    /// <inheritdoc cref="GetWindowLong(HWND, WINDOW_LONG_PTR_INDEX)"/>
     public static nint GetWindowLongPtr(NoReleaseHwnd hWnd, int nIndex)
     {
         return GetWindowLong(hWnd.ToHwnd(), (WINDOW_LONG_PTR_INDEX)nIndex);

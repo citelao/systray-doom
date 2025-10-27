@@ -5,6 +5,12 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
+/// <summary>
+/// This is a simple wrapper for a message-only window, which can be used to
+/// receive window messages (without showing UI).
+/// 
+/// You still need to pump a message loop to receive messages (see Program.cs).
+/// </summary>
 internal class MessageOnlyWindow : IDisposable
 {
     internal delegate LRESULT? WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
