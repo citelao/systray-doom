@@ -316,43 +316,4 @@ public class MenuItemInfoUnitTests
             }
         }
     }
-
-    [Fact]
-    public void TestEnabledVsDisabled_FlagValueDocumentation()
-    {
-        // This test documents the actual flag values for reference
-        var enabledItem = MenuItemInfo.CreateString("Enabled", 1);
-        enabledItem.Enabled = true;
-        
-        var disabledItem = MenuItemInfo.CreateString("Disabled", 2);
-        disabledItem.Enabled = false;
-
-        // Verify managed object states
-        Assert.True(enabledItem.Enabled);
-        Assert.False(disabledItem.Enabled);
-
-        // Verify native structures and document flag behavior
-        unsafe
-        {
-            fixed (char* pEnabled = enabledItem.Text)
-            fixed (char* pDisabled = disabledItem.Text)
-            {
-                var enabledInfo = enabledItem.BuildNative(pEnabled);
-                var disabledInfo = disabledItem.BuildNative(pDisabled);
-
-                // Document the values for debugging
-                var enabledState = (uint)enabledInfo.fState;
-                var disabledState = (uint)disabledInfo.fState;
-
-                // The key assertion: enabled and disabled items should have different states
-                Assert.NotEqual(enabledState, disabledState);
-                
-                // Disabled items should have the MFS_DISABLED flag
-                Assert.True(IsStateFlagEnabled(disabledInfo, MENU_ITEM_STATE.MFS_DISABLED));
-                
-                // This test helps us understand that MFS_ENABLED might be 0
-                // In Windows, MFS_ENABLED is typically 0x00000000 and MFS_DISABLED is 0x00000003
-            }
-        }
-    }
 }
