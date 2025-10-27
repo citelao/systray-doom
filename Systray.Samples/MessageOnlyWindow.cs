@@ -107,6 +107,7 @@ internal class MessageOnlyWindow : IDisposable
 
     public void Dispose()
     {
+        // TODO: implement Dispose properly. Not urgently needed for sample.
         // PInvoke.DestroyWindow(Hwnd);
     }
 }
