@@ -11,24 +11,17 @@ internal class MessageOnlyWindow : IDisposable
 
     private static readonly Dictionary<int, WeakReference<MessageOnlyWindow>> s_handlers = [];
     private static int s_nextId = 1;
-    public struct Data
-    {
-        public int ID;
-    }
 
     internal readonly HWND Hwnd;
 
-    private Data _data;
+    private int _id;
     private readonly WndProcDelegate _wndProc;
 
     unsafe public MessageOnlyWindow(string name, WndProcDelegate wndProc)
     {
         _wndProc = wndProc;
-        _data = new Data
-        {
-            ID = s_nextId++,
-        };
-        s_handlers[_data.ID] = new WeakReference<MessageOnlyWindow>(this);
+        _id = s_nextId++;
+        s_handlers[_id] = new WeakReference<MessageOnlyWindow>(this);
 
         fixed (char* fixedName = name)
         {
@@ -49,22 +42,23 @@ internal class MessageOnlyWindow : IDisposable
         // https://stackoverflow.com/questions/4081334/using-createwindowex-to-make-a-message-only-window
         // https://pinvoke.net/default.aspx/Constants/HWND_MESSAGE.html
         var HWND_MESSAGE = new HWND(unchecked((nint)(-3)));
-        fixed (void* pData = &_data)
-        {
-            Hwnd = PInvoke.CreateWindowEx(
-                0,
-                lpClassName: name,
-                lpWindowName: name,
-                0,
-                0,
-                0,
-                0,
-                0,
-                HWND_MESSAGE,
-                default,
-                default,
-                lpParam: pData);
-        }
+
+        // Use the ID as the lpParam directly.
+        var fakePtr = new IntPtr(_id);
+        void* lpParam = fakePtr.ToPointer();
+        Hwnd = PInvoke.CreateWindowEx(
+            0,
+            lpClassName: name,
+            lpWindowName: name,
+            0,
+            0,
+            0,
+            0,
+            0,
+            HWND_MESSAGE,
+            default,
+            default,
+            lpParam: lpParam);
         PInvokeHelpers.THROW_LAST_ERROR_IF(Hwnd == HWND.Null, "Failed to create window");
     }
 
@@ -77,18 +71,19 @@ internal class MessageOnlyWindow : IDisposable
                 unsafe
                 {
                     var createStruct = (CREATESTRUCTW*)lParam.Value;
-                    var data = (Data*)createStruct->lpCreateParams;
-                    Systray.NativeTypes.PInvokeCore.SetWindowLongPtr(new Systray.NativeTypes.NoReleaseHwnd(hwnd.Value), (int)WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, (nint)data);
+                    var data = (nint)createStruct->lpCreateParams;
+                    Systray.NativeTypes.PInvokeCore.SetWindowLongPtr(new Systray.NativeTypes.NoReleaseHwnd(hwnd.Value), (int)WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, data);
                 }
                 return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
 
             default:
                 unsafe
                 {
-                    var data = (Data*)Systray.NativeTypes.PInvokeCore.GetWindowLongPtr(new Systray.NativeTypes.NoReleaseHwnd(hwnd.Value), (int)WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
+                    var dataPtr = Systray.NativeTypes.PInvokeCore.GetWindowLongPtr(new Systray.NativeTypes.NoReleaseHwnd(hwnd.Value), (int)WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
+                    var data = (int?)dataPtr;
                     if (data != null)
                     {
-                        var id = data->ID;
+                        var id = data.Value;
                         if (s_handlers.TryGetValue(id, out var weakRef) && weakRef.TryGetTarget(out MessageOnlyWindow? that))
                         {
                             var result = that?._wndProc(hwnd, msg, wParam, lParam);
