@@ -16,14 +16,14 @@ internal class WindowMessageHandler
                 {
                     var createStruct = (CREATESTRUCTW*)lParam.Value;
                     var data = (Data*)createStruct->lpCreateParams;
-                    PInvoke.SetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, (nint)data);
+                    Systray.NativeTypes.PInvokeCore.SetWindowLongPtr(new Systray.NativeTypes.NoReleaseHwnd(hwnd.Value), (int)WINDOW_LONG_PTR_INDEX.GWLP_USERDATA, (nint)data);
                 }
                 return PInvoke.DefWindowProc(hwnd, msg, wParam, lParam);
 
             default:
                 unsafe
                 {
-                    var data = (Data*)PInvoke.GetWindowLongPtr(hwnd, WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
+                    var data = (Data*)Systray.NativeTypes.PInvokeCore.GetWindowLongPtr(new Systray.NativeTypes.NoReleaseHwnd(hwnd.Value), (int)WINDOW_LONG_PTR_INDEX.GWLP_USERDATA);
                     if (data != null)
                     {
                         var id = data->ID;
