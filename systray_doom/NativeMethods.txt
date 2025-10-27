@@ -1,7 +1,3 @@
-Shell_NotifyIcon
-NOTIFYICON_VERSION_4
-NOTIFY_ICON_DATA_FLAGS
-
 LoadIcon
 CreateIcon
 DestroyIcon
@@ -33,8 +29,6 @@ GetModuleHandle
 LoadCursor
 DefWindowProc
 
-GetWindowLongPtr
-SetWindowLongPtr
 WINDOW_LONG_PTR_INDEX
 CallWindowProc
 

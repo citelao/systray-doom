@@ -5,6 +5,7 @@
 * META: Add basic PR validation.
 * META: Add NerdBank.GitVersioning for automatic version management.
 * FEATURE: Add context menu helpers, to make it a bit easier to make a well-behaved context menu.
+* BUG: Fixed Doom running on ARM.
 
 ## v0.1.3
 * BUG: Fixed an issue where construction failures in `TrayIcon` crashed the host HWND.
