@@ -81,7 +81,6 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
 
     // If you ... happen to call `CreateMenu` instead here, you'll get a menu
     // that has basically no width.
-    // var menu = PInvoke.CreatePopupMenu();
     using var menu = MenuHelpers.CreatePopupMenu();
 
     MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfo { Text = "Systray Doom", Enabled = false });
