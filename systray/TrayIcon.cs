@@ -137,6 +137,7 @@ public class TrayIcon
             // For: http://www.flounder.com/messages.htm
             // See also: https://stackoverflow.com/questions/30843497/wm-user-vs-wm-app
             callbackMessage ??= PInvokeSystray.RegisterWindowMessage($"TrayIconMessage-{Guid}");
+            _logger?.LogDebug("Registered callback message: {Message}", callbackMessage);
         }
         CallbackMessage = callbackMessage;
 
@@ -156,6 +157,7 @@ public class TrayIcon
     /// </summary>
     public void Create()
     {
+        _logger?.LogInformation("Creating tray icon...");
         var notificationIconData = new TrayIconMessageBuilder(guid: Guid)
         {
             HWND = OwnerHwnd,

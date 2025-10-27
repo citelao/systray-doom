@@ -2,7 +2,7 @@ This project contains packages under different licenses.
 
 ----------
 
-The `Systray` & `Systray.UnitTests` directories are licensed under the MIT
+The `Systray`, `Systray.Samples`, & `Systray.UnitTests` directories are licensed under the MIT
 license; see `Systray/LICENSE.txt`.
 
 ----------

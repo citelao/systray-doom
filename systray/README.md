@@ -45,6 +45,62 @@ var trayIcon = new TrayIcon(
 
 For a full example, see https://github.com/citelao/systray-doom/.
 
+### Example with context menu
+
+Provided that you have the following PInvokes in your code:
+
+1. `TRACK_POPUP_MENU_FLAGS`
+2. `TrackPopupMenuEx`
+3. `SetForegroundWindow`
+4. `PostMessage`
+5. `WM_CLOSE`
+
+```csharp
+using Systray.Menus;
+
+var trayIcon = new TrayIcon(/* ... */)
+{
+    ContextMenu = (hwnd, pt) =>
+    {
+        // Focus the window, so keyboard activation & dismissal works.
+        // https://github.com/microsoft/Windows-classic-samples/blob/d338bb385b1ac47073e3540dbfa810f4dcb12ed8/Samples/Win7Samples/winui/shell/appshellintegration/NotificationIcon/NotificationIcon.cpp#L217
+        PInvoke.SetForegroundWindow(new HWND(hwnd.Value));
+
+        using var menu = MenuHelpers.CreatePopupMenu();
+
+        uint exitId = 1;
+        MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfo { Text = "My app", Enabled = false });
+        MenuHelpers.InsertMenuItem(menu, 1, MenuItemInfo.CreateSeparator());
+        MenuHelpers.InsertMenuItem(menu, 2, new MenuItemInfo { Text = "E&xit", Id = exitId, Default = true });
+
+        // Note: add TPM_LAYOUTRTL for RTL layouts.
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#:~:text=existing%20menu%20item.-,%5Bin%5D%20uFlags,-Type%3A%20UINT
+        var flags = (TRACK_POPUP_MENU_FLAGS)MenuHelpers.GetPopupAlignmentFlags();
+        var returnValueFlags = TRACK_POPUP_MENU_FLAGS.TPM_RETURNCMD | TRACK_POPUP_MENU_FLAGS.TPM_NONOTIFY;
+        flags |= returnValueFlags;
+
+        // Note: these are physical points; if your app is not DPI-aware, the
+        // context menu will display in the wrong spot.
+        var response = PInvoke.TrackPopupMenuEx(
+            menu,
+            (uint)flags,
+            pt.X,
+            pt.Y,
+            new HWND(hwnd.Value),
+            null);
+        if (response == 0)
+        {
+            // Either nothing selected or an error occurred.
+        }
+        else if (response == exitId)
+        {
+            // Exit!
+            PInvoke.PostMessage(new HWND(hwnd.Value), PInvoke.WM_CLOSE, 0, 0);
+        }
+    }
+};
+```
+
 ## Feedback
 
 The project repo is here: https://github.com/citelao/systray-doom/.

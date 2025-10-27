@@ -11,7 +11,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Systray.NativeTypes;
 
-internal static partial class PInvokeCore
+public static partial class PInvokeCore
 {
     [LibraryImport("USER32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -23,12 +23,28 @@ internal static partial class PInvokeCore
     [SupportedOSPlatform("windows5.0")]
     private static partial nint SetWindowLongPtrW(IntPtr hWnd, int nIndex, nint dwNewLong);
 
-    public static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint newValue)
+    /// <summary>
+    ///  Dynamic wrapper for SetWindowLong that works on both 32 and 64 bit
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    ///  <see href="https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setwindowlongptrw">
+    ///  SetWindowLong documentation.
+    /// </para>
+    /// </remarks>
+    /// <returns></returns>
+    internal static nint SetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex, nint newValue)
     {
         nint result = Environment.Is64BitProcess
             ? SetWindowLongPtrW(hWnd, (int)nIndex, newValue)
             : SetWindowLongW(hWnd, (int)nIndex, (int)newValue);
         GC.KeepAlive(hWnd);
         return result;
+    }
+
+    /// <inheritdoc cref="SetWindowLong(HWND, WINDOW_LONG_PTR_INDEX, nint)"/>
+    public static nint SetWindowLongPtr(NoReleaseHwnd hWnd, int nIndex, nint newValue)
+    {
+        return SetWindowLong(hWnd.ToHwnd(), (WINDOW_LONG_PTR_INDEX)nIndex, newValue);
     }
 }

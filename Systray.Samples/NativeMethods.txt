@@ -1,0 +1,27 @@
+RegisterClassEx
+CreateWindowEx
+GetModuleHandle
+
+// Does not seem to be defined
+// HWND_MESSAGE
+
+WM_NCCREATE
+WM_*
+
+CREATESTRUCTW
+DefWindowProc
+DestroyWindow
+PostQuitMessage
+
+// For GWLP_USERDATA
+WINDOW_LONG_PTR_INDEX
+
+GetMessage
+TranslateMessage
+DispatchMessage
+PostMessage
+
+// Context menus!
+TRACK_POPUP_MENU_FLAGS
+TrackPopupMenuEx
+SetForegroundWindow
