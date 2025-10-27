@@ -69,9 +69,9 @@ var trayIcon = new TrayIcon(/* ... */)
         using var menu = MenuHelpers.CreatePopupMenu();
 
         uint exitId = 1;
-        MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "My app", Enabled = false }.Build());
-        MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-        MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
+        MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfo { Text = "My app", Enabled = false });
+        MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfo.CreateSeparator());
+        MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfo { Text = "E&xit", Id = exitId, Default = true });
 
         // Note: add TPM_LAYOUTRTL for RTL layouts.
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#:~:text=existing%20menu%20item.-,%5Bin%5D%20uFlags,-Type%3A%20UINT

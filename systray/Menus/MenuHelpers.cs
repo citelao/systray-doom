@@ -24,15 +24,14 @@ public class MenuHelpers
     }
 
     /// <summary>
-    /// Insert a menu item into the specified menu. You can build a MenuItemInfo
-    /// with MenuItemInfoBuilder.
+    /// Insert a menu item into the specified menu.
     /// </summary>
     /// <param name="menu">The menu to append to</param>
     /// <param name="index">The position at which to insert the menu item</param>
-    /// <param name="item">The menu item to insert; typically created with MenuItemInfoBuilder's `.Build()`</param>
+    /// <param name="item">The menu item to insert</param>
     public static void InsertMenuItem(SafeHmenu menu, uint index, MenuItemInfo item)
     {
-        PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(menu, index, true, item.Info));
+        item.InsertMenuItem(menu, index);
     }
 
     /// <summary>

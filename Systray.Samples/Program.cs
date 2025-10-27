@@ -70,19 +70,19 @@ static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILog
     PInvoke.SetForegroundWindow(hwnd);
 
     using var submenu = MenuHelpers.CreatePopupMenu();
-    MenuHelpers.InsertMenuItem(submenu, 1, new MenuItemInfoBuilder { Text = "Welcome to the submenu!", Enabled = false }.Build());
-    MenuHelpers.InsertMenuItem(submenu, 2, MenuItemInfoBuilder.CreateSeparator());
-    MenuHelpers.InsertMenuItem(submenu, 3, new MenuItemInfoBuilder { Text = "&Checked option", Id = 102, Checked = true }.Build());
-    MenuHelpers.InsertMenuItem(submenu, 4, new MenuItemInfoBuilder { Text = "&Highlighed option", Id = 103, Hilite = true }.Build());
-    MenuHelpers.InsertMenuItem(submenu, 5, new MenuItemInfoBuilder { Text = "&Default option", Id = 104, Default = true }.Build());
+    MenuHelpers.InsertMenuItem(submenu, 1, new MenuItemInfo { Text = "Welcome to the submenu!", Enabled = false });
+    MenuHelpers.InsertMenuItem(submenu, 2, MenuItemInfo.CreateSeparator());
+    MenuHelpers.InsertMenuItem(submenu, 3, new MenuItemInfo { Text = "&Checked option", Id = 102, Checked = true });
+    MenuHelpers.InsertMenuItem(submenu, 4, new MenuItemInfo { Text = "&Highlighed option", Id = 103, Hilite = true });
+    MenuHelpers.InsertMenuItem(submenu, 5, new MenuItemInfo { Text = "&Default option", Id = 104, Default = true });
 
     using var menu = MenuHelpers.CreatePopupMenu();
 
     uint exitId = 1;
-    MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "My app", Enabled = false }.Build());
-    MenuHelpers.InsertMenuItem(menu, 2, new MenuItemInfoBuilder { Text = "&Options", SubMenu = submenu }.Build());
-    MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfoBuilder.CreateSeparator());
-    MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = exitId, Default = true }.Build());
+    MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfo { Text = "My app", Enabled = false });
+    MenuHelpers.InsertMenuItem(menu, 2, new MenuItemInfo { Text = "&Options", SubMenu = submenu });
+    MenuHelpers.InsertMenuItem(menu, 3, MenuItemInfo.CreateSeparator());
+    MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfo { Text = "E&xit", Id = exitId, Default = true });
 
     // Note: add TPM_LAYOUTRTL for RTL layouts.
     // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackpopupmenuex#:~:text=existing%20menu%20item.-,%5Bin%5D%20uFlags,-Type%3A%20UINT

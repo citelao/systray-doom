@@ -2,25 +2,13 @@ namespace Systray.Menus;
 
 using System.Runtime.InteropServices;
 using Systray.NativeTypes;
+using Windows.Win32;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 /// <summary>
-/// An opaque wrapper for MENUITEMINFOWs, to manage CsWin32's projections.
+/// A menu item that can be inserted into menus via MenuHelpers.InsertMenuItem.
 /// </summary>
 public class MenuItemInfo
-{
-    internal readonly MENUITEMINFOW Info;
-
-    internal MenuItemInfo(MENUITEMINFOW info)
-    {
-        Info = info;
-    }
-}
-
-/// <summary>
-/// A builder for creating MenuItemInfo instances, useful with MenuHelpers.InsertMenuItem.
-/// </summary>
-public class MenuItemInfoBuilder
 {
     /// <summary>
     /// The command ID that will be sent when the menu item is selected.
@@ -76,10 +64,10 @@ public class MenuItemInfoBuilder
     /// <returns>N.B. this returns a MenuItemInfo directly, since separators don't support customization</returns>
     public static MenuItemInfo CreateSeparator()
     {
-        return new MenuItemInfoBuilder
+        return new MenuItemInfo
         {
             Type = ItemType.Separator,
-        }.Build();
+        };
     }
 
     /// <summary>
@@ -87,10 +75,10 @@ public class MenuItemInfoBuilder
     /// </summary>
     /// <param name="text">The text to display for the menu item; use `&` to indicate the access key</param>
     /// <param name="id">The command ID that will be sent when the menu item is selected</param>
-    /// <returns>A MenuItemInfoBuilder pre-populated with the given text and ID; it's safe to call Build()</returns>
-    public static MenuItemInfoBuilder CreateString(string text, uint? id = null)
+    /// <returns>A MenuItemInfo pre-populated with the given text and ID</returns>
+    public static MenuItemInfo CreateString(string text, uint? id = null)
     {
-        return new MenuItemInfoBuilder
+        return new MenuItemInfo
         {
             Text = text,
             Id = id,
@@ -99,10 +87,25 @@ public class MenuItemInfoBuilder
     }
 
     /// <summary>
-    /// Builds the current MenuItemInfo! You can pass this to MenuHelpers.InsertMenuItem.
+    /// Internal method to insert this menu item into a menu with proper string lifetime management.
     /// </summary>
-    /// <returns>An opaque MenuItemInfo instance that can be used with MenuHelpers.InsertMenuItem</returns>
-    public MenuItemInfo Build()
+    /// <param name="menu">The menu to insert into</param>
+    /// <param name="index">The position to insert at</param>
+    internal unsafe void InsertMenuItem(SafeHmenu menu, uint index)
+    {
+        fixed (char* pText = Text)
+        {
+            var basic = BuildNative(pText);
+            PInvokeHelpers.THROW_IF_FALSE(PInvokeSystray.InsertMenuItem(menu, index, true, basic));
+        }
+    }
+
+    /// <summary>
+    /// Internal method to build the native MENUITEMINFOW structure.
+    /// </summary>
+    /// <param name="pText">Pointer to the text string, or null if no text</param>
+    /// <returns>The native MENUITEMINFOW structure</returns>
+    internal unsafe MENUITEMINFOW BuildNative(char* pText)
     {
         var basic = CreateBasic();
         if (Text != null)
@@ -112,14 +115,8 @@ public class MenuItemInfoBuilder
                 throw new InvalidOperationException("Text is only valid for string items.");
             }
 
-            unsafe
-            {
-                fixed (char* pText = Text)
-                {
-                    basic.fMask |= MENU_ITEM_MASK.MIIM_STRING;
-                    basic.dwTypeData = pText;
-                }
-            }
+            basic.fMask |= MENU_ITEM_MASK.MIIM_STRING;
+            basic.dwTypeData = pText;
         }
 
         switch (Type)
@@ -185,7 +182,7 @@ public class MenuItemInfoBuilder
             basic.hSubMenu = SubMenu.DangerousToHMENU();
         }
 
-        return new MenuItemInfo(basic);
+        return basic;
     }
 
     private static MENUITEMINFOW CreateBasic()

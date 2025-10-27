@@ -84,11 +84,11 @@ bool TryDisplayContextMenuRaw(HWND hwnd, Systray.PhysicalPoint pt)
     // var menu = PInvoke.CreatePopupMenu();
     using var menu = MenuHelpers.CreatePopupMenu();
 
-    MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfoBuilder { Text = "Systray Doom", Enabled = false }.Build());
-    MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfoBuilder { Text = "By Ben Stolovitz", Enabled = false }.Build());
-    MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfoBuilder.CreateSeparator());
-    MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfoBuilder { Text = "&Open window", Id = 3, Default = true }.Build());
-    MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfoBuilder { Text = "E&xit", Id = 4 }.Build());
+    MenuHelpers.InsertMenuItem(menu, 0, new MenuItemInfo { Text = "Systray Doom", Enabled = false });
+    MenuHelpers.InsertMenuItem(menu, 1, new MenuItemInfo { Text = "By Ben Stolovitz", Enabled = false });
+    MenuHelpers.InsertMenuItem(menu, 2, MenuItemInfo.CreateSeparator());
+    MenuHelpers.InsertMenuItem(menu, 3, new MenuItemInfo { Text = "&Open window", Id = 3, Default = true });
+    MenuHelpers.InsertMenuItem(menu, 4, new MenuItemInfo { Text = "E&xit", Id = 4 });
 
     // TODO: docs say to use this, but there are no examples.
     // PInvokeHelpers.THROW_IF_FALSE(PInvoke.CalculatePopupWindowPosition(
