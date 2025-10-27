@@ -35,7 +35,7 @@ public class MenuHelpers
     }
 
     /// <summary>
-    /// Get basic flags for aligning popup menus, taking into system metrics for positioning. Also ensures right-clicks activate menu items for context menus.
+    /// Get basic flags for aligning popup menus, taking into account system metrics for positioning. Also ensures right-clicks activate menu items for context menus.
     /// </summary>
     /// <param name="forRightClick">If true (default), includes TPM_RIGHTBUTTON to allow right-click activation.</param>
     /// <returns>A set of flags suitable for TrackPopupMenu & TrackPopupMenuEx; you can augment them.</returns>
