@@ -73,7 +73,7 @@ static void ShowContextMenu(HWND hwnd, PhysicalPoint pt, bool isRightClick, ILog
     MenuHelpers.InsertMenuItem(submenu, 1, new MenuItemInfo { Text = "Welcome to the submenu!", Enabled = false });
     MenuHelpers.InsertMenuItem(submenu, 2, MenuItemInfo.CreateSeparator());
     MenuHelpers.InsertMenuItem(submenu, 3, new MenuItemInfo { Text = "&Checked option", Id = 102, Checked = true });
-    MenuHelpers.InsertMenuItem(submenu, 4, new MenuItemInfo { Text = "&Highlighed option", Id = 103, Hilite = true });
+    MenuHelpers.InsertMenuItem(submenu, 4, new MenuItemInfo { Text = "&Highlighted option", Id = 103, Hilite = true });
     MenuHelpers.InsertMenuItem(submenu, 5, new MenuItemInfo { Text = "&Default option", Id = 104, Default = true });
 
     using var menu = MenuHelpers.CreatePopupMenu();
